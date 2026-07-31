@@ -11,7 +11,7 @@
 # shared with la_county_cats.yaml; original left in
 # OneDrive/Journal Physics LOS/PRA/LA County Open Data full database/
 #   Animal_Care_PawStats_Data 20241016.csv
-source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_dir:   "../../_shelter_raw"
 source_file:  "LA_raw.csv.gz"
 
 # NOT ISO. This export writes "2021/09/14 07:00:00+00" -- slashes, and an
@@ -28,7 +28,7 @@ keep_time:    false
 window_start_date: 2019-04-01
 window_end_date:   2024-07-31
 
-dest_dir:   "../../mLOS/data"
+dest_dir:   "../results"
 dest_file:  "LA_data.csv"
 
 # No date of birth and no size in this export, so no animal_group. FACILITY or

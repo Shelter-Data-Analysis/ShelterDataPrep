@@ -8,13 +8,14 @@
 # maps below have to land on exactly those labels.
 
 # --- source ---------------------------------------------------------------
-# Gzipped working copy of the raw extract. Kept outside any git repository:
-# raw extracts are published data and belong in a figshare deposit with their
-# own DOI, not in git history. pandas reads .csv.gz transparently.
+# Gzipped working copy of the raw extract, in a directory alongside this
+# repository rather than inside it: raw extracts are published data and belong
+# in a figshare deposit with their own DOI, not in git history. pandas reads
+# .csv.gz transparently.
 # Original, left where it was:
 #   OneDrive/Journal Physics LOS/PRA/Orange County 2018-2024/
 #     25-5969 Intakes and Outcomes 2018 to 20251002 1.csv
-source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_dir:   "../../_shelter_raw"
 source_file:  "OC_raw.csv.gz"
 date_format:  ISO8601        # this export is YYYY-MM-DD with a separate time column
 keep_time:    false
@@ -34,7 +35,11 @@ window_end_date:   2025-10-03
 # --- destination ----------------------------------------------------------
 # Relative paths are resolved against this settings file, not the working
 # directory, so the run means the same thing from anywhere.
-dest_dir:   "../../mLOS/data"
+#
+# Results land in ShelterDataPrep/results/, which is gitignored. A run never
+# writes into mLOS: copying a prepared file across is a separate, conscious
+# decision, not a side effect of re-running the prep.
+dest_dir:   "../results"
 dest_file:  "OC_data.csv"
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type, animal_size]
 

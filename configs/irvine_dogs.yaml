@@ -6,7 +6,7 @@
 
 # Gzipped working copy, kept outside any git repo (see orange_county.yaml);
 # original left in OneDrive/Journal Physics LOS/PRA/Irvine/IrvineDogs.csv
-source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_dir:   "../../_shelter_raw"
 source_file:  "IR_raw.csv.gz"
 date_format:  ISO8601
 keep_time:    false
@@ -17,7 +17,7 @@ keep_time:    false
 window_start_date: 2014-07-01
 window_end_date:   2024-10-14
 
-dest_dir:   "../../mLOS/data"
+dest_dir:   "../results"
 dest_file:  "IR_data.csv"
 
 # This extract has no date of birth and no size, so there is no animal_group

@@ -6,7 +6,7 @@
 
 # The same extract la_county_dogs.yaml reads; only the species cut and the
 # window differ between the two configs.
-source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_dir:   "../../_shelter_raw"
 source_file:  "LA_raw.csv.gz"
 
 # See la_county_dogs.yaml: this export writes "2021/09/14 07:00:00+00".
@@ -18,7 +18,7 @@ keep_time:    false
 window_start_date: 2018-11-30
 window_end_date:   2024-07-31
 
-dest_dir:   "../../mLOS/data"
+dest_dir:   "../results"
 dest_file:  "LAdc_data.csv"
 
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type]

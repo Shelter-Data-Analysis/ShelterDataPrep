@@ -2,3 +2,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .DS_Store
+
+# Run output. Regenerated from configs/ plus the raw extract; copied into
+# mLOS by hand, as a separate decision.
+results/

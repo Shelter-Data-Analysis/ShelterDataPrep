@@ -8,7 +8,7 @@
 
 # Gzipped working copy, kept outside any git repo (see orange_county.yaml);
 # original left in OneDrive/Journal Physics LOS/PRA/Irvine/IrvineAllSpecies.csv
-source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_dir:   "../../_shelter_raw"
 source_file:  "CIall_raw.csv.gz"
 
 # NOT ISO. This export writes US m/d/yy -- "3/29/24", "4/10/15". Under
@@ -20,7 +20,7 @@ keep_time:    false
 window_start_date: 2016-07-01
 window_end_date:   2024-01-01
 
-dest_dir:   "../../mLOS/data"
+dest_dir:   "../results"
 dest_file:  "CIall_data.csv"
 
 # Set animal_group_columns: [animal_type] in CIall_settings.txt.

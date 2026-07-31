@@ -9,13 +9,17 @@ A run is one YAML settings file:
 python -m shelterprep configs/orange_county.yaml
 ```
 
-Three files come out, next to each other:
+Three files come out, next to each other in `results/`:
 
 | file | contents |
 |---|---|
 | `OC_data.csv` | the prepared data |
 | `OC_data_stats.csv` | the processing ledger, one row per stage |
 | `OC_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
+
+`results/` is gitignored, and a run writes nowhere else. Handing a prepared
+file to the downstream analysis is a copy you make deliberately, not something
+that happens because you re-ran the prep.
 
 Or from Python, if you want to poke at an intermediate stage:
 
@@ -49,7 +53,7 @@ code had a bug worth knowing about, are commented in the config itself.
 ## The settings file
 
 ```yaml
-source_dir:   "~/data/Orange County 2018-2024"
+source_dir:   "../../_shelter_raw"
 source_file:  "intakes and outcomes.csv"
 sheet:                       # Excel only; omit and the file must have one sheet
 date_format:  ISO8601        # or: mixed  (US-style m/d/Y extracts)
@@ -58,7 +62,7 @@ keep_time:    false
 window_start_date: 2018-07-01   # optional pair, both or neither
 window_end_date:   2024-10-19
 
-dest_dir:   "../mLOS/data"
+dest_dir:   "../results"
 dest_file:  "OC_data.csv"
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, animal_size]
 
@@ -78,6 +82,16 @@ steps:
 An unknown top-level key is an error, not a warning. A misspelled setting that
 quietly skips an exclusion is the failure mode that survives into a published
 table.
+
+### Paths
+
+`source_dir` and `dest_dir` are relative, and resolve against the settings file
+rather than the working directory, so a run means the same thing from anywhere.
+Nothing in `configs/` names a home directory or a machine, so a clone of this
+repo next to a `_shelter_raw/` directory runs as written.
+
+The shipped configs read `../../_shelter_raw` — a sibling of the repo, so the
+extracts can never be committed — and write to `../results`.
 
 ### Columns
 
