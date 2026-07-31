@@ -1,0 +1,4 @@
+pandas>=2.0
+PyYAML>=6.0
+openpyxl>=3.1   # only needed for Excel sources
+pytest>=7.0     # tests only

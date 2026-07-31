@@ -1,0 +1,147 @@
+# Orange County Animal Care -> mLOS input
+#
+# Produces mLOS/data/OC_data.csv from the raw public-records extract.
+# Run with:  python -m shelterprep configs/orange_county.yaml
+#
+# The companion mLOS/data/OC_settings.txt expects outcome_type in
+# {LiveC, Transf, NonL, InCare} and reads animal_size as animal_group, so the
+# maps below have to land on exactly those labels.
+
+# --- source ---------------------------------------------------------------
+# Gzipped working copy of the raw extract. Kept outside any git repository:
+# raw extracts are published data and belong in a figshare deposit with their
+# own DOI, not in git history. pandas reads .csv.gz transparently.
+# Original, left where it was:
+#   OneDrive/Journal Physics LOS/PRA/Orange County 2018-2024/
+#     25-5969 Intakes and Outcomes 2018 to 20251002 1.csv
+source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_file:  "OC_raw.csv.gz"
+date_format:  ISO8601        # this export is YYYY-MM-DD with a separate time column
+keep_time:    false
+
+# --- study window ---------------------------------------------------------
+# Set to the full span of the extract, so the window excludes nothing and the
+# window_presence step reports 0. That is deliberate: the cut stays in the
+# sequence, so narrowing the study period is a one-line edit here and the rows
+# it costs are counted in the statistics table rather than being invisible.
+#
+# For reference, the old stale/orangecounty.py carried sampleStart 2018-07-01
+# and sampleEnd 2024-10-19, which on this extract costs 9,264 rows; mLOS's own
+# period_dates are narrower still, 2019-01-01 to 2022-10-01.
+window_start_date: 2018-01-01
+window_end_date:   2025-10-03
+
+# --- destination ----------------------------------------------------------
+# Relative paths are resolved against this settings file, not the working
+# directory, so the run means the same thing from anywhere.
+dest_dir:   "../../mLOS/data"
+dest_file:  "OC_data.csv"
+output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type, animal_size]
+
+# --- column names ---------------------------------------------------------
+# canonical_name: name_in_file. This export already uses the canonical names
+# for all five required fields and for dob, so there is nothing to declare.
+columns: {}
+
+# --- derived --------------------------------------------------------------
+# Cutoff falls in the lower group: age exactly 1 is JUVENILE.
+age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 18}
+unique_report: [animal_id]
+
+# --- ordered filter / map sequence ----------------------------------------
+# Value counts in the comments are for the 44,764 DOG rows of the 2025-10-02
+# extract. A step whose count comes out 0 is not dead weight: it is how a
+# misspelled label gets caught, so retired values are left in place.
+steps:
+  # Species first, then the window, so the window counts are about dogs.
+  - cut: {animal_type: [CAT, BIRD, OTHER, LIVESTOCK]}
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
+
+  # --- administrative rows that are not shelter stays ---------------------
+  - cut: {intake_type: [DISPO REQ, EUTH REQ, WILD, SURGERY, FOUND, LOST]}
+  - cut: {intake_cond: [DEAD, HEAD TEST]}
+  - cut: {kennel_no: [FOUND, HOME, HOME EXP, LOST]}
+
+  # DISPOSAL is body disposal, not an outcome of a stay. The old code was of
+  # two minds about it -- filterRawData cut it while getOutCodes mapped it to
+  # non-live -- and orangecounty.py:142-145 flagged that contradiction as a
+  # known source of divergence from the R tool. Resolved here, once: it is cut.
+  - cut: {outcome_type: [DOA, DISPOSAL, DELETE DUP, HOME EXP, FOUND EXP, LOST EXP,
+                         SURG SCHED, SURG WAIT]}
+
+  # --- outcome_type -> the three canonical mLOS codes ---------------------
+  # Adoption by a rescue partner is a transfer, not an adoption. Must run
+  # before the map to canonical codes below, while ADOPTION still exists.
+  - map: {outcome_type: {ADOPTION: TRANSFER}}
+    where: {outcome_subtype: RESCUE}
+
+  # LiveC = community live (returned to owner, adopted).
+  # Transf = other live (transfer, foster, return to field).
+  # NonL   = non-live.
+  # RTO-S appears 3 times and was in none of the old code's tables, so the old
+  # pipeline mapped it to NaN and dropped it without counting. Named here.
+  - map:
+      outcome_type:
+        ADOPTION:   LiveC
+        RTO:        LiveC
+        RTO-TMH:    LiveC
+        RTO 2 OS:   LiveC
+        RTO-S:      LiveC
+        TRANSFER:   Transf
+        CELL DOGS:  Transf
+        FOSTER:     Transf
+        RESCU WAIT: Transf
+        RET 2 WILD: Transf
+        EUTH:       NonL
+        DIED:       NonL
+        RTO-DEAD:   NonL
+        MISSING:    NonL
+        ESCAPED:    NonL
+        _UNKNOWN_:  InCare    # no outcome recorded: still in care
+
+  # --- intake_type -> STRAY / OWNER / OTHER -------------------------------
+  - map:
+      intake_type:
+        STRAY:      STRAY
+        STRAY OWN:  STRAY
+        OWNER SUR:  OWNER
+        CONFISCATE: OTHER
+        RETURN:     OTHER
+        FOSTER:     OTHER
+        DISASTER:   OTHER
+        TRANSFER:   OTHER
+        BOARDING:   OTHER
+
+  # --- animal_size --------------------------------------------------------
+  # 905-V and OPS are junk codes and KITTN is a cat that slipped the species
+  # filter. The old sizeTrans() dispatched on the first letter and folded all
+  # three silently into Medium; here they are named and counted.
+  - map:
+      animal_size:
+        LARGE:  LRG
+        X-LRG:  XL
+        905-V:  _UNKNOWN_
+        OPS:    _UNKNOWN_
+        UNKWN:  _UNKNOWN_
+        KITTN:  _UNKNOWN_
+
+  # PUPPY is an age leaking into the size column. Uncomment to fold it into
+  # MED for animals no longer juvenile -- correct, but it changes the
+  # animal_group strata mLOS reports, so it is opt-in rather than silent.
+  # - map: {animal_size: {PUPPY: MED}}
+  #   where_not: {age_group: JUVENILE}
+
+  # --- impossible or unusable rows ----------------------------------------
+  - cut: {night_sign: "-1"}     # outcome before intake
+  - cut: {age_group: _OVER_}    # older than the last cutoff (18)
+
+  # --- the narrowest safe deduplication -----------------------------------
+  # This extract carries 29 stays recorded twice. Only the multi-day ones are
+  # unambiguous: an animal cannot be admitted twice on the same day for the
+  # same multi-day stay, and 19 of the 20 such pairs are identical in every
+  # output column. The same-day pairs are left alone -- a genuine in-and-out
+  # can repeat within a day, and 7 of those 9 pairs disagree with each other
+  # about the outcome, so they are a judgement call for mLOS's duplicate-stay
+  # and overlapping-stay screens rather than for this pipeline.
+  - dedup:                      # compare every output column
+    where: {night_sign: "1"}    # only stays of at least one night

@@ -1,0 +1,82 @@
+# Irvine Animal Care Center, all species -> mLOS input
+#
+# Best-approximation port of stale/irvineallspecies.py. Not yet validated
+# against published results.
+#
+# Unlike the other configs this one keeps every species, and hands animal_type
+# to mLOS as the stratifier.
+
+# Gzipped working copy, kept outside any git repo (see orange_county.yaml);
+# original left in OneDrive/Journal Physics LOS/PRA/Irvine/IrvineAllSpecies.csv
+source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_file:  "CIall_raw.csv.gz"
+
+# NOT ISO. This export writes US m/d/yy -- "3/29/24", "4/10/15". Under
+# ISO8601 every row parses to NaT and the run produces nothing.
+date_format:  mixed
+keep_time:    false
+
+# From sampleStart/sampleEnd in stale/irvineallspecies.py.
+window_start_date: 2016-07-01
+window_end_date:   2024-01-01
+
+dest_dir:   "../../mLOS/data"
+dest_file:  "CIall_data.csv"
+
+# Set animal_group_columns: [animal_type] in CIall_settings.txt.
+output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type,
+                 animal_type]
+
+columns: {}
+unique_report: [animal_id]
+
+steps:
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
+
+  # No species cut: keeping every species is the point of this extract.
+  # CAT 15762, DOG 12745, BIRD 3192, OTHER 1804, RABBIT 842, LIVESTOCK 14.
+
+  - cut: {intake_type: [DEAD, DISPO REQ, EUTH REQ, SAFEKEEP]}
+  - cut: {intake_cond: DEAD}
+  - cut: {outcome_type: [DISPOSAL, DEAD, EUTH OR]}
+
+  # RETURN (73) is genuinely ambiguous -- return to owner, or to a rescue?
+  # The old code had no entry for it, so it was dropped uncounted. Same
+  # decision here, made visible. Move it into the map below if you can settle
+  # what it means.
+  - cut: {outcome_type: RETURN}
+
+  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # EUTH-ASO, ESCAPED and RELOCATE were absent from the old table and so were
+  # silently dropped. Their meaning is not in doubt, so they are mapped.
+  - map:
+      outcome_type:
+        ADOPTION:  LiveC
+        ADOPT-RES: LiveC
+        RTO:       LiveC
+        RTO-FIELD: Transf
+        RELOCATE:  Transf
+        TRANSFER:  Transf
+        FOSTER:    Transf
+        EUTH:      NonL
+        EUTH VET:  NonL
+        EUTH-ASO:  NonL
+        DIED:      NonL
+        MISSING:   NonL
+        ESCAPED:   NonL
+        _UNKNOWN_: InCare
+
+  - map:
+      intake_type:
+        STRAY:      STRAY
+        OWNER SUR:  OWNER
+        FOSTER:     OTHER
+        IACC-BIRTH: OTHER
+        POLICEHOLD: OTHER
+        RETURN:     OTHER
+        TRANSFER:   OTHER
+
+  - cut: {night_sign: "-1"}
+
+  - dedup:
+    where: {night_sign: "1"}

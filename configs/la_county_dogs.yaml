@@ -1,0 +1,104 @@
+# LA County Animal Care & Control, dogs -> mLOS input
+#
+# Best-approximation port of stale/losangelescounty.py. Not yet validated
+# against published results.
+#
+# Noted in the old module: internal transfers (TRANS_INT) ought to be bridged
+# into a single stay, but the data does not make the pairing clear. Nothing
+# here attempts it, so an animal moved between facilities appears as two stays.
+
+# Gzipped working copy, kept outside any git repo (see orange_county.yaml) and
+# shared with la_county_cats.yaml; original left in
+# OneDrive/Journal Physics LOS/PRA/LA County Open Data full database/
+#   Animal_Care_PawStats_Data 20241016.csv
+source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_file:  "LA_raw.csv.gz"
+
+# NOT ISO. This export writes "2021/09/14 07:00:00+00" -- slashes, and an
+# offset on every value. That parses to a timezone-aware column, which
+# shelterprep converts back to plain datetime64 by keeping the UTC wall clock.
+# The offsets are 07:00/08:00, i.e. local midnight, so the calendar date is
+# the intended one.
+date_format:  mixed
+keep_time:    false
+
+# From sampleStart/sampleEnd in stale/losangelescounty.py. The file itself
+# runs 2010-10-21 to 2025-02-07, so this window is doing a great deal of work
+# -- check its count first when the totals look small.
+window_start_date: 2019-04-01
+window_end_date:   2024-07-31
+
+dest_dir:   "../../mLOS/data"
+dest_file:  "LA_data.csv"
+
+# No date of birth and no size in this export, so no animal_group. FACILITY or
+# PRIMARY_BREED could serve if you want one; neither is added here.
+output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type]
+
+columns:
+  animal_id:    ANIMAL_ID
+  intake_date:  INTAKE_DATE
+  outcome_date: OUTCOME_DATE
+  intake_type:  INTAKE_TYPE_GROUP
+  outcome_type: OUTCOME_TYPE_GROUP
+
+unique_report: [animal_id]
+
+steps:
+  - cut: {ANIMAL_GROUP: [CATS, OTHER]}
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
+
+  - cut: {intake_type: DECEASED}
+
+  # stale/losangelescounty.py:97 blanked OUTCOME_TYPE_GROUP wherever the raw
+  # OUTCOME_TYPE was the placeholder UNK9999999 (1,344 rows file-wide).
+  #
+  # On this extract the step reports 0, and that is the right answer: all
+  # 1,344 of those rows already have a blank OUTCOME_TYPE_GROUP, so the old
+  # line was rewriting a blank to a blank. Kept as a tripwire -- if a later
+  # extract does populate the group for a placeholder outcome, this fires and
+  # the count says so instead of the row being scored as a real outcome.
+  - map:
+      outcome_type:
+        ADOPTION:     _UNKNOWN_
+        RTO:          _UNKNOWN_
+        RESCUE:       _UNKNOWN_
+        "OTHER LIVE": _UNKNOWN_
+        EUTHANASIA:   _UNKNOWN_
+        DIED:         _UNKNOWN_
+        ESCAPED:      _UNKNOWN_
+        MISSING:      _UNKNOWN_
+    where: {OUTCOME_TYPE: UNK9999999}
+
+  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # A blank outcome group is 21% of the dog rows. stale/losangelescounty.py:85
+  # meant to route those to transfer, via a pd.NA dictionary key that never
+  # fired against the NaN pandas actually produces -- so the intent never took
+  # effect and they fell through to be dropped. Treated as still-in-care here,
+  # which is the ordinary reading of "no outcome recorded". Change to Transf
+  # if the original intent was right.
+  - map:
+      outcome_type:
+        ADOPTION:     LiveC
+        RTO:          LiveC
+        RESCUE:       Transf
+        "OTHER LIVE": Transf
+        EUTHANASIA:   NonL
+        DIED:         NonL
+        ESCAPED:      NonL
+        MISSING:      NonL
+        _UNKNOWN_:    InCare
+
+  - map:
+      intake_type:
+        STRAY:       STRAY
+        "OWNER SUR": OWNER
+        OTHER:       OTHER
+        _UNKNOWN_:   OTHER
+
+  # stale/losangelescounty.py:92 required INTAKE_DATE <= OUTCOME_DATE. Same
+  # rule, but the rows it removes are counted instead of vanishing in a mask.
+  - cut: {night_sign: "-1"}
+
+  - dedup:
+    where: {night_sign: "1"}

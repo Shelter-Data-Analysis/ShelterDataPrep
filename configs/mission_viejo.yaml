@@ -1,0 +1,94 @@
+# Mission Viejo Animal Services, dogs -> mLOS input
+#
+# Best-approximation port of stale/missionviejo.py. Not yet validated against
+# published results.
+
+# Gzipped working copy, kept outside any git repo (see orange_county.yaml);
+# original left in OneDrive/Journal Physics LOS/PRA/Mission Viejo/
+#   2016-Feb_2025 Intake Data _Dog-Cat.csv
+source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_file:  "MV_raw.csv.gz"
+date_format:  ISO8601
+keep_time:    false
+
+# From sampleStart/sampleEnd in stale/missionviejo.py. This does real work at
+# the top end: the file contains an intake dated 2029-04-11, which the window
+# removes as AFTER and the statistics table counts.
+window_start_date: 2017-01-01
+window_end_date:   2024-12-31
+
+dest_dir:   "../../mLOS/data"
+dest_file:  "MV_data.csv"
+
+output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type,
+                 animal_size]
+
+# This export uses its own names throughout. Renaming happens on the way in
+# only, so nothing downstream ever sees intype/outdate/petsize.
+columns:
+  animal_id:    animalid
+  intake_date:  indate
+  outcome_date: outdate
+  intake_type:  intype
+  outcome_type: outtype
+  animal_size:  petsize
+  dob:          petdob
+
+age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 18}
+unique_report: [animal_id]
+
+steps:
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
+
+  # animaltype is spelled "DOG" and "DOG       " in this file. Trailing
+  # whitespace is stripped on read, so CAT is all this needs to name.
+  - cut: {animaltype: CAT}
+
+  - cut: {intake_type: QUARANTINE}
+
+  # MUTLAID, OWNER SURR and TRANS QT were coded X in stale/missionviejo.py.
+  - cut: {outcome_type: [MUTLAID, "OWNER SURR", "TRANS QT"]}
+
+  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  - map:
+      outcome_type:
+        ADOPTION:  LiveC
+        RTO:       LiveC
+        RESCUE:    Transf
+        TRANSFER:  Transf
+        EUTH:      NonL
+        DIED:      NonL
+        MISSING:   NonL      # absent from the old table, so dropped uncounted
+        _UNKNOWN_: InCare
+
+  - map:
+      intake_type:
+        STRAY:        STRAY
+        RELINQUISH:   OWNER
+        CONFISCATE:   OTHER
+        EVACUEE:      OTHER
+        "MUTUAL AID": OTHER
+        "POLICE IMP": OTHER
+        RESCUE:       OTHER
+        RETURN:       OTHER
+        SHELASSIST:   OTHER
+        TRANSFER:     OTHER
+        "VET ASSIST": OTHER
+        WELFARE:      OTHER
+
+  # --- animal_size --------------------------------------------------------
+  # KITEN is a cat that slipped the species column and 905V is a junk code.
+  # The old sizeTrans() dispatched on the first letter and folded both into
+  # Medium; here they are named and counted.
+  - map:
+      animal_size:
+        LARGE:  LRG
+        X-LRG:  XL
+        KITEN:  _UNKNOWN_
+        905V:   _UNKNOWN_
+
+  - cut: {night_sign: "-1"}
+  - cut: {age_group: _OVER_}
+
+  - dedup:
+    where: {night_sign: "1"}

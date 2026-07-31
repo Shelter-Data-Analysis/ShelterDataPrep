@@ -1,0 +1,96 @@
+# Long Beach Animal Care Services, dogs -> mLOS input
+#
+# Best-approximation port of stale/longbeach.py. Not yet validated against
+# published results.
+#
+# Noted in the old module: the shelter ended its relationship with SPCA-LA
+# during the covered period, which shows up in the transfer stream.
+
+# Gzipped working copy, kept outside any git repo (see orange_county.yaml);
+# original left in OneDrive/Journal Physics LOS/PRA/Long Beach October 2024/
+#   animal-shelter-intakes-and-outcomes.csv
+source_dir:   "~/Desktop/GitProjects/_shelter_raw"
+source_file:  "LB_raw.csv.gz"
+date_format:  ISO8601
+keep_time:    false
+
+# From sampleStart/sampleEnd in stale/longbeach.py. Note the file on disk now
+# runs past that end date, so this window does real work -- check the count on
+# the window_presence step and widen if you want the newer rows.
+window_start_date: 2018-03-01
+window_end_date:   2024-12-31
+
+dest_dir:   "../../mLOS/data"
+dest_file:  "LB_data.csv"
+
+# No size column in this export, but there is a date of birth, so age_group
+# is the natural stratifier. Set animal_group_columns: [age_group] in
+# LB_settings.txt.
+output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type,
+                 age_group]
+
+columns:
+  animal_id:    "Animal ID"
+  intake_date:  "Intake Date"
+  outcome_date: "Outcome Date"
+  intake_type:  "Intake Type"
+  outcome_type: "Outcome Type"
+  dob:          "DOB"
+
+age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 18}
+unique_report: [animal_id]
+
+steps:
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
+
+  # Both of these are 0 on the October 2024 extract: it is already dogs only
+  # and already alive-on-intake only. Kept so that an extract which is not
+  # would be caught rather than quietly analysed.
+  - cut: {"Animal Type": [CAT, BIRD, OTHER, RABBIT, LIVESTOCK]}
+  - cut: {intake_is_dead: "Dead on Intake"}
+
+  # "Euthenasia Required" is misspelled in the data. stale/longbeach.py:130
+  # cut the correctly spelled "Euthanasia Required", which never matched, so
+  # those rows survived. Spelled as the data spells it here, so the cut works.
+  - cut: {intake_type: [QUARANTINE, SAFE KEEP, WILDLIFE, "Euthenasia Required",
+                        "TRAP, NEUTER, RETURN"]}
+
+  - cut: {outcome_type: ["COMMUNITY CAT", DUPLICATE, "RETURN TO WILD HABITAT",
+                         "SHELTER, NEUTER, RETURN", "TRAP, NEUTER, RELEASE"]}
+
+  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # RETURN TO RESCUE was coded as return-to-owner in stale/longbeach.py.
+  # Returning an animal to the rescue organisation that placed it is other-live
+  # rather than community-live, so it goes to Transf. Only 8 rows either way.
+  - map:
+      outcome_type:
+        ADOPTION:          LiveC
+        "FOSTER TO ADOPT": LiveC
+        HOMEFIRST:         LiveC
+        "RETURN TO OWNER": LiveC
+        "RETURN TO RESCUE": Transf
+        RESCUE:            Transf
+        TRANSFER:          Transf
+        TRANSPORT:         Transf
+        FOSTER:            Transf
+        EUTHANASIA:        NonL
+        DIED:              NonL
+        DISPOSAL:          NonL
+        MISSING:           NonL
+        _UNKNOWN_:         InCare
+
+  - map:
+      intake_type:
+        STRAY:                   STRAY
+        "OWNER SURRENDER":       OWNER
+        "Adopted Animal Return": OWNER
+        CONFISCATE:              OTHER
+        "WELFARE SEIZED":        OTHER
+        RETURN:                  OTHER
+        FOSTER:                  OTHER
+
+  - cut: {night_sign: "-1"}
+  - cut: {age_group: _OVER_}
+
+  - dedup:
+    where: {night_sign: "1"}
