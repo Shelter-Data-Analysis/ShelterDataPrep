@@ -338,6 +338,113 @@ def test_the_ledger_chain_is_continuous(tmp_path):
     assert list(counts.rows_in)[1:] == list(counts.rows_out)[:-1]
 
 
+# --- the value-level breakdown ---------------------------------------------
+
+def _values(details, **filters):
+    """The {value: rows_affected} mapping of the matching detail rows."""
+    for column, wanted in filters.items():
+        details = details[details[column] == wanted]
+    return dict(zip(details["value"], details["rows_affected"]))
+
+
+def test_a_value_that_never_occurs_is_reported_as_zero(tmp_path):
+    # The safeguard case: a label kept in the settings so a future extract
+    # carrying it is caught. A summary of what occurred would omit it.
+    details = prepared(tmp_path, steps=[
+        {"cut": {"animal_type": ["CAT", "LIVESTOCK"]}}]).statistics.details()
+    assert _values(details) == {"CAT": 1, "LIVESTOCK": 0}
+
+
+def test_the_breakdown_of_a_column_adds_up_to_the_step(tmp_path):
+    prep = prepared(tmp_path, steps=[
+        {"cut": {"animal_type": ["CAT", "DOG"], "intake_type": "DISPO REQ"}}])
+    row = prep.statistics.frame().query("action == 'cut'").iloc[0]
+    details = prep.statistics.details()
+    for column in ("animal_type", "intake_type"):
+        assert sum(_values(details, column=column).values()) == row.rows_affected
+
+
+def test_a_conjunction_is_broken_down_one_part_at_a_time(tmp_path):
+    details = prepared(tmp_path, steps=[
+        {"cut": {"animal_type": ["CAT", "DOG"], "intake_type": "DISPO REQ"}}
+    ]).statistics.details()
+    assert _values(details, column="animal_type") == {"CAT": 0, "DOG": 1}
+    assert _values(details, column="intake_type") == {"DISPO REQ": 1}
+
+
+def test_a_map_breaks_down_by_source_value(tmp_path):
+    details = prepared(tmp_path, steps=[
+        {"map": {"animal_size": {"LARGE": "LRG", "905-V": UNKNOWN}}}
+    ]).statistics.details()
+    counts = _values(details, role="map from")
+    assert set(counts) == {"LARGE", "905-V"}
+    assert counts["LARGE"] > 0
+
+
+def test_a_where_is_counted_within_the_rows_mapped(tmp_path):
+    prep = prepared(tmp_path, steps=[
+        {"map": {"outcome_type": {"ADOPTION": "TRANSFER"}},
+         "where": {"outcome_subtype": ["RESCUE", "NEVER USED"]}}])
+    row = prep.statistics.frame().query("action == 'map'").iloc[0]
+    counts = _values(prep.statistics.details(), role="where")
+    assert counts == {"RESCUE": int(row.rows_affected), "NEVER USED": 0}
+
+
+def test_a_where_not_is_counted_over_the_rows_it_held_back(tmp_path):
+    # Counting where_not values among the *mapped* rows would report zero for
+    # every one of them, since excluding them is exactly what the guard did.
+    prep = prepared(tmp_path, steps=[
+        {"map": {"animal_size": {"MED": "MEDIUM"}},
+         "where_not": {"age_group": ["ADULT", "NEVER USED"]}}])
+    row = prep.statistics.frame().query("action == 'map'").iloc[0]
+    details = prep.statistics.details()
+    # Six MED rows; A005 is the ADULT one, so five are mapped and one held back.
+    assert int(row.rows_affected) == 5
+    assert _values(details, role="map from") == {"MED": 5}
+    assert _values(details, role="where_not") == {"ADULT": 1, "NEVER USED": 0}
+    assert details.query("role == 'where_not'")["scope"].iloc[0].endswith("where_not")
+
+
+def test_a_dedup_breaks_down_only_its_guards(tmp_path):
+    prep = prepared(tmp_path, steps=[{"dedup": None, "where": {"night_sign": "1"}}],
+                    **_twice(tmp_path, "2020-03-01", "2020-03-08"))
+    details = prep.statistics.details()
+    assert _values(details) == {"1": 1}
+    assert set(details.column) == {"night_sign"}
+
+
+def test_stages_without_a_value_set_get_no_detail_rows(tmp_path):
+    details = prepared(tmp_path, steps=[]).statistics.details()
+    assert details.empty
+    assert "value" in details.columns   # shape holds even when there is nothing
+
+
+def test_the_report_stacks_both_tables_in_one_readable_csv(tmp_path):
+    prep = Prep(load(write_settings(tmp_path, steps=[
+        {"cut": {"animal_type": ["CAT", "LIVESTOCK"]}}]))).run(verbose=False)
+
+    written = pd.read_csv(prep.settings.stats_path)
+    assert set(written.section) == {"stage", "detail"}
+    # Stage rows come first, so the file reads top to bottom as before.
+    assert written.section.tolist() == sorted(written.section.tolist(),
+                                              key=lambda s: s != "stage")
+
+    stages = written[written.section == "stage"]
+    details = written[written.section == "detail"]
+    assert stages.rows_in.notna().all() and details.rows_in.isna().all()
+    # Nullable integers: a blank stays blank rather than making the column float.
+    assert prep.statistics.report()["rows_in"].dtype == "Int64"
+    assert dict(zip(details["value"], details["rows_affected"])) == {"CAT": 1,
+                                                                     "LIVESTOCK": 0}
+
+
+def test_the_run_log_carries_the_breakdown_too(tmp_path):
+    prep = Prep(load(write_settings(tmp_path, steps=[
+        {"cut": {"animal_type": ["CAT", "LIVESTOCK"]}}]))).run(verbose=False)
+    log = prep.settings.run_path.read_text()
+    assert "by value" in log and "LIVESTOCK" in log
+
+
 # --- settings validation ---------------------------------------------------
 
 def test_an_unknown_setting_is_an_error(tmp_path):

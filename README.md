@@ -14,7 +14,7 @@ Three files come out, next to each other in `results/`:
 | file | contents |
 |---|---|
 | `OC_data.csv` | the prepared data |
-| `OC_data_stats.csv` | the processing ledger, one row per stage |
+| `OC_data_stats.csv` | the processing ledger: one row per stage, then one row per value each step names |
 | `OC_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
 
 `results/` is gitignored, and a run writes nowhere else. Handing a prepared
@@ -29,7 +29,9 @@ from shelterprep import load, Prep
 prep = Prep(load("configs/orange_county.yaml"))
 prep.read().derive()          # frame now has nights, age_group, window_presence
 prep.apply_steps().write()
-prep.statistics.frame()       # the ledger as a DataFrame
+prep.statistics.frame()       # the stage ledger as a DataFrame
+prep.statistics.details()     # the by-value breakdown, on its own
+prep.statistics.report()      # both, stacked -- what gets written to the CSV
 ```
 
 ## Configs
@@ -261,6 +263,50 @@ triple. `_in` minus `_out` is the number of animals that left the study
 
 Every step computes its mask, records the statistics, and only then applies the
 change, so the numbers describe the frame the step actually saw.
+
+### The by-value breakdown
+
+Underneath the stage table, in the same file, sits a second one at a finer
+grain: **one row per value the settings name**, counted within the rows that
+step actually cut or mapped. A `section` column selects between them, and each
+section leaves the other's columns blank, so the file is still one CSV that
+`pd.read_csv` opens.
+
+```
+ step action       column     role      value        scope  rows_affected  animal_id_affected
+    1    cut  animal_type      cut       BIRD     rows cut          16493               16421
+    1    cut  animal_type      cut        CAT     rows cut          87403               64096
+    1    cut  animal_type      cut  LIVESTOCK     rows cut            113                 110
+    1    cut  animal_type      cut      OTHER     rows cut          43376               42887
+    3    cut  intake_type      cut  DISPO REQ     rows cut           1815                1814
+    3    cut  intake_type      cut      FOUND     rows cut              0                   0
+```
+
+This exists mostly for the zeros. Settings files deliberately keep values that
+no longer occur, so that a label reappearing in a future extract is caught
+rather than passed through — and a summary of what *did* happen is exactly the
+report that cannot show them. `FOUND` above is one: named in the cut, matching
+nothing, and now visibly so.
+
+Two things to read carefully:
+
+- **`role`** says which part of the step the value came from: `cut`, `map from`
+  (a key of the map table), `where` or `where_not`.
+- **`scope`** says what the count is over. For everything except `where_not`
+  that is the rows the step cut or mapped. A `where_not` value cannot appear in
+  a row the step touched — keeping it out is what the guard did — so those are
+  counted over the rows the guard **held back** instead, which is the number
+  that says whether it fired.
+
+A conjunction is broken down one part at a time, not by combination. For
+`cut: {animal_type: [CAT, DOG], intake_type: DISPO REQ}` you get counts for
+`animal_type` and counts for `intake_type` over the same set of cut rows. Since
+a row holds one value per column, the counts within a column add up to the
+stage's `rows_affected` — a column that does not add up is one whose value set
+is missing something.
+
+`dedup` breaks down only its `where` / `where_not` guards: `on:` names columns,
+not values, so there is no set to split.
 
 ## Scope
 

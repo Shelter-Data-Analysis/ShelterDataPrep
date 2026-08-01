@@ -241,7 +241,8 @@ class Prep:
             after = steps.apply(before, step, chosen)
             self.statistics.record(
                 step=step.index, action=step.action, before=before, after=after,
-                affected=chosen, column=step.column, detail=step.detail)
+                affected=chosen, column=step.column, detail=step.detail,
+                breakdown=steps.breakdown(before, step, chosen))
             self.frame = after
         return self
 
@@ -277,7 +278,7 @@ class Prep:
 
         settings.dest_dir.mkdir(parents=True, exist_ok=True)
         output.to_csv(settings.dest_path, index=False)
-        self.statistics.frame().to_csv(settings.stats_path, index=False)
+        self.statistics.report().to_csv(settings.stats_path, index=False)
         settings.run_path.write_text(self._run_log(), encoding="utf-8")
         return self
 

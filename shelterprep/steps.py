@@ -1,10 +1,12 @@
 """Applying one filter or mapping step.
 
-The two functions here are deliberately separate.  `selection` works out which
-rows a step will touch; `apply` touches them.  Nothing calls `apply` without
-having recorded the statistics from `selection` first, which is the whole
-reason the split exists: the numbers in the ledger describe the frame the step
-actually saw, not a frame reconstructed afterwards.
+`selection` works out which rows a step will touch; `apply` touches them.
+Nothing calls `apply` without having recorded the statistics from `selection`
+first, which is the whole reason the split exists: the numbers in the ledger
+describe the frame the step actually saw, not a frame reconstructed afterwards.
+
+`breakdown` is the third of the trio and reads the same masks a second time,
+splitting a step's work across the individual values its settings name.
 """
 
 from __future__ import annotations
@@ -57,6 +59,61 @@ def selection(frame, step):
         return chosen
 
     return frame[step.column].isin(step.table) & _restrict(frame, step)
+
+
+def breakdown(frame, step, chosen):
+    """How a step's work splits across each value its settings name.
+
+    One entry per (role, column, value) mentioned anywhere in *step*, as
+    ``(role, column, value, scope, mask)``.  A value that matched nothing comes
+    back with an empty mask rather than not at all, which is the point of the
+    function: the safeguard entries -- labels kept in a settings file so that a
+    future extract carrying them is mapped rather than passed through -- are
+    exactly the ones a summary of what did occur cannot show.
+
+    Within one column the masks partition their scope, because a row holds one
+    value at a time.  So the counts for a column add up to the count of the
+    scope, and a set that does not add up says a value is missing from it.
+
+    A conjunction is reported one part at a time: `cut: {a: [...], b: [...]}`
+    gives counts for a and counts for b over the same rows, not counts for the
+    pairs.  Both add up to the same total.
+    """
+    entries = []
+
+    def add(role, scope, conditions, within):
+        for column, values in conditions.items():
+            for value in sorted(values):
+                entries.append(
+                    (role, column, value, scope, within & frame[column].isin([value])))
+
+    if isinstance(step, Cut):
+        add("cut", "rows cut", step.conditions, chosen)
+        return entries
+
+    if isinstance(step, Map):
+        # The table's keys are a value set like any other, and the one most
+        # likely to be carrying safeguard entries.
+        add("map from", "rows mapped", {step.column: frozenset(step.table)}, chosen)
+        add("where", "rows mapped", step.where, chosen)
+        if step.where_not:
+            # Counted over the rows the guard held back, not over the rows
+            # mapped: a where_not value cannot appear in a mapped row (that is
+            # what the guard did), so counting it there would report zero for
+            # every value and say nothing about which of them fired.
+            add("where_not", "rows excluded by where_not", step.where_not,
+                frame[step.column].isin(step.table)
+                & matches(frame, step.where)
+                & matches(frame, step.where_not))
+        return entries
+
+    # Dedup: `on` names columns rather than values, so only the guards have
+    # anything to break down.
+    add("where", "rows dropped", step.where, chosen)
+    if step.where_not:
+        add("where_not", "rows excluded by where_not", step.where_not,
+            matches(frame, step.where) & matches(frame, step.where_not))
+    return entries
 
 
 def apply(frame, step, chosen):
