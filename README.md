@@ -37,6 +37,7 @@ prep.statistics.frame()       # the ledger as a DataFrame
 | config | shelter | rows out | notes |
 |---|---|---|---|
 | `orange_county.yaml` | Orange County, dogs | 36,564 | validated against the previous `OC_data.csv` |
+| `orange_county2.yaml` | Orange County, dogs | 34,718 | supersedes the above; new outcome codes, `age_group` exported |
 | `irvine_dogs.yaml` | Irvine, dogs | 11,022 | no dob, no size — no `animal_group` |
 | `irvine_all_species.yaml` | Irvine, all species | 20,690 | US `m/d/yy` dates; `animal_type` is the stratifier |
 | `long_beach.yaml` | Long Beach, dogs | 12,183 | no size; `age_group` is the stratifier |

@@ -1,0 +1,223 @@
+# Orange County Animal Care -> mLOS input
+#
+# Produces results/OC2_data.csv from the raw public-records extract.
+# Run with:  python3 -m shelterprep configs/orange_county2.yaml
+#
+# The ultimate user's mLOS/data/OC2_settings.yaml expects outcome_type in
+# {LCOM, TRAN, NONL, INC} and reads animal_size as animal_group, so the
+# maps below have to land on exactly those labels.
+
+# --- source ---------------------------------------------------------------
+# Gzipped working copy of the raw extract, in a directory alongside this
+# repository rather than inside it: raw extracts are published data and belong
+# in a figshare deposit with their own DOI, not in git history. pandas reads
+# .csv.gz transparently.
+# Original, left where it was:
+#   OneDrive/Journal Physics LOS/PRA/Orange County 2018-2024/
+#     25-5969 Intakes and Outcomes 2018 to 20251002 1.csv
+source_dir:   "../../_shelter_raw"
+source_file:  "OC_raw.csv.gz"
+date_format:  ISO8601        # this export is YYYY-MM-DD with a separate time column
+keep_time:    false
+
+# --- study window ---------------------------------------------------------
+# The start date is set by left truncation, not by a policy decision.
+#
+# The extract is drawn *by intake date* and begins 2018-01-01, so an animal
+# admitted in 2017 and still resident in April 2018 does not appear at all.
+# Early 2018 therefore under-counts exactly the population an LOS study cares
+# about most -- the long stays. The bias decays as the pre-2018 admissions
+# leave, and OC's move to a new facility in spring 2018 (when the shelter
+# almost emptied out) flushed most of them; by 1 June 2018 the resident
+# population is one the extract can fully account for. That is the first date
+# from which a length-of-stay estimate is not biased downward by animals
+# missing from the file.
+#
+# Note that window_presence is an OVERLAP rule, not an intake-date rule:
+# BEFORE is outcome_date < start, AFTER is intake_date > end. A stay admitted
+# in March 2018 and released in August is kept -- correctly, because it IS in
+# the file and it was resident during the window. 162 rows are of that kind.
+# What the start date removes is the period whose *denominator* is incomplete.
+#
+# The end date stops one day short of the extract's last intake (2025-10-03),
+# dropping 11 same-day admissions that carry no usable follow-up.
+#
+# Further narrowing is left to the consumer of the file; mLOS applies its own
+# period_dates. Doing it here instead is a one-line edit, and the rows it costs
+# are counted in the statistics table rather than going missing invisibly.
+window_start_date: 2018-06-01
+window_end_date:   2025-10-02
+
+# --- destination ----------------------------------------------------------
+# Relative paths are resolved against this settings file, not the working
+# directory, so the run means the same thing from anywhere.
+#
+# Results land in ShelterDataPrep/results/, which is gitignored. A run never
+# writes into mLOS: copying a prepared file across is a separate, conscious
+# decision, not a side effect of re-running the prep.
+dest_dir:   "../results"
+dest_file:  "OC2_data.csv"
+output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type, animal_size, age_group]
+
+# --- column names ---------------------------------------------------------
+# canonical_name: name_in_file. This export already uses the canonical names
+# for all five required fields and for dob, so there is nothing to declare.
+columns: {}
+
+# --- derived --------------------------------------------------------------
+# Cutoff falls in the lower group: age exactly 1 is JUVENILE.
+age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 19}
+unique_report: [animal_id]
+
+# --- ordered filter / map sequence ----------------------------------------
+# A step whose count comes out 0 is not dead weight: it is how a
+# misspelled label gets caught, so retired values are left in place.
+steps:
+  # Species first, then the window, so the window counts are about dogs.
+  - cut: {animal_type: [CAT, BIRD, OTHER, LIVESTOCK]}
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
+
+  # --- administrative rows that are not shelter stays ---------------------
+  - cut: {intake_type: [DISPO REQ, EUTH REQ, SURGERY, FOUND, LOST]}
+  - cut: {intake_cond: [DEAD, HEAD TEST]}
+
+  # DISPOSAL is left in, to be treated as a non-live outcome.
+  - cut: {outcome_type: [DELETE DUP, HOME EXP, FOUND EXP, LOST EXP]}
+
+  - cut: {intake_type: [DISASTER, BOARDING]}
+
+  # Not redundant, though it ought to be. These 632 rows are reached by no
+  # other cut: 460 RTO, 108 RTO-TMH, 36 ADOPTION, 15 transfer/foster, 1 EUTH,
+  # admitted as STRAY (280), STRAY OWN (282), CONFISCATE (39), FOSTER (30) and
+  # OWNER SUR (1). Every one of them would otherwise survive as an ordinary
+  # stay.
+  #
+  # The reading is that kennel_no HOME/FOUND/LOST marks an animal that was
+  # never actually kenneled -- a field return-to-owner, or a found/lost report
+  # -- which is why 90% of them are RTO. That is a stay of zero shelter
+  # nights, so it is cut. Ideally the intake_type and outcome_type vocabulary
+  # would express this and the kennel number would not have to carry it; it
+  # does not, so this step stays until the source data says otherwise.
+  - cut: {kennel_no: [FOUND, HOME, HOME EXP, LOST]}
+
+  # --- outcome_type -> the three canonical mLOS codes ---------------------
+  # Adoption by a rescue partner is a transfer, not an adoption. Must run
+  # before the map to canonical codes below, while ADOPTION still exists.
+  - map: {outcome_type: {ADOPTION: TRANSFER}}
+    where: {outcome_subtype: RESCUE}
+
+  # LCOM = community live (returned to owner, adopted).
+  # TRAN = other live (transfer, foster, return to field).
+  # NONL = non-live.
+  # INC  = still in care.
+  #
+  # DOA, SURG SCHED, SURG WAIT, RESCU WAIT, RET 2 WILD, RTO-S and DELETE DUP
+  # do not occur anywhere in the surviving dog rows; they are kept so that a
+  # label reappearing in a future extract is mapped rather than passed through.
+  # Open question if one ever does fire: SURG SCHED and SURG WAIT read as
+  # in-shelter states, so INC would fit them better than LCOM.
+  #
+  # _UNKNOWN_ -> INC was checked against residency rather than assumed. All
+  # 206 such rows were admitted 2024-03-18 or later, median implied residency
+  # 27.5 days, none over two years. The 7 exceeding a year are all LARGE dogs,
+  # which is the ordinary long-stay population. So a blank outcome here really
+  # does mean "still in care", not "outcome never recorded".
+  - map:
+      outcome_type:
+        ADOPTION:   LCOM
+        RTO:        LCOM
+        RTO-TMH:    LCOM
+        RTO 2 OS:   LCOM
+        RTO-S:      LCOM
+        SURG SCHED: LCOM
+        SURG WAIT:  LCOM
+        TRANSFER:   TRAN
+        CELL DOGS:  TRAN
+        FOSTER:     TRAN
+        RESCU WAIT: TRAN
+        RET 2 WILD: TRAN
+        EUTH:       NONL
+        DIED:       NONL
+        RTO-DEAD:   NONL
+        MISSING:    NONL
+        ESCAPED:    NONL
+        DOA:        NONL
+        DISPOSAL:   NONL
+        _UNKNOWN_:  INC    # no outcome recorded: still in care
+
+  # --- intake_type -> STRAY / OWNER / RET / OTH -------------------------------
+  - map:
+      intake_type:
+        STRAY:      STRAY
+        STRAY OWN:  STRAY
+        OWNER SUR:  OWNER
+        CONFISCATE: OTH
+        RETURN:     RET
+        FOSTER:     RET
+        TRANSFER:   OTH
+        WILD:       STRAY
+
+  # --- age_group ----------------------------------------------------------
+  # age_group is an output column now, so its sentinels ship to mLOS and have
+  # to mean something there. _UNKNOWN_ (no date of birth) already does. Fold
+  # _NEGATIVE_ into it: a date of birth falling after the intake date tells us
+  # the record is wrong, not that the animal is young, so the honest statement
+  # is that the age is unknown. 140 rows.
+  #
+  # Done as a map rather than in the deriving code so that it stays visible
+  # here and gets its own row in the statistics table. The two remain distinct
+  # upstream because they are different sentences in a methods section, and a
+  # future run can decide differently without a code change.
+  #
+  # Runs before animal_size, so the PUPPY rule below reads a settled column.
+  - map: {age_group: {_NEGATIVE_: _UNKNOWN_}}
+
+  # --- animal_size --------------------------------------------------------
+  # 905-V and OPS are junk codes and KITTN is a cat that slipped the species
+  # filter. The old sizeTrans() dispatched on the first letter and folded all
+  # three silently into Medium; here they are named and counted.
+  - map:
+      animal_size:
+        TOY:    SMALL
+        X-LRG:  LARGE
+        905-V:  _UNKNOWN_
+        OPS:    _UNKNOWN_
+        UNKWN:  _UNKNOWN_
+        KITTN:  _UNKNOWN_
+
+  # PUPPY is kept as a size, deliberately. It is not a mis-filed age: a puppy's
+  # eventual size often cannot be judged on intake, so the shelter records the
+  # one thing it knows. Read it as "size not yet determinable", which is a
+  # narrower and more useful statement than _UNKNOWN_ -- and since PUPPY would
+  # dominate _UNKNOWN_ anyway (4,360 rows against 500), folding it in would
+  # relabel the category rather than clean it.
+  #
+  # Every PUPPY row is JUVENILE, so animal_size and age_group agree wherever
+  # both are informative and JUVENILE stays a proper superset of PUPPY if the
+  # two are ever combined into a composite animal_group downstream. mLOS
+  # currently strata on animal_size alone (animal_group_columns: [animal_size])
+  # and may or may not take up age_group; either way this holds.
+  #
+  # PUPPY is overridden only where the age says it cannot be true. Listed
+  # positively rather than as where_not: {age_group: JUVENILE}, because
+  # "not JUVENILE" also catches _UNKNOWN_, and for an animal with no usable
+  # date of birth PUPPY is the only age signal in the record -- discarding it
+  # would lose information rather than correct it. That distinction is worth
+  # 133 rows. NB: a new age group would have to be added to this list.
+  - map: {animal_size: {PUPPY: _UNKNOWN_}}
+    where: {age_group: [YOUNG, ADULT, SENIOR]}
+
+  # --- impossible or unusable rows ----------------------------------------
+  - cut: {night_sign: "-1"}     # outcome before intake
+  - cut: {age_group: _OVER_}    # older than the last cutoff (19)
+
+  # --- the narrowest safe deduplication -----------------------------------
+  # This extract carries stays recorded twice. Only the multi-day ones are
+  # unambiguous: an animal cannot be admitted twice on the same day for the
+  # same multi-day stay, and many such pairs are identical in every
+  # output column. The same-day pairs are left alone -- a genuine in-and-out
+  # can repeat within a day, and many such pairs disagree with each other
+  # about the outcome, so they are a judgement call for mLOS's duplicate-stay
+  # and overlapping-stay screens rather than for this pipeline.
+  - dedup:                      # compare every output column
+    where: {night_sign: "1"}    # only stays of at least one night
