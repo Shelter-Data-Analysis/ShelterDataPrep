@@ -114,8 +114,13 @@ steps:
   # DOA, SURG SCHED, SURG WAIT, RESCU WAIT, RET 2 WILD, RTO-S and DELETE DUP
   # do not occur anywhere in the surviving dog rows; they are kept so that a
   # label reappearing in a future extract is mapped rather than passed through.
-  # Open question if one ever does fire: SURG SCHED and SURG WAIT read as
-  # in-shelter states, so INC would fit them better than LCOM.
+  #
+  # SURG SCHED and SURG WAIT go to INC rather than LCOM: they name an animal
+  # waiting on surgery, which is a state inside the shelter, not a way of
+  # leaving it. Mapping them to a live release would end a stay that has not
+  # ended and count the animal as adopted or returned to owner. Both are 0 in
+  # this extract, so this changes nothing today; it is set correctly now so
+  # that a future extract carrying them is not silently mis-scored.
   #
   # _UNKNOWN_ -> INC was checked against residency rather than assumed. All
   # 206 such rows were admitted 2024-03-18 or later, median implied residency
@@ -129,8 +134,6 @@ steps:
         RTO-TMH:    LCOM
         RTO 2 OS:   LCOM
         RTO-S:      LCOM
-        SURG SCHED: LCOM
-        SURG WAIT:  LCOM
         TRANSFER:   TRAN
         CELL DOGS:  TRAN
         FOSTER:     TRAN
@@ -143,6 +146,8 @@ steps:
         ESCAPED:    NONL
         DOA:        NONL
         DISPOSAL:   NONL
+        SURG SCHED: INC
+        SURG WAIT:  INC
         _UNKNOWN_:  INC    # no outcome recorded: still in care
 
   # --- intake_type -> STRAY / OWNER / RET / OTH -------------------------------
