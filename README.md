@@ -366,6 +366,34 @@ is missing something.
 `dedup` breaks down only its `where` / `where_not` guards: `on:` names columns,
 not values, so there is no set to split.
 
+### Other tools writing this table
+
+The format is not private to this project. mLOS, the length-of-stay analysis
+downstream, records its own screening in these columns, so the two files stack:
+one `read_csv` each, one `concat`, and you have a single flow from the raw
+extract to the rows the models ran on. The chain joins at the handoff, because
+the `write` row here and mLOS's `read` row are the same frame counted twice.
+
+Two things to expect from a file this project did not write.
+
+- **The vocabularies are open.** `action` and `role` are documented above as
+  what *this* tool emits, not as the closed set. A conforming tool may add
+  verbs for stages preparation has no equivalent of. mLOS adds `split`, for
+  breaking a stay into the periods it is observed in, and `pass`, for a
+  keep-only filter, whose named values are counted over the rows it kept rather
+  than the rows it cut.
+- **`rows_out` may exceed `rows_in`.** Preparation only ever removes rows, so
+  every stage here narrows or holds, and it is tempting to read that as a
+  property of the format. It is not. An analysis stage can multiply rows: one
+  stay observed in three periods becomes three rows. A reader that assumes the
+  count falls monotonically down a stacked file will be wrong about the second
+  half of it.
+
+The columns are the contract; what a writer puts in them is its own business.
+An extra column would break the concatenation, which is why mLOS keeps its
+internal stage names out of the file and identifies a stage the way this one
+does, by `action`, `column` and `detail`.
+
 ## The summary table
 
 The ledger says what came out. `OC2_data_summary.csv` says what is left: every
