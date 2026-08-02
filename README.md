@@ -6,17 +6,17 @@ statistics table recording exactly what every step removed or changed.
 A run is one YAML settings file:
 
 ```bash
-python -m shelterprep configs/orange_county.yaml
+python3 -m shelterprep configs/orange_county2.yaml
 ```
 
 Four files come out, next to each other in `results/`:
 
 | file | contents |
 |---|---|
-| `OC_data.csv` | the prepared data |
-| `OC_data_stats.csv` | the processing ledger: one row per stage, then one row per value each step names |
-| `OC_data_summary.csv` | descriptive statistics of the finished set: joint frequencies and length of stay |
-| `OC_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
+| `OC2_data.csv` | the prepared data |
+| `OC2_data_stats.csv` | the processing ledger: one row per stage, then one row per value each step names |
+| `OC2_data_summary.csv` | descriptive statistics of the finished set: joint frequencies and length of stay |
+| `OC2_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
 
 `results/` is gitignored, and a run writes nowhere else. Handing a prepared
 file to the downstream analysis is a copy you make deliberately, not something
@@ -27,7 +27,7 @@ Or from Python, if you want to poke at an intermediate stage:
 ```python
 from shelterprep import load, Prep
 
-prep = Prep(load("configs/orange_county.yaml"))
+prep = Prep(load("configs/orange_county2.yaml"))
 prep.read().derive()          # frame now has nights, age_group, window_presence
 prep.apply_steps().write()
 prep.statistics.frame()       # the stage ledger as a DataFrame
@@ -44,7 +44,7 @@ Python 3.9 or newer.
 
 ```bash
 pip install -r requirements.txt
-python -m shelterprep configs/orange_county.yaml
+python3 -m shelterprep configs/orange_county2.yaml
 ```
 
 Run from the repository root, which is where `configs/` and `shelterprep/` are.
@@ -63,8 +63,8 @@ environment.
 
 | config | shelter | rows out | notes |
 |---|---|---|---|
-| `orange_county.yaml` | Orange County, dogs | 36,564 | validated against the previous `OC_data.csv` |
-| `orange_county2.yaml` | Orange County, dogs | 34,718 | supersedes the above; new outcome codes, `age_group` exported |
+| `orange_county2.yaml` | Orange County, dogs | 34,718 | the mLOS default; new outcome codes, `age_group` exported |
+| `orange_county1.yaml` | Orange County, dogs | 36,564 | superseded by the above, frozen and kept as a baseline |
 | `irvine_dogs.yaml` | Irvine, dogs | 11,022 | no dob, no size — no `animal_group` |
 | `irvine_all_species.yaml` | Irvine, all species | 20,690 | US `m/d/yy` dates; `animal_type` is the stratifier |
 | `long_beach.yaml` | Long Beach, dogs | 12,183 | no size; `age_group` is the stratifier |
@@ -72,7 +72,9 @@ environment.
 | `la_county_dogs.yaml` | LA County, dogs | 97,990 | offset-stamped dates; large blank-outcome share |
 | `la_county_cats.yaml` | LA County, cats | 76,402 | same file and maps as the dogs config |
 
-Only the Orange County config has been checked against a known-good result.
+Only `orange_county1.yaml` has been checked against a known-good result;
+`orange_county2.yaml` is a deliberate revision of it, reviewed against its own
+statistics table and the analysis it feeds rather than against a prior file.
 **The other six are best-approximation ports of the modules in `stale/` and
 have not been validated against anything** — read their statistics tables
 before trusting a run. Places where a judgement was made, or where the old
@@ -91,7 +93,7 @@ window_start_date: 2018-07-01   # optional pair, both or neither
 window_end_date:   2024-10-19
 
 dest_dir:   "../results"
-dest_file:  "OC_data.csv"
+dest_file:  "OC2_data.csv"
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, animal_size]
 
 columns:                     # canonical_name: name_in_file
@@ -366,7 +368,7 @@ not values, so there is no set to split.
 
 ## The summary table
 
-The ledger says what came out. `OC_data_summary.csv` says what is left: every
+The ledger says what came out. `OC2_data_summary.csv` says what is left: every
 exported categorical column crossed against intake type and outcome type, with
 length of stay in each cell. It is a convenience for whoever gets the prepared
 file, and nothing downstream depends on it.
@@ -540,6 +542,6 @@ still-in-care animal never being `BEFORE` the window. The uncovered remainder
 is defensive branches and the console printing.
 
 What the tests do **not** establish is that any config is *correct* for its
-shelter. Only `orange_county.yaml` has been checked against a known-good
+shelter. Only `orange_county1.yaml` has been checked against a known-good
 result. A config is a set of claims about someone's data, and the way to check
 one is to read its statistics table.

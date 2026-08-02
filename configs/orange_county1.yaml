@@ -1,11 +1,19 @@
 # Orange County Animal Care -> mLOS input
 #
-# Produces mLOS/data/OC_data.csv from the raw public-records extract.
-# Run with:  python -m shelterprep configs/orange_county.yaml
+# Superseded by orange_county2.yaml, which produces the mLOS default. This is
+# the first definition, kept and frozen so the dataset behind earlier results
+# can still be rebuilt and compared against. It was called orange_county.yaml,
+# writing OC_data.csv, until 2026-08-01.
 #
-# The companion mLOS/data/OC_settings.txt expects outcome_type in
+# Produces results/OC1_data.csv from the raw public-records extract.
+# Run with:  python3 -m shelterprep configs/orange_county1.yaml
+#
+# The companion mLOS/data/OC1_settings.yaml expects outcome_type in
 # {LiveC, Transf, NonL, InCare} and reads animal_size as animal_group, so the
 # maps below have to land on exactly those labels.
+#
+# Nothing here should change. An edit makes the baseline disagree with the
+# numbers it was recorded against, which is the one thing it exists to rule out.
 
 # --- source ---------------------------------------------------------------
 # Gzipped working copy of the raw extract, in a directory alongside this
@@ -40,7 +48,7 @@ window_end_date:   2025-10-03
 # writes into mLOS: copying a prepared file across is a separate, conscious
 # decision, not a side effect of re-running the prep.
 dest_dir:   "../results"
-dest_file:  "OC_data.csv"
+dest_file:  "OC1_data.csv"
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type, animal_size]
 
 # --- column names ---------------------------------------------------------

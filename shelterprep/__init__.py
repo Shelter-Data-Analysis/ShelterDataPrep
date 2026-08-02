@@ -6,11 +6,11 @@ CSV, a statistics table recording what every step removed or changed, a summary
 of the finished set, and a run log for provenance.
 
     from shelterprep import load, Prep
-    Prep(load("configs/orange_county.yaml")).run()
+    Prep(load("configs/orange_county2.yaml")).run()
 
 or from the command line::
 
-    python -m shelterprep configs/orange_county.yaml
+    python3 -m shelterprep configs/orange_county2.yaml
 """
 
 from __future__ import annotations
