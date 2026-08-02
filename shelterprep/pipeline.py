@@ -10,14 +10,17 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import platform
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from . import dates, steps, summary
+from .version import __version__
 from .settings import (DATE_COLUMNS, DERIVED_COLUMNS, NEGATIVE, OVER,
                        REQUIRED_COLUMNS, UNKNOWN, Dedup, SettingsError)
 from .statistics import Statistics
@@ -301,10 +304,18 @@ class Prep:
             frame["outcome_date"].max().date(), open_stays)
 
     def _run_log(self):
+        """Everything needed to say where this output came from.
+
+        Written last, so the digest of the output file is of the file that was
+        actually just written.  Between the two digests a reader can verify
+        both ends of the run: that the extract is the one named, and that the
+        prepared file has not been edited since.
+        """
         settings = self.settings
         lines = [
             "ShelterDataPrep run log",
             "",
+            "shelterprep   {0}".format(__version__),
             "run at        {0}".format(datetime.now().isoformat(timespec="seconds")),
             "settings      {0}".format(settings.path),
             "source        {0}".format(settings.source_path),
@@ -318,9 +329,11 @@ class Prep:
                                     settings.window_end_date.date())
                 if settings.has_window else "(none)"),
             "destination   {0}".format(settings.dest_path),
+            "output sha256 {0}".format(_sha256(settings.dest_path)),
+            "output rows   {0}".format(len(self.frame)),
             "final span    {0}".format(self._span()),
-            "pandas        {0}".format(pd.__version__),
-            "numpy         {0}".format(np.__version__),
+            "",
+        ] + _environment() + [
             "",
             self.statistics.render(),
             "",
@@ -384,6 +397,30 @@ def _age_group(age, age_groups):
 def _mask(condition):
     """A nullable-boolean condition, made safe to index with."""
     return condition.fillna(False).astype(bool)
+
+
+def _environment():
+    """The interpreter and libraries this run actually used.
+
+    Recorded because a result is only reproducible against a stated
+    environment: pandas has changed the behaviour of date parsing, of groupby
+    and of nullable integers across minor versions, and "it ran under pandas 2"
+    is not a version.  Optional libraries are listed as absent rather than
+    omitted, so the line means the same thing whether or not they were needed.
+    """
+    lines = [
+        "python        {0} on {1}".format(
+            platform.python_version(), platform.platform()),
+        "pandas        {0}".format(pd.__version__),
+        "numpy         {0}".format(np.__version__),
+        "PyYAML        {0}".format(yaml.__version__),
+    ]
+    try:
+        import openpyxl
+        lines.append("openpyxl      {0}".format(openpyxl.__version__))
+    except ImportError:
+        lines.append("openpyxl      (not installed; Excel sources unavailable)")
+    return lines
 
 
 def _sha256(path):

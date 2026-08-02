@@ -6,3 +6,9 @@ __pycache__/
 # Run output. Regenerated from configs/ plus the raw extract; copied into
 # mLOS by hand, as a separate decision.
 results/
+
+# Editable/build artefacts
+*.egg-info/
+build/
+dist/
+.coverage

@@ -691,6 +691,97 @@ def test_a_utf8_bom_does_not_corrupt_the_first_column_name(tmp_path):
     assert "animal_id" in Prep(load(path)).read().frame.columns
 
 
+# --- things that would be silent if they were wrong -------------------------
+
+def test_a_map_is_simultaneous_not_sequential(tmp_path):
+    # The foot-gun: {MED: LARGE, LARGE: SMALL} in one step must not send MED
+    # on to SMALL. Every chosen row is rewritten once, from the value it had
+    # when the step began.
+    prep = prepared(tmp_path, steps=[
+        {"map": {"animal_size": {"MED": "LARGE", "LARGE": "SMALL"}}}])
+    sizes = prep.frame.animal_size.value_counts()
+    assert sizes["LARGE"] == 6      # the six that were MED, and no others
+    assert sizes["SMALL"] == 4      # the one that was LARGE, plus three SMALL
+
+
+def test_a_dedup_may_be_guarded_by_where_not(tmp_path):
+    prep = prepared(tmp_path, steps=[{"dedup": None, "where_not": {"night_sign": "0"}}],
+                    **_twice(tmp_path, "2020-03-01", "2020-03-08"))
+    assert list(prep.frame.animal_id).count("D001") == 1
+    held = prep.statistics.details().query("role == 'where_not'")
+    assert list(held["value"]) == ["0"]
+
+
+def test_a_high_cardinality_column_is_not_treated_as_a_category(tmp_path,
+                                                                monkeypatch):
+    # Guards against an output column of free text producing a summary file
+    # longer than the data itself.
+    monkeypatch.setattr(summary, "MAX_LEVELS", 2)
+    prep = prepared(tmp_path)
+    assert summary.skipped(prep.frame, prep.settings) == ["animal_size"]
+    table = summary.summarize(prep.frame, prep.settings)
+    assert set(table.field) == {summary.NONE}
+
+
+def test_a_run_that_keeps_nothing_still_writes_every_file(tmp_path):
+    prep = Prep(load(write_settings(tmp_path, steps=[
+        {"cut": {"animal_type": ["DOG", "CAT"]}}]))).run(verbose=False)
+    assert len(prep.frame) == 0
+    for path in (prep.settings.dest_path, prep.settings.stats_path,
+                 prep.settings.summary_path, prep.settings.run_path):
+        assert path.exists()
+    # Headers survive, so the files are still readable rather than zero bytes.
+    assert list(pd.read_csv(prep.settings.summary_path).columns)[0] == "field"
+    assert "(no rows)" in prep.settings.run_path.read_text()
+
+
+# --- errors a stranger will actually hit ------------------------------------
+
+def test_a_missing_source_file_says_so(tmp_path):
+    path = write_settings(tmp_path, source_file="nope.csv")
+    with pytest.raises(SourceError, match="source file not found"):
+        Prep(load(path)).read()
+
+
+def test_a_sheet_named_for_a_csv_is_an_error(tmp_path):
+    path = write_settings(tmp_path, sheet="Sheet1")
+    with pytest.raises(SourceError, match="not an Excel"):
+        Prep(load(path)).read()
+
+
+def test_two_canonical_fields_cannot_share_one_file_column(tmp_path):
+    path = write_settings(tmp_path, columns={
+        "animal_id": "Animal ID", "intake_date": "Intake Date",
+        "outcome_date": "Outcome Date",
+        "intake_type": "animal_type", "outcome_type": "animal_type"})
+    with pytest.raises(SettingsError, match="map to the file column"):
+        Prep(load(path)).read()
+
+
+def test_a_step_naming_a_derived_column_that_was_not_built_says_why(tmp_path):
+    # age_group needs a dob in the file as well as age_groups in the settings.
+    # With age_groups set, settings validation passes and the gap only shows up
+    # at derive time -- where the error has to name the missing dob, or the
+    # user hunts for a typo in a column name that is spelled correctly.
+    source = tmp_path / "nodob.csv"
+    pd.read_csv(FIXTURES / "tiny.csv", dtype=str).drop(columns=["DOB"]).to_csv(
+        source, index=False)
+    path = write_settings(
+        tmp_path, source_dir=str(tmp_path), source_file="nodob.csv",
+        columns={"animal_id": "Animal ID", "intake_date": "Intake Date",
+                 "outcome_date": "Outcome Date"},
+        steps=[{"cut": {"age_group": "ADULT"}}])
+    with pytest.raises(SettingsError, match="derived column"):
+        Prep(load(path)).read().derive()
+
+
+def test_the_command_line_reports_an_error_without_a_traceback(tmp_path, capsys):
+    from shelterprep.__main__ import main
+    assert main([str(write_settings(tmp_path, source_file="nope.csv"))]) == 1
+    assert "source file not found" in capsys.readouterr().err
+    assert main([str(write_settings(tmp_path)), "--quiet"]) == 0
+
+
 # --- end to end ------------------------------------------------------------
 
 def test_a_full_run_writes_data_statistics_and_a_log(tmp_path):

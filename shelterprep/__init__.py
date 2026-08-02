@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from .pipeline import Prep, SourceError
 from .settings import Settings, SettingsError, load
+from .version import __version__
 
-__all__ = ["Prep", "Settings", "SettingsError", "SourceError", "load"]
-
-__version__ = "0.1.0"
+__all__ = ["Prep", "Settings", "SettingsError", "SourceError", "load",
+           "__version__"]

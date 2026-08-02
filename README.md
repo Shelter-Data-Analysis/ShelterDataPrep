@@ -38,6 +38,27 @@ from shelterprep import summary
 summary.summarize(prep.frame, prep.settings)   # the descriptive tables
 ```
 
+## Installing
+
+Python 3.9 or newer.
+
+```bash
+pip install -r requirements.txt
+python -m shelterprep configs/orange_county.yaml
+```
+
+Run from the repository root, which is where `configs/` and `shelterprep/` are.
+Or install it properly, so `shelterprep` works from anywhere:
+
+```bash
+pip install .
+```
+
+`openpyxl` is only needed for Excel sources; everything else is pandas and
+PyYAML. `pytest` is only needed to run the tests. The run log records the
+version of each, because a result is only reproducible against a stated
+environment.
+
 ## Configs
 
 | config | shelter | rows out | notes |
@@ -247,6 +268,37 @@ repair is **not** reproduced here, because a cut or a map cannot rewrite a
 date. If you want it, it needs to be a new feature rather than a settings
 change.
 
+## The prepared file
+
+`output_columns` decides which columns are written and in what order, so the
+file is whatever a run asks for. What each of those columns *means* is fixed:
+
+| column | type | values |
+|---|---|---|
+| `animal_id` | text | as in the source. Not unique — an animal with repeat stays has one row per stay |
+| `intake_date` | `YYYY-MM-DD` | never blank; a row with no parseable intake date can still exist, and shows as blank |
+| `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, either still in care or never recorded |
+| `intake_type` | text | the source vocabulary, as rewritten by the `map:` steps in the config |
+| `outcome_type` | text | likewise. The shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` for mLOS |
+| `animal_size`, `animal_type`, … | text | any other source column the config keeps, as rewritten |
+| `nights`, `age` | number | whole nights, and years at intake. Blank where a date is missing |
+| `night_sign` | text | `-1`, `0`, `1`, `_UNKNOWN_` |
+| `window_presence` | text | `BEFORE`, `IN`, `AFTER`, `_UNKNOWN_` |
+| `age_group` | text | the `age_groups` names, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
+
+Three conventions run through all of it:
+
+- **`_UNKNOWN_` is the only missing-value marker in a text column.** Blank,
+  whitespace and absent all become it, before any step runs. A cut or a map can
+  name it, and nothing downstream special-cases NaN.
+- **A blank date is genuinely blank**, never `NaN` or `NaT` as text.
+- **One row is one stay**, not one animal. `animal_id_distinct` in the summary
+  is the animal count where you need it.
+
+The observed levels of every categorical column, for a given run, are
+enumerated in that run's summary file — so a reader can see the whole
+vocabulary without opening the data.
+
 ## The statistics table
 
 One row per stage, in execution order — the shape of a CONSORT flow diagram, so
@@ -382,6 +434,82 @@ is entirely still in care, and its night columns are blank rather than zero.
 The run log carries the one fact this table cannot, since it counts stays
 rather than dates: the span the surviving rows actually cover.
 
+## Reproducibility
+
+A run is deterministic: same settings, same source file, same output, with no
+sampling, no randomness and no dependence on the working directory or on the
+order of anything. So the run log is enough to reproduce it.
+
+```
+shelterprep   0.2.0
+run at        2026-08-01T18:23:27
+settings      configs/orange_county2.yaml
+source        ../../_shelter_raw/OC_raw.csv.gz
+source sha256 fbc5fa49...  (of the uncompressed contents)
+destination   results/OC2_data.csv
+output sha256 e7b04f9a...
+output rows   34718
+final span    intake 2018-01-22 to 2025-10-02, last outcome 2025-10-03, 205 still in care
+
+python        3.9.6 on macOS-26.5.2-arm64-arm-64bit
+pandas        2.3.1
+numpy         2.0.2
+PyYAML        6.0.3
+openpyxl      3.1.5
+```
+
+The two digests bracket the run. **`source sha256`** identifies the extract —
+taken over the *uncompressed* contents, so it does not move if the file is
+recompressed by a different tool or at a different level, and still matches the
+original the archive was made from. **`output sha256`** identifies the prepared
+file, so a copy that has been opened and re-saved by a spreadsheet announces
+itself instead of passing as the original.
+
+Library versions are recorded because pandas has changed the behaviour of date
+parsing, of `groupby` and of nullable integers across minor versions. "It ran
+under pandas 2" is not a version.
+
+### For a paper
+
+Four things, in the order a reviewer will want them:
+
+1. **The prepared file, its stats file and its run log travel together.** The
+   data file alone cannot say where it came from; the run log is the provenance
+   and the stats file is the exclusion history.
+2. **Archive a tagged release, not a branch.** A GitHub URL is not archival —
+   the repository can be rewritten or deleted, so a bare link fails a data
+   availability statement. Tag a release and mint a DOI for it (Zenodo does
+   this from a GitHub release in one step), then cite the DOI and the version
+   number the run log records.
+3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
+   public records; they belong in a repository with a persistent identifier,
+   not in git history. That is why `source_dir` points outside this repo.
+4. **The statistics table is the flow diagram.** It is shaped after CONSORT and
+   goes into a supplement more or less as is; the by-value breakdown underneath
+   it is what turns "147,385 rows were excluded" into a defensible sentence.
+
+## When it stops
+
+Errors are deliberate and name the thing that is wrong. The common ones:
+
+| message | what to do |
+|---|---|
+| `unknown setting(s) ...` | a misspelled top-level key. Rejected rather than ignored, because a typo that quietly skips an exclusion survives into a published table |
+| `... does not have the column(s) this run needs` | the error lists what the file *does* contain; add a `columns:` entry mapping the canonical name to the file's spelling |
+| `step N names the column X, which does not exist` | a step column that is neither in the file nor derived. If it is a derived one, the message says what building it needs |
+| `has N sheets, so 'sheet:' is required` | name the sheet |
+| `N of M supplied value(s) unparseable` — in the stats table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
+
+Two failures are **not** errors and have to be read for:
+
+- **A step that affects 0 rows.** Often correct — a retired label kept as a
+  safeguard — but also what a misspelled value looks like. The by-value
+  breakdown in the stats file names every value at zero, which is the point of
+  it.
+- **An unparseable date.** It becomes `NaT`, and for `outcome_date` that reads
+  downstream as "still in care". Only the `parse_dates` row of the stats table
+  distinguishes the two, so check it before trusting a run.
+
 ## Scope
 
 Preparation only: read, derive, filter and map, write. The weekly-cumulative
@@ -394,3 +522,14 @@ pandas 2.
 ```bash
 python -m pytest tests/ -q
 ```
+
+80 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
+documented above, so a test name reads as the rule it protects — the age cutoff
+falling in the lower group, a map being simultaneous rather than sequential, a
+still-in-care animal never being `BEFORE` the window. The uncovered remainder
+is defensive branches and the console printing.
+
+What the tests do **not** establish is that any config is *correct* for its
+shelter. Only `orange_county.yaml` has been checked against a known-good
+result. A config is a set of claims about someone's data, and the way to check
+one is to read its statistics table.
