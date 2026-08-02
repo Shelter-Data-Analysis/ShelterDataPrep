@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import dates, steps
+from . import dates, steps, summary
 from .settings import (DATE_COLUMNS, DERIVED_COLUMNS, NEGATIVE, OVER,
                        REQUIRED_COLUMNS, UNKNOWN, Dedup, SettingsError)
 from .statistics import Statistics
@@ -47,6 +47,7 @@ class Prep:
             print(self.statistics.render())
             print("\nwrote {0}".format(self.settings.dest_path))
             print("      {0}".format(self.settings.stats_path))
+            print("      {0}".format(self.settings.summary_path))
             print("      {0}".format(self.settings.run_path))
         return self
 
@@ -279,8 +280,25 @@ class Prep:
         settings.dest_dir.mkdir(parents=True, exist_ok=True)
         output.to_csv(settings.dest_path, index=False)
         self.statistics.report().to_csv(settings.stats_path, index=False)
+        summary.summarize(self.frame, settings).to_csv(
+            settings.summary_path, index=False)
         settings.run_path.write_text(self._run_log(), encoding="utf-8")
         return self
+
+    def _span(self):
+        """The dates the surviving rows actually cover, and what is unfinished.
+
+        The one descriptive fact the summary table cannot carry: it counts
+        stays, and this is about when they happened.  Worth a line because the
+        span of the kept rows is not the study window -- the steps move it.
+        """
+        frame = self.frame
+        if frame.empty:
+            return "(no rows)"
+        open_stays = int(frame["outcome_date"].isna().sum())
+        return "intake {0} to {1}, last outcome {2}, {3} still in care".format(
+            frame["intake_date"].min().date(), frame["intake_date"].max().date(),
+            frame["outcome_date"].max().date(), open_stays)
 
     def _run_log(self):
         settings = self.settings
@@ -300,6 +318,7 @@ class Prep:
                                     settings.window_end_date.date())
                 if settings.has_window else "(none)"),
             "destination   {0}".format(settings.dest_path),
+            "final span    {0}".format(self._span()),
             "pandas        {0}".format(pd.__version__),
             "numpy         {0}".format(np.__version__),
             "",

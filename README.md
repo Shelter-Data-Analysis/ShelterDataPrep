@@ -9,12 +9,13 @@ A run is one YAML settings file:
 python -m shelterprep configs/orange_county.yaml
 ```
 
-Three files come out, next to each other in `results/`:
+Four files come out, next to each other in `results/`:
 
 | file | contents |
 |---|---|
 | `OC_data.csv` | the prepared data |
 | `OC_data_stats.csv` | the processing ledger: one row per stage, then one row per value each step names |
+| `OC_data_summary.csv` | descriptive statistics of the finished set: joint frequencies and length of stay |
 | `OC_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
 
 `results/` is gitignored, and a run writes nowhere else. Handing a prepared
@@ -32,6 +33,9 @@ prep.apply_steps().write()
 prep.statistics.frame()       # the stage ledger as a DataFrame
 prep.statistics.details()     # the by-value breakdown, on its own
 prep.statistics.report()      # both, stacked -- what gets written to the CSV
+
+from shelterprep import summary
+summary.summarize(prep.frame, prep.settings)   # the descriptive tables
 ```
 
 ## Configs
@@ -307,6 +311,75 @@ is missing something.
 
 `dedup` breaks down only its `where` / `where_not` guards: `on:` names columns,
 not values, so there is no set to split.
+
+## The summary table
+
+The ledger says what came out. `OC_data_summary.csv` says what is left: every
+exported categorical column crossed against intake type and outcome type, with
+length of stay in each cell. It is a convenience for whoever gets the prepared
+file, and nothing downstream depends on it.
+
+```
+      field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_p25  nights_median  nights_p75
+     _NONE_    _NONE_       STRAY         LCOM       0  19446               18586         19446        11.22         1.0            5.0         9.0
+     _NONE_    _NONE_       STRAY         TRAN       0   4275                4272          4275        27.29         5.0           10.0        24.5
+     _NONE_    _NONE_       STRAY        _ALL_       1  24832               23864         24696        14.19         1.0            5.0        11.0
+     _NONE_    _NONE_       _ALL_        _ALL_       2  34718               28230         34513        15.40         1.0            5.0        12.0
+animal_size     LARGE       STRAY         LCOM       0   6552                6360          6552        13.20         2.0            7.0        14.0
+```
+
+**Long, not rectangular.** A contingency table written as a grid needs a header
+row *and* a header column, which one CSV cannot carry for several tables at
+once and which neither pandas nor R reads back without being told how. One row
+per cell, dimensions in named columns, goes straight into all three:
+
+```python
+cells = frame[(frame.field == "animal_size") & (frame.margin == 0)]
+cells.pivot_table(index="value", columns="outcome_type", values="rows")
+```
+
+```r
+cells <- subset(frame, field == "animal_size" & margin == 0)
+xtabs(rows ~ value + outcome_type, data = cells)
+```
+
+and in a spreadsheet it is already a pivot table's source range.
+
+**Which tables are there.** One per exported categorical column — a third
+dimension crossed against the two type axes — plus the degenerate one that
+crosses the axes against each other, marked `field = _NONE_`. Dates, numbers
+and the `unique_report` identifiers are not categories and are skipped, as is
+any column with more than 50 distinct values. A run whose output columns are
+just IDs, dates and the two types gets the `_NONE_` table alone.
+
+**Partial sums** are in the same table, marked `_ALL_` in the dimension they
+collapse. `margin` counts how many of the two axes are collapsed, so:
+
+- `margin == 0` — the cells. **Filter on this before summing anything.**
+- `margin == 1` — one axis totalled: rows per intake type, or per outcome type.
+- `margin == 2` — both, i.e. the total for that field level (or the grand total
+  in the `_NONE_` table).
+
+Sums over a field are not repeated per field, because they are exactly the
+`_NONE_` table. So every number appears once, and the `margin == 2` rows of any
+field table add up to the `margin == 2` row of `_NONE_`.
+
+**The measures**, per cell, are the frequency and the one descriptive that
+matters for a length-of-stay study:
+
+| column | |
+|---|---|
+| `rows` | stays in the cell |
+| `animal_id_distinct` | distinct animals — one per `unique_report` field; below `rows` where an animal has repeat stays |
+| `nights_known` | stays with a night count; `rows` minus this is the stays still in care |
+| `nights_mean`, `nights_p25`, `nights_median`, `nights_p75` | over the known ones. Quartiles rather than min/max: length of stay is skewed enough that the extremes say little |
+
+`nights` counts nights, not days — an animal in and out the same day scores 0,
+and mLOS defines `LOS = nights + 1`. A cell with `rows` but no `nights_known`
+is entirely still in care, and its night columns are blank rather than zero.
+
+The run log carries the one fact this table cannot, since it counts stays
+rather than dates: the span the surviving rows actually cover.
 
 ## Scope
 

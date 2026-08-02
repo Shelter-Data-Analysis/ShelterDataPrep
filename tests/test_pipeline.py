@@ -18,7 +18,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from shelterprep import Prep, SettingsError, SourceError, load       # noqa: E402
-from shelterprep import dates                                        # noqa: E402
+from shelterprep import dates, summary                              # noqa: E402
 from shelterprep.pipeline import _age_group, _window_presence        # noqa: E402
 from shelterprep.settings import NEGATIVE, OVER, UNKNOWN             # noqa: E402
 
@@ -443,6 +443,95 @@ def test_the_run_log_carries_the_breakdown_too(tmp_path):
         {"cut": {"animal_type": ["CAT", "LIVESTOCK"]}}]))).run(verbose=False)
     log = prep.settings.run_path.read_text()
     assert "by value" in log and "LIVESTOCK" in log
+
+
+# --- the summary of the finished set ---------------------------------------
+
+def summarized(tmp_path, **overrides):
+    prep = prepared(tmp_path, **overrides)
+    return summary.summarize(prep.frame, prep.settings), prep
+
+
+def test_the_summary_crosses_each_kept_category_against_both_types(tmp_path):
+    table, _ = summarized(tmp_path)
+    # animal_size is the only extra category: the rest of output_columns is an
+    # identifier and two dates.
+    assert set(table.field) == {summary.NONE, "animal_size"}
+
+
+def test_intake_by_outcome_alone_is_the_degenerate_case(tmp_path):
+    table, _ = summarized(tmp_path, output_columns=[
+        "animal_id", "intake_date", "outcome_date", "outcome_type"])
+    assert set(table.field) == {summary.NONE}
+    assert set(table["value"]) == {summary.NONE}
+
+
+def test_identifiers_dates_and_numbers_are_not_categories(tmp_path):
+    prep = prepared(tmp_path, output_columns=[
+        "animal_id", "intake_date", "outcome_date", "outcome_type",
+        "animal_size", "nights", "age"])
+    assert summary.fields(prep.frame, prep.settings) == ["animal_size"]
+
+
+def test_the_cells_add_up_to_the_partial_sums_and_the_total(tmp_path):
+    table, prep = summarized(tmp_path)
+    for field in set(table.field):
+        one = table[table.field == field]
+        cells = one[one.margin == 0].rows.sum()
+        assert one[one.margin == 1].rows.sum() == 2 * cells   # two ways to sum
+        assert one[one.margin == 2].rows.sum() == cells
+        assert cells == len(prep.frame)
+
+
+def test_a_margin_column_keeps_the_partial_sums_from_double_counting(tmp_path):
+    # The one hazard of putting the sums in the same table: margin == 0 is the
+    # filter that makes summing safe, so it has to be there and be right.
+    table, prep = summarized(tmp_path)
+    cells = table[(table.field == summary.NONE) & (table.margin == 0)]
+    assert cells.rows.sum() == len(prep.frame)
+    assert not (cells.intake_type == summary.ALL).any()
+    assert not (cells.outcome_type == summary.ALL).any()
+
+
+def test_a_combination_that_never_occurs_is_a_zero_not_a_missing_row(tmp_path):
+    table, _ = summarized(tmp_path)
+    cells = table[(table.field == "animal_size") & (table.margin == 0)]
+    levels = cells.groupby(["value", "intake_type", "outcome_type"]).size()
+    # Full rectangle: every level of every dimension against every other.
+    assert len(cells) == len(levels)
+    assert (cells.rows == 0).any()
+
+
+def test_a_stay_still_in_care_is_counted_but_has_no_night_count(tmp_path):
+    table, prep = summarized(tmp_path)
+    total = table[(table.field == summary.NONE) & (table.margin == 2)].iloc[0]
+    assert total.rows == len(prep.frame) == 15
+    # A002's second row and A014 have no outcome date; A013's is unparseable.
+    assert total.nights_known == 12
+    assert total.animal_id_distinct == 14
+
+
+def test_the_summary_reads_back_with_its_sentinels_intact(tmp_path):
+    prep = Prep(load(write_settings(tmp_path))).run(verbose=False)
+    written = pd.read_csv(prep.settings.summary_path)
+    # Blanks would have come back as NaN and made the tables unselectable.
+    dimensions = ["field", "value", "intake_type", "outcome_type"]
+    assert written[dimensions].notna().all(axis=None)
+    assert (written[written.margin == 2].intake_type == summary.ALL).all()
+    assert len(written[written.field == summary.NONE]) > 0
+
+    # And it pivots back into the rectangle it came from.
+    cells = written[(written.field == summary.NONE) & (written.margin == 0)]
+    grid = cells.pivot_table(index="intake_type", columns="outcome_type",
+                             values="rows", aggfunc="sum")
+    assert grid.to_numpy().sum() == len(prep.frame)
+
+
+def test_the_run_log_records_the_span_of_the_kept_rows(tmp_path):
+    prep = Prep(load(write_settings(tmp_path))).run(verbose=False)
+    line = [l for l in prep.settings.run_path.read_text().splitlines()
+            if l.startswith("final span")][0]
+    assert "2018-01-05" in line and "still in care" in line
 
 
 # --- settings validation ---------------------------------------------------

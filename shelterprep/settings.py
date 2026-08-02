@@ -305,6 +305,10 @@ class Settings:
         return self.dest_dir / (Path(self.dest_file).stem + "_stats.csv")
 
     @property
+    def summary_path(self):
+        return self.dest_dir / (Path(self.dest_file).stem + "_summary.csv")
+
+    @property
     def run_path(self):
         return self.dest_dir / (Path(self.dest_file).stem + "_run.txt")
 
