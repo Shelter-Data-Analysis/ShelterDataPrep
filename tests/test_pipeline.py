@@ -671,6 +671,23 @@ def test_a_single_sheet_workbook_needs_no_sheet_name(tmp_path):
     assert len(Prep(load(path)).read().frame) == 15
 
 
+def test_real_excel_date_cells_parse_as_dates(tmp_path):
+    # A shelter's own workbook has genuine date cells, not text -- the common
+    # case, and the one where a serial number could have leaked through.
+    book = tmp_path / "dated.xlsx"
+    frame = pd.read_csv(FIXTURES / "tiny.csv")
+    for column in ("Intake Date", "Outcome Date", "DOB"):
+        frame[column] = pd.to_datetime(frame[column], errors="coerce")
+    frame.to_excel(book, index=False)
+
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="dated.xlsx"))).run(verbose=False)
+    ledger = prep.statistics.frame().query("action == 'parse_dates'")
+    assert ledger.rows_affected.sum() == 0
+    written = pd.read_csv(prep.settings.dest_path, dtype=str)
+    assert written.intake_date.iloc[0] == "2020-01-10"
+
+
 def test_a_gzipped_source_reads_and_hashes_as_its_uncompressed_self(tmp_path):
     import gzip as gziplib
     plain = (FIXTURES / "tiny.csv").read_bytes()

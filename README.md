@@ -523,7 +523,7 @@ pandas 2.
 python -m pytest tests/ -q
 ```
 
-80 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
+81 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
 documented above, so a test name reads as the rule it protects — the age cutoff
 falling in the lower group, a map being simultaneous rather than sequential, a
 still-in-care animal never being `BEFORE` the window. The uncovered remainder
