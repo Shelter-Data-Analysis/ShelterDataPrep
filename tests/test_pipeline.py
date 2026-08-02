@@ -549,6 +549,31 @@ def test_the_run_log_records_the_span_of_the_kept_rows(tmp_path):
     assert "2018-01-05" in line and "still in care" in line
 
 
+# --- the repository's own metadata -----------------------------------------
+
+def test_the_citation_names_the_version_that_is_actually_here():
+    # Drift here is the failure that survives into print: a paper citing a
+    # version of the software that did not produce its numbers.
+    import shelterprep
+    root = Path(__file__).resolve().parent.parent
+    citation = yaml.safe_load((root / "CITATION.cff").read_text())
+    assert citation["version"] == shelterprep.__version__
+    assert (root / "LICENSE").exists()
+    assert citation["license"] == "MIT"
+
+
+def test_every_run_log_states_the_version_that_wrote_it(tmp_path):
+    import shelterprep
+    prep = Prep(load(write_settings(tmp_path))).run(verbose=False)
+    log = prep.settings.run_path.read_text()
+    assert "shelterprep   {0}".format(shelterprep.__version__) in log
+    # Both ends of the run are verifiable: the extract and the file written.
+    written = hashlib.sha256(prep.settings.dest_path.read_bytes()).hexdigest()
+    assert "output sha256 {0}".format(written) in log
+    for library in ("python", "pandas", "numpy", "PyYAML", "openpyxl"):
+        assert library in log
+
+
 # --- settings validation ---------------------------------------------------
 
 def test_an_unknown_setting_is_an_error(tmp_path):

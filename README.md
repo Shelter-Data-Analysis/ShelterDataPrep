@@ -469,6 +469,16 @@ Library versions are recorded because pandas has changed the behaviour of date
 parsing, of `groupby` and of nullable integers across minor versions. "It ran
 under pandas 2" is not a version.
 
+### License and citation
+
+MIT — see [LICENSE](LICENSE). Use it, change it, redistribute it, keep the
+notice, no warranty.
+
+`CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
+repository" button and Zenodo picks it up when minting a DOI. Cite the version
+number the run log reports, not "the GitHub repository": those are different
+claims, and only the first one is checkable.
+
 ### For a paper
 
 Four things, in the order a reviewer will want them:
@@ -523,7 +533,7 @@ pandas 2.
 python -m pytest tests/ -q
 ```
 
-81 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
+83 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
 documented above, so a test name reads as the rule it protects — the age cutoff
 falling in the lower group, a map being simultaneous rather than sequential, a
 still-in-care animal never being `BEFORE` the window. The uncovered remainder

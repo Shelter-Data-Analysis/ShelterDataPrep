@@ -8,9 +8,16 @@ dynamic = ["version"]
 description = "Config-driven preparation of animal shelter data files, with a statistics table recording every row removed or changed."
 readme = "README.md"
 requires-python = ">=3.9"
+license = { file = "LICENSE" }
 authors = [{ name = "Michael Mavrovouniotis" }]
 keywords = ["animal shelter", "length of stay", "data preparation",
             "reproducible research"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
 
 # Floors, not pins.  pandas 2 is required outright: this package exists partly
 # because pandas 2 rejects the datetime handling the previous pipeline relied
