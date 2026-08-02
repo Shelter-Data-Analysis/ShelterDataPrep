@@ -2,13 +2,10 @@
 # GitHub reads this and shows a "Cite this repository" button; Zenodo reads it
 # when minting a DOI from a release.
 #
-# TWO THINGS TO FILL IN before this is used in a submission:
-#   1. Uncomment the `orcid:` line below and put your ORCID in it.  Without it
-#      the citation resolves to a name, which is not unique; with it, to you.
-#   2. On each tagged release, bump `version` and `date-released` to match, and
-#      add the `doi:` Zenodo mints for that release.  The version here should
-#      equal the one a run log reports, or the citation names software that did
-#      not produce the result.
+####   On each tagged release, bump `version` and `date-released` to match, and
+####   add the `doi:` Zenodo mints for that release.  The version here should
+####   equal the one a run log reports, or the citation names software that did
+####   not produce the result.
 
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
@@ -22,8 +19,8 @@ abstract: >-
 type: software
 authors:
   - family-names: "Mavrovouniotis"
-    given-names: "Michael"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    given-names: "Michael Loizos"
+    orcid: "https://orcid.org/0009-0009-9896-2761"
 version: "0.2.0"
 date-released: "2026-08-01"
 license: MIT
