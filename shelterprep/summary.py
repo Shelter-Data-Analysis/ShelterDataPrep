@@ -45,6 +45,15 @@ AXES = ("intake_type", "outcome_type")
 #: longer than the data.  It is skipped, and `skipped` says so.
 MAX_LEVELS = 50
 
+#: The shortest and longest stay in a cell.  Whole nights, so they stay
+#: integers; a journal table wants them rather than a rounded float.
+EXTREMES = ("nights_min", "nights_max")
+
+#: The rest of the distribution.  p90 because mLOS leans on it; the quartiles
+#: because a length of stay is skewed enough that the extremes alone mislead.
+QUANTILES = ("nights_mean", "nights_p25", "nights_median", "nights_p75",
+             "nights_p90")
+
 
 def fields(frame, settings):
     """The exported categorical columns, beyond the two axes themselves.
@@ -84,10 +93,10 @@ def summarize(frame, settings):
     summary = pd.concat(tables, ignore_index=True)
     counts = ["rows", "nights_known"] + [name + "_distinct" for name in unique_report]
     summary[counts] = summary[counts].astype("Int64")
-    order = ["field", "value", "intake_type", "outcome_type", "margin",
-             "rows"] + [name + "_distinct" for name in unique_report] + [
-             "nights_known", "nights_mean", "nights_p25", "nights_median",
-             "nights_p75"]
+    order = (["field", "value", "intake_type", "outcome_type", "margin", "rows"]
+             + [name + "_distinct" for name in unique_report]
+             + ["nights_known", "nights_mean", "nights_min", "nights_p25",
+                "nights_median", "nights_p75", "nights_p90", "nights_max"])
     return summary[order]
 
 
@@ -155,9 +164,12 @@ def _aggregate(work, keys, levels, unique_report):
         "rows": ("nights", "size"),
         "nights_known": ("nights", "count"),
         "nights_mean": ("nights", "mean"),
-        "nights_p25": ("nights", lambda values: values.quantile(0.25)),
+        "nights_min": ("nights", "min"),
+        "nights_p25": ("nights", _quantile(0.25)),
         "nights_median": ("nights", "median"),
-        "nights_p75": ("nights", lambda values: values.quantile(0.75)),
+        "nights_p75": ("nights", _quantile(0.75)),
+        "nights_p90": ("nights", _quantile(0.90)),
+        "nights_max": ("nights", "max"),
     }
     for name in unique_report:
         specification[name + "_distinct"] = (name, "nunique")
@@ -173,6 +185,15 @@ def _aggregate(work, keys, levels, unique_report):
 
     for column in ["rows", "nights_known"] + [n + "_distinct" for n in unique_report]:
         grouped[column] = grouped[column].fillna(0)
-    for column in ("nights_mean", "nights_p25", "nights_median", "nights_p75"):
+    for column in QUANTILES:
         grouped[column] = grouped[column].round(2)
+    # Not filled: a cell where nothing has finished has no shortest or longest
+    # stay, and a blank says that where a zero would claim a same-day stay.
+    for column in EXTREMES:
+        grouped[column] = grouped[column].astype("Int64")
     return grouped.reset_index(drop=not keys)
+
+
+def _quantile(fraction):
+    """A named aggregation for one quantile of the night counts."""
+    return lambda values: values.quantile(fraction)

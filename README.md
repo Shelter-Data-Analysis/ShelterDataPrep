@@ -320,12 +320,12 @@ length of stay in each cell. It is a convenience for whoever gets the prepared
 file, and nothing downstream depends on it.
 
 ```
-      field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_p25  nights_median  nights_p75
-     _NONE_    _NONE_       STRAY         LCOM       0  19446               18586         19446        11.22         1.0            5.0         9.0
-     _NONE_    _NONE_       STRAY         TRAN       0   4275                4272          4275        27.29         5.0           10.0        24.5
-     _NONE_    _NONE_       STRAY        _ALL_       1  24832               23864         24696        14.19         1.0            5.0        11.0
-     _NONE_    _NONE_       _ALL_        _ALL_       2  34718               28230         34513        15.40         1.0            5.0        12.0
-animal_size     LARGE       STRAY         LCOM       0   6552                6360          6552        13.20         2.0            7.0        14.0
+      field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_min  nights_p25  nights_median  nights_p75  nights_p90  nights_max
+     _NONE_    _NONE_       STRAY         LCOM       0  19446               18586         19446        11.22           0         1.0            5.0         9.0        20.0         616
+     _NONE_    _NONE_       STRAY         TRAN       0   4275                4272          4275        27.29           0         5.0           10.0        24.5        67.0         618
+     _NONE_    _NONE_       STRAY        _ALL_       1  24832               23864         24696        14.19           0         1.0            5.0        11.0        28.0         618
+     _NONE_    _NONE_       _ALL_        _ALL_       2  34718               28230         34513        15.40           0         1.0            5.0        12.0        33.0         730
+animal_size     LARGE       STRAY         LCOM       0   6617                6144          6617        21.34           0         1.0            6.0        17.0        52.0         616
 ```
 
 **Long, not rectangular.** A contingency table written as a grid needs a header
@@ -372,7 +372,8 @@ matters for a length-of-stay study:
 | `rows` | stays in the cell |
 | `animal_id_distinct` | distinct animals — one per `unique_report` field; below `rows` where an animal has repeat stays |
 | `nights_known` | stays with a night count; `rows` minus this is the stays still in care |
-| `nights_mean`, `nights_p25`, `nights_median`, `nights_p75` | over the known ones. Quartiles rather than min/max: length of stay is skewed enough that the extremes say little |
+| `nights_min`, `nights_max` | shortest and longest stay, as whole nights |
+| `nights_mean`, `nights_p25`, `nights_median`, `nights_p75`, `nights_p90` | the distribution over the known ones. `p90` because mLOS leans on it; the quartiles because a length of stay is skewed enough that the extremes alone mislead |
 
 `nights` counts nights, not days — an animal in and out the same day scores 0,
 and mLOS defines `LOS = nights + 1`. A cell with `rows` but no `nights_known`

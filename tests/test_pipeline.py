@@ -509,6 +509,21 @@ def test_a_stay_still_in_care_is_counted_but_has_no_night_count(tmp_path):
     # A002's second row and A014 have no outcome date; A013's is unparseable.
     assert total.nights_known == 12
     assert total.animal_id_distinct == 14
+    # Nothing is clipped: A005's outcome precedes its intake by 7 nights, and
+    # no step here cuts it. min and max are whole nights, not rounded floats.
+    assert (total.nights_min, total.nights_max) == (-7, 19)
+    # 12 known counts, so p90 interpolates between the 10th and 11th: 7 and 9.
+    assert total.nights_p90 == pytest.approx(8.8)
+
+
+def test_a_cell_with_nothing_finished_has_no_extremes(tmp_path):
+    # Blank rather than zero: zero would claim a same-day stay.
+    table, _ = summarized(tmp_path, steps=[{"cut": {"outcome_type": UNKNOWN}}])
+    cells = table[table.margin == 0]
+    empty = cells[cells.nights_known == 0]
+    assert not empty.empty
+    assert empty[list(summary.EXTREMES) + list(summary.QUANTILES)].isna().all(
+        axis=None)
 
 
 def test_the_summary_reads_back_with_its_sentinels_intact(tmp_path):
