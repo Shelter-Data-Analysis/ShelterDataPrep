@@ -1,0 +1,97 @@
+# A runnable example, over the 15-row fixture in tests/fixtures/
+#
+# Run with:  python3 -m shelterprep configs/example_tiny.yaml
+#
+# This is the one shipped config that works on a fresh clone, because it is
+# the one whose source file is small enough to live in the repository. The
+# other eight read real extracts that are not distributable. Its purpose is to
+# show that an install works and to be copied as the starting point for a real
+# config -- not to be a model of a well-reasoned settings file. A real config
+# earns each of its steps against its own shelter's data, and says why in a
+# comment; see configs/orange_county2.yaml for what that looks like.
+#
+# The fixture is deliberately nasty for 15 rows: an unparseable outcome date, a
+# date of birth after the intake date, a missing date of birth, an outcome date
+# before the intake date, a timestamp where every other value is a plain date,
+# and an animal admitted twice. Every one of those lands somewhere visible in
+# results/EX_data_stats.csv, which is the file to read after the run.
+
+# --- source ---------------------------------------------------------------
+# Relative to this settings file, not to the working directory. A real config
+# points source_dir outside the repository, so that raw extracts cannot be
+# committed; see configs/orange_county2.yaml.
+#
+# pandas reads .csv.gz transparently, so a gzipped extract needs no setting.
+source_dir:   "../tests/fixtures"
+source_file:  "tiny.csv"
+date_format:  ISO8601        # accepts both YYYY-MM-DD and YYYY-MM-DD HH:MM:SS
+keep_time:    false
+
+# --- study window ---------------------------------------------------------
+# Both dates or neither. A stay is BEFORE when it ended before the window
+# opened, AFTER when it began after the window closed; the cut below is what
+# actually removes them.
+window_start_date: 2019-01-01
+window_end_date:   2021-12-31
+
+# --- destination ----------------------------------------------------------
+# results/ is gitignored, and a run writes nowhere else.
+dest_dir:   "../results"
+dest_file:  "EX_data.csv"
+output_columns: [animal_id, intake_date, outcome_date, intake_type, outcome_type,
+                 animal_size, age_group, nights]
+
+# --- column names ---------------------------------------------------------
+# canonical_name: name_in_file, and only ever in that direction. The fixture
+# already uses the canonical spelling for intake_type, outcome_type and
+# outcome_subtype, so only these four have to be declared.
+columns:
+  animal_id:    "Animal ID"
+  intake_date:  "Intake Date"
+  outcome_date: "Outcome Date"
+  dob:          "DOB"
+
+# --- derived --------------------------------------------------------------
+# Cutoff falls in the lower group: age exactly 1 is JUVENILE. Above the last
+# cutoff is _OVER_ (one row here), a dob after the intake date is _NEGATIVE_
+# (one row), and a missing dob is _UNKNOWN_ (one row).
+age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 18}
+unique_report: [animal_id]
+
+# --- ordered filter / map sequence ----------------------------------------
+# A step whose count comes out 0 is not dead weight: it is how a misspelled
+# label gets caught, so retired values are left in place. BIRD below is one --
+# named, matching nothing, and visibly so in the by-value breakdown.
+steps:
+  - cut: {animal_type: [CAT, BIRD]}
+  - cut: {window_presence: [BEFORE, AFTER]}
+
+  # An outcome date before the intake date is a data error, not a stay.
+  # _UNKNOWN_ is deliberately not cut here: it is a stay still in care.
+  - cut: {night_sign: "-1"}
+
+  # Not a shelter stay: a request for disposal of an animal already dead.
+  - cut: {intake_type: [DISPO REQ]}
+
+  # Adoption by a rescue partner is a transfer, not an adoption. Runs before
+  # the map to canonical codes, while ADOPTION still exists.
+  - map: {outcome_type: {ADOPTION: TRANSFER}}
+    where: {outcome_subtype: [RESCUE]}
+
+  # LCOM = community live, TRAN = other live, NONL = non-live, INC = still in
+  # care. A blank outcome_type is _UNKNOWN_ before any step runs, so it can be
+  # mapped like any other value.
+  - map:
+      outcome_type:
+        ADOPTION:  LCOM
+        RTO:       LCOM
+        TRANSFER:  TRAN
+        EUTH:      NONL
+        _UNKNOWN_: INC
+
+  # The narrowest safe deduplication: two rows identical in every output
+  # column, covering a stay of at least one night, cannot both be real.
+  # Same-day repeats are left alone -- in and out twice in one day is
+  # physically possible. Nothing matches in this fixture, so the count is 0.
+  - dedup:                      # compare every output column
+    where: {night_sign: "1"}    # only stays of at least one night

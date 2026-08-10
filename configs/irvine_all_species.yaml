@@ -6,7 +6,7 @@
 # Unlike the other configs this one keeps every species, and hands animal_type
 # to mLOS as the stratifier.
 
-# Gzipped working copy, kept outside any git repo (see orange_county.yaml);
+# Gzipped working copy, kept outside any git repo (see orange_county2.yaml);
 # original left in OneDrive/Journal Physics LOS/PRA/Irvine/IrvineAllSpecies.csv
 source_dir:   "../../_shelter_raw"
 source_file:  "CIall_raw.csv.gz"

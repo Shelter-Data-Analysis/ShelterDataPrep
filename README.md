@@ -1,9 +1,16 @@
 # ShelterDataPrep
 
-Turns a raw animal shelter extract (CSV or Excel) into a tidy CSV, plus a
-statistics table recording exactly what every step removed or changed.
+Turns a raw animal shelter extract (CSV, gzipped CSV or Excel) into a tidy CSV,
+plus a statistics table recording exactly what every step removed or changed.
 
 A run is one YAML settings file:
+
+```bash
+python3 -m shelterprep configs/example_tiny.yaml
+```
+
+That one reads a 15-row fixture inside the repository, so it works on a fresh
+clone with no data of your own. A real run names a real config:
 
 ```bash
 python3 -m shelterprep configs/orange_county2.yaml
@@ -22,21 +29,9 @@ Four files come out, next to each other in `results/`:
 file to the downstream analysis is a copy you make deliberately, not something
 that happens because you re-ran the prep.
 
-Or from Python, if you want to poke at an intermediate stage:
-
-```python
-from shelterprep import load, Prep
-
-prep = Prep(load("configs/orange_county2.yaml"))
-prep.read().derive()          # frame now has nights, age_group, window_presence
-prep.apply_steps().write()
-prep.statistics.frame()       # the stage ledger as a DataFrame
-prep.statistics.details()     # the by-value breakdown, on its own
-prep.statistics.report()      # both, stacked -- what gets written to the CSV
-
-from shelterprep import summary
-summary.summarize(prep.frame, prep.settings)   # the descriptive tables
-```
+`-q` suppresses the console table; the files are written either way. Installing
+the package also puts a `shelterprep` command on your path, so
+`shelterprep configs/orange_county2.yaml` does the same thing from anywhere.
 
 ## Installing
 
@@ -44,7 +39,7 @@ Python 3.9 or newer.
 
 ```bash
 pip install -r requirements.txt
-python3 -m shelterprep configs/orange_county2.yaml
+python3 -m shelterprep configs/example_tiny.yaml
 ```
 
 Run from the repository root, which is where `configs/` and `shelterprep/` are.
@@ -54,15 +49,33 @@ Or install it properly, so `shelterprep` works from anywhere:
 pip install .
 ```
 
-`openpyxl` is only needed for Excel sources; everything else is pandas and
-PyYAML. `pytest` is only needed to run the tests. The run log records the
-version of each, because a result is only reproducible against a stated
-environment.
+Add the `excel` extra if your extract is a workbook — a plain `pip install .`
+leaves out `openpyxl`, and an Excel source will fail without it:
 
-## Configs
+```bash
+pip install ".[excel]"
+```
+
+Everything else is pandas and PyYAML. `pytest` is only needed to run the tests.
+The run log records the version of each, because a result is only reproducible
+against a stated environment.
+
+## Documentation
+
+| document | read it when |
+|---|---|
+| [Preparing your own shelter data](docs/getting-started.md) | you have an extract from a shelter not listed below, and need a config for it |
+| [The settings file](docs/settings.md) | every top-level key, the path rules, and how dates are handled |
+| [Steps and derived columns](docs/steps.md) | the `cut` / `map` / `dedup` grammar, and the columns the tool builds for you to filter on |
+| [The prepared file and the summary table](docs/outputs.md) | you have been handed a prepared CSV and need to know what its columns mean |
+| [The statistics table](docs/statistics-table.md) | the ledger format — shared with mLOS, so the two files stack into one flow |
+| [Reproducibility and publishing](docs/reproducibility.md) | the run log, the digests, and what travels with a file into a paper |
+
+## The shipped configs
 
 | config | shelter | rows out | notes |
 |---|---|---|---|
+| `example_tiny.yaml` | none — the test fixture | 11 | runs on a clean clone; the starting point to copy |
 | `orange_county2.yaml` | Orange County, dogs | 34,718 | the mLOS default; new outcome codes, `age_group` exported |
 | `orange_county1.yaml` | Orange County, dogs | 36,564 | superseded by the above, frozen and kept as a baseline |
 | `irvine_dogs.yaml` | Irvine, dogs | 11,022 | no dob, no size — no `animal_group` |
@@ -80,475 +93,39 @@ have not been validated against anything** — read their statistics tables
 before trusting a run. Places where a judgement was made, or where the old
 code had a bug worth knowing about, are commented in the config itself.
 
-## The settings file
-
-```yaml
-source_dir:   "../../_shelter_raw"
-source_file:  "intakes and outcomes.csv"
-sheet:                       # Excel only; omit and the file must have one sheet
-date_format:  ISO8601        # or: mixed  (US-style m/d/Y extracts)
-keep_time:    false
-
-window_start_date: 2018-07-01   # optional pair, both or neither
-window_end_date:   2024-10-19
-
-dest_dir:   "../results"
-dest_file:  "OC2_data.csv"
-output_columns: [animal_id, intake_date, outcome_date, outcome_type, animal_size]
-
-columns:                     # canonical_name: name_in_file
-  intake_date: "Intake Date"
-
-age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 18}
-unique_report: [animal_id]
-
-steps:
-  - cut: {window_presence: [BEFORE, AFTER]}
-  - cut: {animal_type: [CAT, BIRD]}
-  - map: {outcome_type: {ADOPTION: TRANSFER}}
-    where: {outcome_subtype: [TRANSFER, RESCUE]}
-```
-
-An unknown top-level key is an error, not a warning. A misspelled setting that
-quietly skips an exclusion is the failure mode that survives into a published
-table.
-
-### Paths
-
-`source_dir` and `dest_dir` are relative, and resolve against the settings file
-rather than the working directory, so a run means the same thing from anywhere.
-Nothing in `configs/` names a home directory or a machine, so a clone of this
-repo next to a `_shelter_raw/` directory runs as written.
-
-The shipped configs read `../../_shelter_raw` — a sibling of the repo, so the
-extracts can never be committed — and write to `../results`.
-
-### Columns
-
-Five canonical fields must resolve to a column in the file: `animal_id`,
-`intake_date`, `outcome_date`, `intake_type`, `outcome_type`. `dob` is used
-when present and ignored when absent. Anything else a step or `output_columns`
-names is assumed to exist in the file under that exact name; if it does not,
-the run stops and the error lists what the file does contain.
-
-`columns:` renames file columns to canonical names — and only ever in that
-direction. The previous pipeline renamed *outward* (`outcome_date` became
-`outdate`, `outcome_type` became `outcome`) while leaving the originals in the
-frame, so two spellings of the same field circulated at once and different
-functions read different ones. Nothing here is renamed on the way out.
-
-Only the columns a run actually needs are read, which keeps a 70 MB extract
-cheap.
-
-### Steps
-
-The sequence is ordered and each entry is a cut, a map or a dedup.
-
-- **`cut:`** drops matching rows. Multiple columns are ANDed. Always a cut,
-  never a pass.
-- **`map:`** rewrites values in exactly one column. `where:` / `where_not:`
-  restrict which rows it applies to; both are ANDs of columns, and `where_not`
-  negates the whole conjunction.
-- **`dedup:`** keeps the **last** of each group of rows matching across the
-  listed columns — or across every output column if none are listed — and cuts
-  the earlier ones. Takes `where:` / `where_not:` like a map.
-
-A scalar is accepted anywhere a set is meant (`intake_cond: DEAD` is
-`[DEAD]`). Values compare as text, so `night_sign: "-1"` matches.
-
-Two restrictions are deliberate: a cut takes no `where:` (add the column to the
-cut, which already ANDs), and a map takes one column (a statistics row
-describing two columns at once cannot be read unambiguously — use two steps).
-
-A step whose count comes out zero is not dead weight. It is how a misspelled
-label gets caught, so retired values are worth leaving in place.
-
-### Deduplication is deliberately narrow
-
-```yaml
-  - dedup:                      # compare every output column
-    where: {night_sign: "1"}    # only stays of at least one night
-```
-
-Two rows identical in every output column covering a stay of **at least one
-night** cannot both be real: an animal cannot be admitted twice on the same day
-for the same multi-day stay. Those are safe to collapse.
-
-A **same-day** repeat is a different matter — in and out in the morning, in and
-out again in the afternoon is physically possible. In the Orange County extract
-that intuition is borne out: of the 29 stays recorded twice, 19 of the 20
-multi-day pairs are identical (plain duplication), while 7 of the 9 same-day
-pairs *disagree with each other* about the outcome. Those are a judgement call,
-and they belong to the downstream analysis, which has its own duplicate-stay
-and overlapping-stay screens.
-
-So the `where:` clause is not a detail. Without it this step would collapse
-pairs that may be two genuine visits.
-
-Which row survives matters only when the compared columns are a **subset**, so
-two matching rows can still differ elsewhere. There the **last** row is kept,
-on the reading that a later record corrects an earlier one rather than the
-reverse — which is also how mLOS breaks the same tie ("of two equal stays, the
-one earlier in the file is dropped").
-
-### Derived columns
-
-Built after the dates are parsed and before any step runs, so they filter and
-map exactly like columns that came out of the file.
-
-| column | |
-|---|---|
-| `nights` | `outcome_date - intake_date`, in whole nights |
-| `night_sign` | `-1`, `0`, `1`, or `_UNKNOWN_` |
-| `window_presence` | `BEFORE`, `IN`, `AFTER`, or `_UNKNOWN_` |
-| `age` | years at intake, from `dob` |
-| `age_group` | per `age_groups`, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
-
-Age cutoffs fall in the **lower** group: with `JUVENILE: 1`, an age of exactly
-1 is JUVENILE. Above the last cutoff is `_OVER_`; a `dob` after the intake date
-is `_NEGATIVE_` (a data error, kept distinct from a missing `dob`, which is
-`_UNKNOWN_`).
-
-`window_presence` is `AFTER` when the animal arrived after the window closed
-and `BEFORE` when it left before the window opened. `IN` is the default, so an
-animal still in care — no outcome date — is never `BEFORE`. It has not left.
-
-**Nothing is filtered automatically.** Over-age animals, impossible date
-orders and out-of-window stays are all removed by ordinary `cut:` steps you
-can see in the settings file, so each lands in the statistics table like
-everything else.
-
-`nights` is nights, not length of stay. mLOS defines `LOS = nights + 1` and
-derives it from the two dates itself.
-
-### Blanks
-
-Every non-date value is text, and blank, whitespace-only and missing all become
-`_UNKNOWN_` — the same sentinel mLOS uses. Because it is an ordinary value, a
-cut or a map can name it and nothing downstream has to special-case NaN.
-
-## Dates
-
-One rule, and the reason this package exists:
-
-> Every date-valued thing here is `datetime64[ns]`. Never `datetime.date`,
-> never a mix.
-
-`keep_time: false` (the default) normalises to midnight — the time is dropped,
-the dtype is not. `keep_time: true` preserves it. `nights` is computed from
-normalised values either way, so the switch can never shift a night count.
-Dates become `YYYY-MM-DD` strings only at the moment they are written.
-
-Two things worth knowing about the parsing:
-
-**Format is always explicit.** Left to infer, pandas locks onto one format from
-the first non-null value and silently coerces everything else to `NaT`:
-
-```python
->>> s = pd.Series(["2018-01-01 14:30:00", "2018-03-02"])
->>> list(pd.to_datetime(s, errors="coerce"))
-[Timestamp('2018-01-01 14:30:00'), NaT]
-```
-
-That row would leave the study with no warning. `ISO8601` accepts both
-spellings; `mixed` also accepts US-style `m/d/Y`, at the cost of guessing on
-ambiguous days. Whatever still fails to parse is **counted**, on its own
-`parse_dates` row in the statistics table.
-
-**CSVs are read as `utf-8-sig`.** The Orange County and Long Beach exports
-carry a byte-order mark, which otherwise becomes part of the first column name
-and makes every lookup on it fail.
-
-**A date that fails to parse becomes `NaT`, which downstream is
-indistinguishable from a date that was never recorded** — for `outcome_date`
-that reads as "still in care". The `parse_dates` row of the statistics table
-is what catches it, so it is worth looking at before trusting a run. A row in
-that state is visible in the frame as `outcome_type` set to something real
-while `night_sign` is `_UNKNOWN_`; the old pipeline repaired it by assuming
-the animal left the day it arrived (`stale/_PhysicsSubs.py:28-30`). That
-repair is **not** reproduced here, because a cut or a map cannot rewrite a
-date. If you want it, it needs to be a new feature rather than a settings
-change.
-
-## The prepared file
-
-`output_columns` decides which columns are written and in what order, so the
-file is whatever a run asks for. What each of those columns *means* is fixed:
-
-| column | type | values |
-|---|---|---|
-| `animal_id` | text | as in the source. Not unique — an animal with repeat stays has one row per stay |
-| `intake_date` | `YYYY-MM-DD` | never blank; a row with no parseable intake date can still exist, and shows as blank |
-| `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, either still in care or never recorded |
-| `intake_type` | text | the source vocabulary, as rewritten by the `map:` steps in the config |
-| `outcome_type` | text | likewise. The shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` for mLOS |
-| `animal_size`, `animal_type`, … | text | any other source column the config keeps, as rewritten |
-| `nights`, `age` | number | whole nights, and years at intake. Blank where a date is missing |
-| `night_sign` | text | `-1`, `0`, `1`, `_UNKNOWN_` |
-| `window_presence` | text | `BEFORE`, `IN`, `AFTER`, `_UNKNOWN_` |
-| `age_group` | text | the `age_groups` names, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
-
-Three conventions run through all of it:
-
-- **`_UNKNOWN_` is the only missing-value marker in a text column.** Blank,
-  whitespace and absent all become it, before any step runs. A cut or a map can
-  name it, and nothing downstream special-cases NaN.
-- **A blank date is genuinely blank**, never `NaN` or `NaT` as text.
-- **One row is one stay**, not one animal. `animal_id_distinct` in the summary
-  is the animal count where you need it.
-
-The observed levels of every categorical column, for a given run, are
-enumerated in that run's summary file — so a reader can see the whole
-vocabulary without opening the data.
+Every config except `example_tiny.yaml` reads an extract that is not
+distributable, so running one means [supplying the file
+yourself](docs/getting-started.md#2-put-your-extract-where-a-config-can-see-it).
 
 ## The statistics table
 
 One row per stage, in execution order — the shape of a CONSORT flow diagram, so
-it can go into a supplement more or less as is. Reading, date parsing and the
-derived columns get rows too, so the chain of counts is continuous and a gap is
-visible rather than inferred.
+it can go into a supplement more or less as is. Underneath it, in the same
+file, one row per value the settings name, which is what makes a step that cut
+nothing visible. The format is shared with mLOS, so the two files stack into a
+single flow from the raw extract to the rows the models ran on.
 
-```
- step     action        column  rows_in  rows_affected  rows_out  animal_id_in  animal_id_out
-    0       read           ...   192149              0    192149        105396         105396
-    1        cut   animal_type   192149         147385     44764        105396          33402
-    2        cut  ...
-```
+**[Full specification →](docs/statistics-table.md)**
 
-For each field in `unique_report` there is an `_in` / `_affected` / `_out`
-triple. `_in` minus `_out` is the number of animals that left the study
-*entirely* at that stage.
+## From Python
 
-Every step computes its mask, records the statistics, and only then applies the
-change, so the numbers describe the frame the step actually saw.
-
-### The by-value breakdown
-
-Underneath the stage table, in the same file, sits a second one at a finer
-grain: **one row per value the settings name**, counted within the rows that
-step actually cut or mapped. A `section` column selects between them, and each
-section leaves the other's columns blank, so the file is still one CSV that
-`pd.read_csv` opens.
-
-```
- step action       column     role      value        scope  rows_affected  animal_id_affected
-    1    cut  animal_type      cut       BIRD     rows cut          16493               16421
-    1    cut  animal_type      cut        CAT     rows cut          87403               64096
-    1    cut  animal_type      cut  LIVESTOCK     rows cut            113                 110
-    1    cut  animal_type      cut      OTHER     rows cut          43376               42887
-    3    cut  intake_type      cut  DISPO REQ     rows cut           1815                1814
-    3    cut  intake_type      cut      FOUND     rows cut              0                   0
-```
-
-This exists mostly for the zeros. Settings files deliberately keep values that
-no longer occur, so that a label reappearing in a future extract is caught
-rather than passed through — and a summary of what *did* happen is exactly the
-report that cannot show them. `FOUND` above is one: named in the cut, matching
-nothing, and now visibly so.
-
-Two things to read carefully:
-
-- **`role`** says which part of the step the value came from: `cut`, `map from`
-  (a key of the map table), `where` or `where_not`.
-- **`scope`** says what the count is over. For everything except `where_not`
-  that is the rows the step cut or mapped. A `where_not` value cannot appear in
-  a row the step touched — keeping it out is what the guard did — so those are
-  counted over the rows the guard **held back** instead, which is the number
-  that says whether it fired.
-
-A conjunction is broken down one part at a time, not by combination. For
-`cut: {animal_type: [CAT, DOG], intake_type: DISPO REQ}` you get counts for
-`animal_type` and counts for `intake_type` over the same set of cut rows. Since
-a row holds one value per column, the counts within a column add up to the
-stage's `rows_affected` — a column that does not add up is one whose value set
-is missing something.
-
-`dedup` breaks down only its `where` / `where_not` guards: `on:` names columns,
-not values, so there is no set to split.
-
-### Other tools writing this table
-
-The format is not private to this project. mLOS, the length-of-stay analysis
-downstream, records its own screening in these columns, so the two files stack:
-one `read_csv` each, one `concat`, and you have a single flow from the raw
-extract to the rows the models ran on. The chain joins at the handoff, because
-the `write` row here and mLOS's `read` row are the same frame counted twice.
-
-Two things to expect from a file this project did not write.
-
-- **The vocabularies are open.** `action` and `role` are documented above as
-  what *this* tool emits, not as the closed set. A conforming tool may add
-  verbs for stages preparation has no equivalent of. mLOS adds `split`, for
-  breaking a stay into the periods it is observed in, and `pass`, for a
-  keep-only filter, whose named values are counted over the rows it kept rather
-  than the rows it cut.
-- **`rows_out` may exceed `rows_in`.** Preparation only ever removes rows, so
-  every stage here narrows or holds, and it is tempting to read that as a
-  property of the format. It is not. An analysis stage can multiply rows: one
-  stay observed in three periods becomes three rows. A reader that assumes the
-  count falls monotonically down a stacked file will be wrong about the second
-  half of it.
-
-The columns are the contract; what a writer puts in them is its own business.
-An extra column would break the concatenation, which is why mLOS keeps its
-internal stage names out of the file and identifies a stage the way this one
-does, by `action`, `column` and `detail`.
-
-## The summary table
-
-The ledger says what came out. `OC2_data_summary.csv` says what is left: every
-exported categorical column crossed against intake type and outcome type, with
-length of stay in each cell. It is a convenience for whoever gets the prepared
-file, and nothing downstream depends on it.
-
-```
-      field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_min  nights_p25  nights_median  nights_p75  nights_p90  nights_max
-     _NONE_    _NONE_       STRAY         LCOM       0  19446               18586         19446        11.22           0         1.0            5.0         9.0        20.0         616
-     _NONE_    _NONE_       STRAY         TRAN       0   4275                4272          4275        27.29           0         5.0           10.0        24.5        67.0         618
-     _NONE_    _NONE_       STRAY        _ALL_       1  24832               23864         24696        14.19           0         1.0            5.0        11.0        28.0         618
-     _NONE_    _NONE_       _ALL_        _ALL_       2  34718               28230         34513        15.40           0         1.0            5.0        12.0        33.0         730
-animal_size     LARGE       STRAY         LCOM       0   6617                6144          6617        21.34           0         1.0            6.0        17.0        52.0         616
-```
-
-**Long, not rectangular.** A contingency table written as a grid needs a header
-row *and* a header column, which one CSV cannot carry for several tables at
-once and which neither pandas nor R reads back without being told how. One row
-per cell, dimensions in named columns, goes straight into all three:
+If you want to poke at an intermediate stage:
 
 ```python
-cells = frame[(frame.field == "animal_size") & (frame.margin == 0)]
-cells.pivot_table(index="value", columns="outcome_type", values="rows")
+from shelterprep import load, Prep
+
+prep = Prep(load("configs/orange_county2.yaml"))
+prep.read().derive()          # frame now has nights, age_group, window_presence
+prep.apply_steps().write()
+prep.statistics.frame()       # the stage ledger as a DataFrame
+prep.statistics.details()     # the by-value breakdown, on its own
+prep.statistics.report()      # both, stacked -- what gets written to the CSV
+
+from shelterprep import summary
+summary.summarize(prep.frame, prep.settings)   # the descriptive tables
 ```
 
-```r
-cells <- subset(frame, field == "animal_size" & margin == 0)
-xtabs(rows ~ value + outcome_type, data = cells)
-```
-
-and in a spreadsheet it is already a pivot table's source range.
-
-**Which tables are there.** One per exported categorical column — a third
-dimension crossed against the two type axes — plus the degenerate one that
-crosses the axes against each other, marked `field = _NONE_`. Dates, numbers
-and the `unique_report` identifiers are not categories and are skipped, as is
-any column with more than 50 distinct values. A run whose output columns are
-just IDs, dates and the two types gets the `_NONE_` table alone.
-
-**Partial sums** are in the same table, marked `_ALL_` in the dimension they
-collapse. `margin` counts how many of the two axes are collapsed, so:
-
-- `margin == 0` — the cells. **Filter on this before summing anything.**
-- `margin == 1` — one axis totalled: rows per intake type, or per outcome type.
-- `margin == 2` — both, i.e. the total for that field level (or the grand total
-  in the `_NONE_` table).
-
-Sums over a field are not repeated per field, because they are exactly the
-`_NONE_` table. So every number appears once, and the `margin == 2` rows of any
-field table add up to the `margin == 2` row of `_NONE_`.
-
-**The measures**, per cell, are the frequency and the one descriptive that
-matters for a length-of-stay study:
-
-| column | |
-|---|---|
-| `rows` | stays in the cell |
-| `animal_id_distinct` | distinct animals — one per `unique_report` field; below `rows` where an animal has repeat stays |
-| `nights_known` | stays with a night count; `rows` minus this is the stays still in care |
-| `nights_min`, `nights_max` | shortest and longest stay, as whole nights |
-| `nights_mean`, `nights_p25`, `nights_median`, `nights_p75`, `nights_p90` | the distribution over the known ones. `p90` because mLOS leans on it; the quartiles because a length of stay is skewed enough that the extremes alone mislead |
-
-`nights` counts nights, not days — an animal in and out the same day scores 0,
-and mLOS defines `LOS = nights + 1`. A cell with `rows` but no `nights_known`
-is entirely still in care, and its night columns are blank rather than zero.
-
-The run log carries the one fact this table cannot, since it counts stays
-rather than dates: the span the surviving rows actually cover.
-
-## Reproducibility
-
-A run is deterministic: same settings, same source file, same output, with no
-sampling, no randomness and no dependence on the working directory or on the
-order of anything. So the run log is enough to reproduce it.
-
-```
-shelterprep   0.2.0
-run at        2026-08-01T18:23:27
-settings      configs/orange_county2.yaml
-source        ../../_shelter_raw/OC_raw.csv.gz
-source sha256 fbc5fa49...  (of the uncompressed contents)
-destination   results/OC2_data.csv
-output sha256 e7b04f9a...
-output rows   34718
-final span    intake 2018-01-22 to 2025-10-02, last outcome 2025-10-03, 205 still in care
-
-python        3.9.6 on macOS-26.5.2-arm64-arm-64bit
-pandas        2.3.1
-numpy         2.0.2
-PyYAML        6.0.3
-openpyxl      3.1.5
-```
-
-The two digests bracket the run. **`source sha256`** identifies the extract —
-taken over the *uncompressed* contents, so it does not move if the file is
-recompressed by a different tool or at a different level, and still matches the
-original the archive was made from. **`output sha256`** identifies the prepared
-file, so a copy that has been opened and re-saved by a spreadsheet announces
-itself instead of passing as the original.
-
-Library versions are recorded because pandas has changed the behaviour of date
-parsing, of `groupby` and of nullable integers across minor versions. "It ran
-under pandas 2" is not a version.
-
-### License and citation
-
-MIT — see [LICENSE](LICENSE). Use it, change it, redistribute it, keep the
-notice, no warranty.
-
-`CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
-repository" button and Zenodo picks it up when minting a DOI. Cite the version
-number the run log reports, not "the GitHub repository": those are different
-claims, and only the first one is checkable.
-
-### For a paper
-
-Four things, in the order a reviewer will want them:
-
-1. **The prepared file, its stats file and its run log travel together.** The
-   data file alone cannot say where it came from; the run log is the provenance
-   and the stats file is the exclusion history.
-2. **Archive a tagged release, not a branch.** A GitHub URL is not archival —
-   the repository can be rewritten or deleted, so a bare link fails a data
-   availability statement. Tag a release and mint a DOI for it (Zenodo does
-   this from a GitHub release in one step), then cite the DOI and the version
-   number the run log records.
-3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
-   public records; they belong in a repository with a persistent identifier,
-   not in git history. That is why `source_dir` points outside this repo.
-4. **The statistics table is the flow diagram.** It is shaped after CONSORT and
-   goes into a supplement more or less as is; the by-value breakdown underneath
-   it is what turns "147,385 rows were excluded" into a defensible sentence.
-
-## When it stops
-
-Errors are deliberate and name the thing that is wrong. The common ones:
-
-| message | what to do |
-|---|---|
-| `unknown setting(s) ...` | a misspelled top-level key. Rejected rather than ignored, because a typo that quietly skips an exclusion survives into a published table |
-| `... does not have the column(s) this run needs` | the error lists what the file *does* contain; add a `columns:` entry mapping the canonical name to the file's spelling |
-| `step N names the column X, which does not exist` | a step column that is neither in the file nor derived. If it is a derived one, the message says what building it needs |
-| `has N sheets, so 'sheet:' is required` | name the sheet |
-| `N of M supplied value(s) unparseable` — in the stats table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
-
-Two failures are **not** errors and have to be read for:
-
-- **A step that affects 0 rows.** Often correct — a retired label kept as a
-  safeguard — but also what a misspelled value looks like. The by-value
-  breakdown in the stats file names every value at zero, which is the point of
-  it.
-- **An unparseable date.** It becomes `NaT`, and for `outcome_date` that reads
-  downstream as "still in care". Only the `parse_dates` row of the stats table
-  distinguishes the two, so check it before trusting a run.
+`Prep(load(path)).run()` is the whole thing, and is what the command line calls.
 
 ## Scope
 
@@ -560,16 +137,27 @@ pandas 2.
 ## Tests
 
 ```bash
-python -m pytest tests/ -q
+python3 -m pytest tests/ -q
 ```
 
 83 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
-documented above, so a test name reads as the rule it protects — the age cutoff
-falling in the lower group, a map being simultaneous rather than sequential, a
-still-in-care animal never being `BEFORE` the window. The uncovered remainder
-is defensive branches and the console printing.
+documented in `docs/`, so a test name reads as the rule it protects — the age
+cutoff falling in the lower group, a map being simultaneous rather than
+sequential, a still-in-care animal never being `BEFORE` the window. The
+uncovered remainder is defensive branches and the console printing.
 
 What the tests do **not** establish is that any config is *correct* for its
 shelter. Only `orange_county1.yaml` has been checked against a known-good
 result. A config is a set of claims about someone's data, and the way to check
 one is to read its statistics table.
+
+## License and citation
+
+MIT — see [LICENSE](LICENSE). Use it, change it, redistribute it, keep the
+notice, no warranty.
+
+`CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
+repository" button and Zenodo picks it up when minting a DOI. Cite the version
+number the run log reports, not "the GitHub repository": those are different
+claims, and only the first one is checkable. [More on publishing
+→](docs/reproducibility.md)

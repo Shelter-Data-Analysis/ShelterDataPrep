@@ -7,7 +7,7 @@
 # into a single stay, but the data does not make the pairing clear. Nothing
 # here attempts it, so an animal moved between facilities appears as two stays.
 
-# Gzipped working copy, kept outside any git repo (see orange_county.yaml) and
+# Gzipped working copy, kept outside any git repo (see orange_county2.yaml) and
 # shared with la_county_cats.yaml; original left in
 # OneDrive/Journal Physics LOS/PRA/LA County Open Data full database/
 #   Animal_Care_PawStats_Data 20241016.csv

@@ -3,7 +3,7 @@
 # Best-approximation port of stale/missionviejo.py. Not yet validated against
 # published results.
 
-# Gzipped working copy, kept outside any git repo (see orange_county.yaml);
+# Gzipped working copy, kept outside any git repo (see orange_county2.yaml);
 # original left in OneDrive/Journal Physics LOS/PRA/Mission Viejo/
 #   2016-Feb_2025 Intake Data _Dog-Cat.csv
 source_dir:   "../../_shelter_raw"
