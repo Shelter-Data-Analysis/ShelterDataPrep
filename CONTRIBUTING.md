@@ -15,7 +15,7 @@ identifier — Figshare, Zenodo, Dryad, an institutional repository:
 
 Then **cite ShelterDataPrep by the DOI of the version you actually used**, not
 by a link to the repository. A GitHub URL is not archival: the repository can
-be rewritten or deleted, and "the GitHub repository" and "version 0.2.0" are
+be rewritten or deleted, and "the GitHub repository" and "version 0.2.1" are
 different claims, of which only the second is checkable. The version to name is
 the one your run log reports.
 

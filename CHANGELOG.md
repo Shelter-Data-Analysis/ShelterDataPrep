@@ -8,12 +8,18 @@ reproduce. Anything that could move a number — a new or altered step type, a
 change to how a derived column is built, a change to what the ledger counts —
 is called out as such.
 
-This file starts at 0.2.0, the first version stamped in `shelterprep/version.py`.
+This file starts at 0.2.0, the first version stamped in
+`shelterprep/version.py`. There was no 0.1.x, and 0.2.0 was never tagged, so
+0.2.1 is the first release with an artifact behind it. Nothing before it was
+depended on by anyone.
 
-## Unreleased
+## 0.2.1 — 2026-08-10
 
-Nothing here moves a number: a run of any config produces byte-identical output
-to 0.2.0.
+Documentation, and one new example config. **No code changed**: `shelterprep/`
+is untouched apart from the version string, so a run of any config produces
+byte-identical output to 0.2.0. The version moves anyway, because the
+documentation is part of what a citation points at and it needs a number of its
+own.
 
 ### Added
 
@@ -55,9 +61,10 @@ Documentation defects, each of which could have cost someone a working run:
 
 ## 0.2.0 — 2026-08-01
 
-First version carrying a version number, and the first intended to be cited.
-It replaces the per-shelter scripts in `stale/`, which do not run under
-pandas 2 and are kept only for reference.
+Never tagged, so there is no artifact to cite for it; this entry is
+reconstructed from the commit history rather than written at the time. It
+replaces the per-shelter scripts in `stale/`, which do not run under pandas 2
+and are kept only for reference.
 
 ### The package
 
