@@ -70,7 +70,10 @@ steps:
   # _UNKNOWN_ is deliberately not cut here: it is a stay still in care.
   - cut: {night_sign: "-1"}
 
-  # Not a shelter stay: a request for disposal of an animal already dead.
+  # An administrative row rather than a stay. Which of your intake types are
+  # administrative is a claim about your shelter's vocabulary, and it is on you
+  # to establish it -- this one is copied from the Orange County config, where
+  # DISPO REQ is cut for that reason.
   - cut: {intake_type: [DISPO REQ]}
 
   # Adoption by a rescue partner is a transfer, not an adoption. Runs before
