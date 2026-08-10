@@ -71,6 +71,11 @@ against a stated environment.
 | [The statistics table](docs/statistics-table.md) | the ledger format — shared with mLOS, so the two files stack into one flow |
 | [Reproducibility and publishing](docs/reproducibility.md) | the run log, the digests, and what travels with a file into a paper |
 
+[CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
+prepared — deposit the extract, the settings and the result together, and cite
+the version you actually ran. [CHANGELOG.md](CHANGELOG.md) records what changed
+between versions, and flags anything that could move a number.
+
 ## The shipped configs
 
 | config | shelter | rows out | notes |
