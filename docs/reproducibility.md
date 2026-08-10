@@ -47,9 +47,14 @@ Four things, in the order a reviewer will want them:
    and the stats file is the exclusion history.
 2. **Archive a tagged release, not a branch.** A GitHub URL is not archival —
    the repository can be rewritten or deleted, so a bare link fails a data
-   availability statement. Tag a release and mint a DOI for it (Zenodo does
-   this from a GitHub release in one step), then cite the DOI and the version
-   number the run log records.
+   availability statement. Tag a release and mint a DOI for it, then cite the
+   DOI and the version number the run log records.
+
+   Zenodo does this from a GitHub release, but **enable the repository in
+   Zenodo before you tag**: the integration archives releases made after it is
+   switched on and does not reach back for earlier ones. A release tagged first
+   and remembered later has no DOI, which is the one thing this step exists to
+   prevent.
 3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
    public records; they belong in a repository with a persistent identifier,
    not in git history. That is why `source_dir` points outside this repo.

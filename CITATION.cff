@@ -2,10 +2,20 @@
 # GitHub reads this and shows a "Cite this repository" button; Zenodo reads it
 # when minting a DOI from a release.
 #
-####   On each tagged release, bump `version` and `date-released` to match, and
-####   add the `doi:` Zenodo mints for that release.  The version here should
-####   equal the one a run log reports, or the citation names software that did
-####   not produce the result.
+####   On each tagged release, bump `version` and `date-released` to match.
+####   The version here should equal the one a run log reports, or the citation
+####   names software that did not produce the result.
+#
+####   For `doi:`, use Zenodo's CONCEPT DOI -- the version-independent one that
+####   always resolves to the newest release -- not the DOI of a single release.
+####   A release's own DOI does not exist until that release is archived, by
+####   which point this file is already inside it, so it could only ever name
+####   the release before.  The concept DOI is stable, and `version` above is
+####   what says which release was actually run.
+#
+####   Enable the repository in Zenodo BEFORE tagging.  Zenodo archives
+####   releases made after it is switched on and does not reach back for
+####   earlier ones.
 
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
