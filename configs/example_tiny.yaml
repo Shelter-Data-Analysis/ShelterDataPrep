@@ -43,7 +43,7 @@ output_columns: [animal_id, intake_date, outcome_date, intake_type, outcome_type
 
 # --- column names ---------------------------------------------------------
 # canonical_name: name_in_file, and only ever in that direction. The fixture
-# already uses the canonical spelling for intake_type, outcome_type and
+# already uses the canonical spelling for intake_type, outcome_type, and
 # outcome_subtype, so only these four have to be declared.
 columns:
   animal_id:    "Animal ID"

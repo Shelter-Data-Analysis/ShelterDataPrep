@@ -88,8 +88,8 @@ steps:
 
   # Not redundant, though it ought to be. These 632 rows are reached by no
   # other cut: 460 RTO, 108 RTO-TMH, 36 ADOPTION, 15 transfer/foster, 1 EUTH,
-  # admitted as STRAY (280), STRAY OWN (282), CONFISCATE (39), FOSTER (30) and
-  # OWNER SUR (1). Every one of them would otherwise survive as an ordinary
+  # admitted as STRAY (280), STRAY OWN (282), CONFISCATE (39), FOSTER (30),
+  # and OWNER SUR (1). Every one of them would otherwise survive as an ordinary
   # stay.
   #
   # The reading is that kennel_no HOME/FOUND/LOST marks an animal that was
@@ -111,7 +111,7 @@ steps:
   # NONL = non-live.
   # INC  = still in care.
   #
-  # DOA, SURG SCHED, SURG WAIT, RESCU WAIT, RET 2 WILD, RTO-S and DELETE DUP
+  # DOA, SURG SCHED, SURG WAIT, RESCU WAIT, RET 2 WILD, RTO-S, and DELETE DUP
   # do not occur anywhere in the surviving dog rows; they are kept so that a
   # label reappearing in a future extract is mapped rather than passed through.
   #
@@ -222,7 +222,7 @@ steps:
   # same multi-day stay, and many such pairs are identical in every
   # output column. The same-day pairs are left alone -- a genuine in-and-out
   # can repeat within a day, and many such pairs disagree with each other
-  # about the outcome, so they are a judgement call for mLOS's duplicate-stay
+  # about the outcome, so they are a judgment call for mLOS's duplicate-stay
   # and overlapping-stay screens rather than for this pipeline.
   - dedup:                      # compare every output column
     where: {night_sign: "1"}    # only stays of at least one night

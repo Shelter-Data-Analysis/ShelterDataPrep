@@ -47,7 +47,7 @@ steps:
   - cut: {outcome_type: RETURN}
 
   # --- outcome_type -> the canonical mLOS codes ---------------------------
-  # EUTH-ASO, ESCAPED and RELOCATE were absent from the old table and so were
+  # EUTH-ASO, ESCAPED, and RELOCATE were absent from the old table and so were
   # silently dropped. Their meaning is not in doubt, so they are mapped.
   - map:
       outcome_type:

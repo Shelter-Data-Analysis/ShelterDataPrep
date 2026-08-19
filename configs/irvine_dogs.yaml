@@ -33,12 +33,12 @@ steps:
   # --- not shelter stays --------------------------------------------------
   # stale/irvine.py also listed "POLICE HOLD", but the data spells it
   # POLICEHOLD, so that filter never fired and those 381 rows were kept and
-  # classified as other. Kept here to match the behaviour you actually saw.
+  # classified as other. Kept here to match the behavior you actually saw.
   # Add POLICEHOLD to this list to apply the cut that was intended.
   - cut: {intake_type: [DEAD, DISPO REQ, EUTH REQ, SAFEKEEP]}
   - cut: {intake_cond: DEAD}
 
-  # DISPOSAL (448), DEAD (147) and EUTH OR (31) were in none of the old
+  # DISPOSAL (448), DEAD (147), and EUTH OR (31) were in none of the old
   # code's tables, so .map turned them into NaN and they were dropped
   # uncounted. Same outcome here, but counted.
   - cut: {outcome_type: [DISPOSAL, DEAD, EUTH OR]}

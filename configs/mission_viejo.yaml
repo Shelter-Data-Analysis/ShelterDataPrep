@@ -46,7 +46,7 @@ steps:
 
   - cut: {intake_type: QUARANTINE}
 
-  # MUTLAID, OWNER SURR and TRANS QT were coded X in stale/missionviejo.py.
+  # MUTLAID, OWNER SURR, and TRANS QT were coded X in stale/missionviejo.py.
   - cut: {outcome_type: [MUTLAID, "OWNER SURR", "TRANS QT"]}
 
   # --- outcome_type -> the canonical mLOS codes ---------------------------

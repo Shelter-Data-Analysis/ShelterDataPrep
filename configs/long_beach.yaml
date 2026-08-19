@@ -45,7 +45,7 @@ steps:
 
   # Both of these are 0 on the October 2024 extract: it is already dogs only
   # and already alive-on-intake only. Kept so that an extract which is not
-  # would be caught rather than quietly analysed.
+  # would be caught rather than quietly analyzed.
   - cut: {"Animal Type": [CAT, BIRD, OTHER, RABBIT, LIVESTOCK]}
   - cut: {intake_is_dead: "Dead on Intake"}
 
@@ -60,7 +60,7 @@ steps:
 
   # --- outcome_type -> the canonical mLOS codes ---------------------------
   # RETURN TO RESCUE was coded as return-to-owner in stale/longbeach.py.
-  # Returning an animal to the rescue organisation that placed it is other-live
+  # Returning an animal to the rescue organization that placed it is other-live
   # rather than community-live, so it goes to Transf. Only 8 rows either way.
   - map:
       outcome_type:
