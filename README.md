@@ -1,6 +1,6 @@
 # ShelterDataPrep
 
-Turns a raw animal shelter extract (CSV, gzipped CSV or Excel) into a tidy CSV,
+Turns a raw animal shelter extract (CSV, gzipped CSV, or Excel) into a tidy CSV,
 plus a statistics table recording exactly what every step removed or changed.
 
 A run is one YAML settings file:
@@ -72,7 +72,7 @@ against a stated environment.
 | [Reproducibility and publishing](docs/reproducibility.md) | the run log, the digests, and what travels with a file into a paper |
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
-prepared — deposit the extract, the settings and the result together, and cite
+prepared — deposit the extract, the settings, and the result together, and cite
 the version you actually ran. [CHANGELOG.md](CHANGELOG.md) records what changed
 between versions, and flags anything that could move a number.
 
@@ -95,7 +95,7 @@ Only `orange_county1.yaml` has been checked against a known-good result;
 statistics table and the analysis it feeds rather than against a prior file.
 **The other six are best-approximation ports of the modules in `stale/` and
 have not been validated against anything** — read their statistics tables
-before trusting a run. Places where a judgement was made, or where the old
+before trusting a run. Places where a judgment was made, or where the old
 code had a bug worth knowing about, are commented in the config itself.
 
 Every config except `example_tiny.yaml` reads an extract that is not

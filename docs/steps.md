@@ -7,7 +7,7 @@ columns the tool builds for you to filter on, and how blanks behave.*
 
 ## Steps
 
-The sequence is ordered and each entry is a cut, a map or a dedup.
+The sequence is ordered and each entry is a cut, a map, or a dedup.
 
 - **`cut:`** drops matching rows. Multiple columns are ANDed. Always a cut,
   never a pass.
@@ -51,7 +51,7 @@ A **same-day** repeat is a different matter — in and out in the morning, in an
 out again in the afternoon is physically possible. In the Orange County extract
 that intuition is borne out: of the 29 stays recorded twice, 19 of the 20
 multi-day pairs are identical (plain duplication), while 7 of the 9 same-day
-pairs *disagree with each other* about the outcome. Those are a judgement call,
+pairs *disagree with each other* about the outcome. Those are a judgment call,
 and they belong to the downstream analysis, which has its own duplicate-stay
 and overlapping-stay screens.
 
@@ -87,7 +87,7 @@ and `BEFORE` when it left before the window opened. `IN` is the default, so an
 animal still in care — no outcome date — is never `BEFORE`. It has not left.
 
 **Nothing is filtered automatically.** Over-age animals, impossible date
-orders and out-of-window stays are all removed by ordinary `cut:` steps you
+orders, and out-of-window stays are all removed by ordinary `cut:` steps you
 can see in the settings file, so each lands in the statistics table like
 everything else.
 
@@ -96,7 +96,7 @@ derives it from the two dates itself.
 
 ## Blanks
 
-Every non-date value is text, and blank, whitespace-only and missing all become
+Every non-date value is text, and blank, whitespace-only, and missing all become
 `_UNKNOWN_` — the same sentinel mLOS uses. Because it is an ordinary value, a
 cut or a map can name it and nothing downstream has to special-case NaN.
 

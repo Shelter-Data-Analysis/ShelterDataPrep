@@ -114,9 +114,9 @@ One rule, and the reason this package exists:
 > Every date-valued thing here is `datetime64[ns]`. Never `datetime.date`,
 > never a mix.
 
-`keep_time: false` (the default) normalises to midnight — the time is dropped,
+`keep_time: false` (the default) normalizes to midnight — the time is dropped,
 the dtype is not. `keep_time: true` preserves it. `nights` is computed from
-normalised values either way, so the switch can never shift a night count.
+normalized values either way, so the switch can never shift a night count.
 Dates become `YYYY-MM-DD` strings only at the moment they are written.
 
 **Format is always explicit.** Left to infer, pandas locks onto one format from

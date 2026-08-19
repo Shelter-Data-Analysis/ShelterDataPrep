@@ -7,9 +7,9 @@ internal detail.*
 [← ShelterDataPrep](../README.md)
 
 One row per stage, in execution order — the shape of a CONSORT flow diagram, so
-it can go into a supplement more or less as is. Reading, date parsing and the
-derived columns get rows too, so the chain of counts is continuous and a gap is
-visible rather than inferred.
+it can go into a supplement more or less as is. Reading, date parsing, and
+column derivation also get rows, so the chain of counts is continuous and a
+gap is visible rather than inferred.
 
 ```
  step     action        column  rows_in  rows_affected  rows_out  animal_id_in  animal_id_out
@@ -52,7 +52,7 @@ nothing, and now visibly so.
 Two things to read carefully:
 
 - **`role`** says which part of the step the value came from: `cut`, `map from`
-  (a key of the map table), `where` or `where_not`.
+  (a key of the map table), `where`, or `where_not`.
 - **`scope`** says what the count is over. For everything except `where_not`
   that is the rows the step cut or mapped. A `where_not` value cannot appear in
   a row the step touched — keeping it out is what the guard did — so those are
@@ -95,7 +95,7 @@ Two things to expect from a file this project did not write.
 The columns are the contract; what a writer puts in them is its own business.
 An extra column would break the concatenation, which is why mLOS keeps its
 internal stage names out of the file and identifies a stage the way this one
-does, by `action`, `column` and `detail`.
+does, by `action`, `column`, and `detail`.
 
 ---
 

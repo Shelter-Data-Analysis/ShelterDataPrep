@@ -28,7 +28,7 @@ own.
   It is meant to be copied as the starting point for a real config.
 - `docs/`, six audience-scoped documents split out of the README:
   `getting-started` (you have an extract from a shelter this repo has never
-  seen), `settings`, `steps`, `outputs`, `statistics-table` and
+  seen), `settings`, `steps`, `outputs`, `statistics-table`, and
   `reproducibility`. `docs/getting-started.md` is new writing — nothing
   previously walked a reader from their own extract to a first run.
 - `CONTRIBUTING.md` and this file.
@@ -71,7 +71,7 @@ and are kept only for reference.
 - A run is one YAML settings file, executed as
   `python3 -m shelterprep <config>` or through the installed `shelterprep`
   command. An unknown top-level key is an error rather than a warning.
-- Sources are CSV, gzipped CSV or Excel. CSVs are read as `utf-8-sig`, because
+- Sources are CSV, gzipped CSV, or Excel. CSVs are read as `utf-8-sig`, because
   two of the shipped extracts carry a byte-order mark. Only the columns a run
   needs are read.
 - Every date-valued thing is `datetime64[ns]`, never `datetime.date` and never
@@ -83,10 +83,10 @@ and are kept only for reference.
   columns that came out of the file. Nothing is filtered automatically:
   out-of-window stays and impossible date orders are removed by ordinary `cut:`
   steps that land in the ledger like every other exclusion.
-- Steps are an ordered sequence of `cut`, `map` and `dedup`, with `where:` /
+- Steps are an ordered sequence of `cut`, `map`, and `dedup`, with `where:` /
   `where_not:` guards. `map` was made simultaneous rather than sequential, and
   `dedup` keeps the last of each group.
-- Blank, whitespace-only and missing text all become `_UNKNOWN_` before any
+- Blank, whitespace-only, and missing text all become `_UNKNOWN_` before any
   step runs, so a filter can name a blank and nothing downstream special-cases
   NaN.
 
@@ -99,11 +99,11 @@ and are kept only for reference.
   what catches a misspelled label or a vocabulary that has drifted.
 - A summary of the finished set: every exported categorical column crossed
   against intake and outcome type, long rather than rectangular, with
-  frequencies and a length-of-stay distribution per cell including min, max and
+  frequencies and a length-of-stay distribution per cell including min, max, and
   p90.
 - A run log: source path, SHA-256 of the source's uncompressed contents,
   SHA-256 of the output, row count, the span the surviving rows cover, and the
-  version of Python, pandas, numpy, PyYAML and openpyxl.
+  version of Python, pandas, numpy, PyYAML, and openpyxl.
 
 ### Configs
 

@@ -6,7 +6,7 @@ travels with a prepared file into a paper.*
 [← ShelterDataPrep](../README.md)
 
 A run is deterministic: same settings, same source file, same output, with no
-sampling, no randomness and no dependence on the working directory or on the
+sampling, no randomness, and no dependence on the working directory or on the
 order of anything. So the run log is enough to reproduce it.
 
 ```
@@ -34,15 +34,15 @@ original the archive was made from. **`output sha256`** identifies the prepared
 file, so a copy that has been opened and re-saved by a spreadsheet announces
 itself instead of passing as the original.
 
-Library versions are recorded because pandas has changed the behaviour of date
-parsing, of `groupby` and of nullable integers across minor versions. "It ran
+Library versions are recorded because pandas has changed the behavior of date
+parsing, of `groupby`, and of nullable integers across minor versions. "It ran
 under pandas 2" is not a version.
 
 ## For a paper
 
 Four things, in the order a reviewer will want them:
 
-1. **The prepared file, its stats file and its run log travel together.** The
+1. **The prepared file, its stats file, and its run log travel together.** The
    data file alone cannot say where it came from; the run log is the provenance
    and the stats file is the exclusion history.
 2. **Archive a tagged release, not a branch.** A GitHub URL is not archival —

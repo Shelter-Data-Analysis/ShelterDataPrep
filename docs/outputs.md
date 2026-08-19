@@ -27,7 +27,7 @@ file is whatever a run asks for. What each of those columns *means* is fixed:
 Three conventions run through all of it:
 
 - **`_UNKNOWN_` is the only missing-value marker in a text column.** Blank,
-  whitespace and absent all become it, before any step runs. A cut or a map can
+  whitespace, and absent all become it, before any step runs. A cut or a map can
   name it, and nothing downstream special-cases NaN.
 - **A blank date is genuinely blank**, never `NaN` or `NaT` as text.
 - **One row is one stay**, not one animal. `animal_id_distinct` in the summary
@@ -76,16 +76,16 @@ and in a spreadsheet it is already a pivot table's source range.
 
 **Which tables are there.** One per exported categorical column — a third
 dimension crossed against the two type axes — plus the degenerate one that
-crosses the axes against each other, marked `field = _NONE_`. Dates, numbers
+crosses the axes against each other, marked `field = _NONE_`. Dates, numbers,
 and the `unique_report` identifiers are not categories and are skipped, as is
 any column with more than 50 distinct values. A run whose output columns are
-just IDs, dates and the two types gets the `_NONE_` table alone.
+just IDs, dates, and the two types gets the `_NONE_` table alone.
 
 **Partial sums** are in the same table, marked `_ALL_` in the dimension they
 collapse. `margin` counts how many of the two axes are collapsed, so:
 
 - `margin == 0` — the cells. **Filter on this before summing anything.**
-- `margin == 1` — one axis totalled: rows per intake type, or per outcome type.
+- `margin == 1` — one axis totaled: rows per intake type, or per outcome type.
 - `margin == 2` — both, i.e. the total for that field level (or the grand total
   in the `_NONE_` table).
 
