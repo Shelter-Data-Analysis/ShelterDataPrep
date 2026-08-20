@@ -27,8 +27,8 @@ keep_time:    false
 # admitted in 2017 and still resident in April 2018 does not appear at all.
 # Early 2018 therefore under-counts the population a length-of-stay study
 # cares about most -- the long stays. The bias decays as the pre-2018
-# admissions leave, and OC's move to a new facility in spring 2018 (when the shelter
-# almost emptied out) flushed most of them; by 1 June 2018 the resident
+# admissions leave, and OC's move to a new facility in spring 2018 (when the
+# shelter almost emptied out) flushed most of them; by 1 June 2018 the resident
 # population is one the extract can fully account for. From that date on, a
 # length-of-stay estimate is free of the downward bias from animals missing in
 # the file.
@@ -165,7 +165,7 @@ steps:
   # to mean something there. _UNKNOWN_ (no date of birth) already does. Fold
   # _NEGATIVE_ into it: a date of birth falling after the intake date means
   # the record is wrong, not that the animal is young, so the age is unknown.
-  # 140 rows.
+  # 140 rows, 132 of which the next step recovers from the size column.
   #
   # Done as a map rather than in the deriving code so that it stays visible
   # here and gets its own row in the statistics table. The two remain distinct
@@ -174,6 +174,14 @@ steps:
   #
   # Runs before animal_size, so the PUPPY rule below reads a settled column.
   - map: {age_group: {_NEGATIVE_: _UNKNOWN_}}
+
+  # Where one field is missing or impossible and another can stand in for it,
+  # use the stand-in. A PUPPY size says the animal is juvenile, so it supplies
+  # the age the date of birth failed to give: 133 rows, 132 of them the
+  # _NEGATIVE_ dates folded just above and 1 with no date of birth at all.
+  # Runs after the fold so that both kinds are caught.
+  - map: {age_group: {_UNKNOWN_: JUVENILE}}
+    where: {animal_size: PUPPY}
 
   # --- animal_size --------------------------------------------------------
   # 905-V and OPS are junk codes and KITTN is a cat that slipped the species
@@ -188,26 +196,25 @@ steps:
         UNKWN:  _UNKNOWN_
         KITTN:  _UNKNOWN_
 
-  # PUPPY is kept as a size, deliberately. It is not a mis-filed age: a puppy's
-  # eventual size often cannot be judged on intake, so the shelter records the
-  # one thing it knows. Take it as "size not yet determinable", which is a
-  # narrower and more useful statement than _UNKNOWN_ -- and since PUPPY would
-  # dominate _UNKNOWN_ anyway (4,591 rows against 269), folding it in would
-  # relabel the category rather than clean it.
+  # PUPPY is kept as a size, deliberately. A puppy's eventual size often cannot
+  # be judged on intake, so the shelter records the one thing it knows. Take it
+  # as "size not yet determinable", a narrower and more useful statement than
+  # _UNKNOWN_ -- and since PUPPY would dominate _UNKNOWN_ anyway (4,591 rows
+  # against 269), folding it in would relabel the category, not clean it.
   #
-  # After this map a PUPPY row is JUVENILE (4,360 rows) or _UNKNOWN_ (133), so
-  # animal_size and age_group agree wherever both are informative, and JUVENILE
-  # contains every PUPPY row of known age if the two are combined into a
-  # composite animal_group downstream. mLOS currently strata on animal_size
-  # alone (animal_group_columns: [animal_size]); if it takes up age_group too,
-  # this still holds.
+  # On this extract every surviving PUPPY row comes out JUVENILE (4,493 rows),
+  # so animal_size and age_group agree, and JUVENILE contains every PUPPY row
+  # if the two are combined into a composite animal_group downstream. mLOS
+  # currently strata on animal_size alone (animal_group_columns:
+  # [animal_size]); if it takes up age_group too, this still holds.
   #
-  # PUPPY is overridden only where the age says it cannot be true. Listed
-  # positively rather than as where_not: {age_group: JUVENILE}, because
-  # "not JUVENILE" also catches _UNKNOWN_, and for an animal with no usable
-  # date of birth PUPPY is the only age signal in the record -- discarding it
-  # would lose information rather than correct it. That distinction is worth
-  # 133 rows. NB: a new age group would have to be added to this list.
+  # PUPPY is overridden where the age says it cannot be true: 98 rows. The
+  # groups are listed positively rather than as where_not: {age_group:
+  # JUVENILE}, because "not JUVENILE" also catches _UNKNOWN_, and a PUPPY row
+  # with an unusable date of birth belongs in JUVENILE rather than stripped of
+  # its size -- which is what the age_group step above settles. Listing the
+  # groups keeps this step independent of that one. NB: a new age group would
+  # have to be added to this list.
   - map: {animal_size: {PUPPY: _UNKNOWN_}}
     where: {age_group: [YOUNG, ADULT, SENIOR]}
 

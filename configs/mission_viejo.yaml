@@ -87,6 +87,14 @@ steps:
         KITEN:  _UNKNOWN_
         905V:   _UNKNOWN_
 
+  # --- age_group ----------------------------------------------------------
+  # Where one field is missing or impossible and another can stand in for it,
+  # use the stand-in. A PUPPY size says the animal is juvenile, so it supplies
+  # the age the date of birth failed to give. This config keeps _NEGATIVE_ and
+  # _UNKNOWN_ distinct, so both are named.
+  - map: {age_group: {_NEGATIVE_: JUVENILE, _UNKNOWN_: JUVENILE}}
+    where: {animal_size: PUPPY}
+
   - cut: {night_sign: "-1"}
   - cut: {age_group: _OVER_}
 

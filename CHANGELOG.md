@@ -12,6 +12,19 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and 0.2.0 was never tagged, so
 0.2.1 is the first release with an artifact behind it.
 
+## Unreleased
+
+### Changed
+
+- `orange_county2.yaml` and `mission_viejo.yaml` take a `PUPPY` size as the
+  age when the date of birth cannot supply one. Where one field is missing or
+  impossible and another can stand in for it, the config uses the stand-in, as
+  an ordinary `map:` step that lands in the statistics table like every other
+  decision. **This moves a number** for a run that strata on `age_group`: 133
+  rows on OC2, 132 of them dates of birth falling after the intake date, and 2
+  on Mission Viejo. No row count changes, and a run using
+  `animal_group_columns: [animal_size]` is unaffected.
+
 ## 0.2.1 (2026-08-10)
 
 Documentation, and one new example config. **No code changed**: `shelterprep/`
