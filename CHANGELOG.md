@@ -30,6 +30,10 @@ This file starts at 0.2.0, the first version stamped in
   after the intake date says the record is wrong rather than that the animal
   is young. 12 rows on Long Beach and 4 on Mission Viejo, of which the PUPPY
   step recovers 1. Neither row count moves.
+- Install commands read `python3 -m pip` rather than `pip`, which installs
+  into the interpreter named on the same line whichever of `pip` and `pip3` a
+  system provides. A machine can carry one, the other, or neither, and the two
+  can belong to different interpreters.
 - `docs/steps.md` and `docs/outputs.md` say what `dedup:` does and does not
   settle: the bare form compares every output column, so widening the output
   narrows the step; naming the columns deduplicates harder; and same-day

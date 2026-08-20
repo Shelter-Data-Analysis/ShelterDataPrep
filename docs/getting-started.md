@@ -10,7 +10,7 @@ Six steps; the third and fourth take the real thought.
 ## 1. Check that the install works
 
 ```bash
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 python3 -m shelterprep configs/example_tiny.yaml
 ```
 
@@ -174,7 +174,7 @@ Errors are deliberate and name the thing that is wrong. The common ones:
 | `... does not have the column(s) this run needs` | the error lists what the file *does* contain; add a `columns:` entry mapping the canonical name to the file's spelling |
 | `step N names the column X, which does not exist` | a step column that is neither in the file nor derived. If it is a derived one, the message says what building it needs |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
-| `No module named 'openpyxl'` | an Excel source with a plain install. `pip install ".[excel]"` |
+| `No module named 'openpyxl'` | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
 | `N of M supplied value(s) unparseable` — in the stats table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
 
 ## What this does not tell you

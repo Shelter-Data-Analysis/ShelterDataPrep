@@ -63,9 +63,10 @@ The run log's `source sha256` is taken over the *uncompressed* contents, so
 compressing a file does not change its recorded identity.
 
 **Excel needs `openpyxl`**, which is an optional dependency: install with
-`pip install ".[excel]"` rather than plain `pip install .`. `sheet:` names the
-worksheet; omit it and the workbook must contain exactly one, or the run stops
-and tells you how many it found.
+`python3 -m pip install ".[excel]"` rather than a plain
+`python3 -m pip install .`. `sheet:` names the worksheet; omit it and the
+workbook must contain exactly one, or the run stops and tells you how many it
+found.
 
 **CSVs are read as `utf-8-sig`.** The Orange County and Long Beach exports
 carry a byte-order mark, which otherwise becomes part of the first column name
