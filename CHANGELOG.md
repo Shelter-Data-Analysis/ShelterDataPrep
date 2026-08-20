@@ -24,6 +24,13 @@ This file starts at 0.2.0, the first version stamped in
   rows on OC2, 132 of them dates of birth falling after the intake date, and 2
   on Mission Viejo. No row count changes, and a run using
   `animal_group_columns: [animal_size]` is unaffected.
+- `mission_viejo.yaml` exports `age_group`, so the repair above reaches a
+  consumer of the prepared file rather than stopping at the statistics table.
+  That export also puts an `age_group` table in the summary, and adds the
+  column to the bare `dedup:` comparison, which drops no rows there either
+  way. `orange_county1.yaml` builds `age_group` and does not export it, and
+  stays that way: it is frozen as a baseline. The remaining configs have no
+  date of birth, so they have no `age_group` to export.
 
 ## 0.2.1 (2026-08-10)
 

@@ -20,8 +20,10 @@ window_end_date:   2024-12-31
 dest_dir:   "../results"
 dest_file:  "MV_data.csv"
 
+# This export has both a size and a date of birth, so either can stratify.
+# Set animal_group_columns: [animal_size] or [age_group] in MV_settings.txt.
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type,
-                 animal_size]
+                 animal_size, age_group]
 
 # This export uses its own names throughout. Renaming happens on the way in,
 # so downstream sees the canonical names.
