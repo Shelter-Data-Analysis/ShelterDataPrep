@@ -9,12 +9,12 @@ two.*
 One row per stage, in execution order — the shape of a CONSORT flow diagram, so
 it can go into a supplement more or less as is. Reading, date parsing, and
 column derivation also get rows, so the chain of counts is continuous and a
-gap is visible rather than inferred.
+gap is visible rather than inferred. On the OC2 run:
 
 ```
  step     action        column  rows_in  rows_affected  rows_out  animal_id_in  animal_id_out
-    0       read           ...   192149              0    192149        105396         105396
-    1        cut   animal_type   192149         147385     44764        105396          33402
+    0       read           ...   192149              0    192149        160819         160819
+    1        cut   animal_type   192149         147385     44764        160819          37305
     2        cut  ...
 ```
 
@@ -31,7 +31,7 @@ Underneath the stage table, in the same file, sits a second one at a finer
 grain: **one row per value the settings name**, counted within the rows that
 step actually cut or mapped. A `section` column selects between them, and each
 section leaves the other's columns blank, so the file is still one CSV that
-`pd.read_csv` opens.
+`pd.read_csv` opens. Again on OC2:
 
 ```
  step action       column     role      value        scope  rows_affected  animal_id_affected

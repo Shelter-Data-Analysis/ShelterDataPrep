@@ -24,8 +24,8 @@ Two restrictions are deliberate: a cut takes no `where:` (add the column to the
 cut, which already requires every column to match), and a map takes one column
 (a statistics row describing two columns at once is ambiguous — use two steps).
 
-A step whose count comes out zero still earns its place: it catches a
-misspelled label, so retired values are worth leaving in the list.
+A step whose count comes out zero is still worth keeping: it catches a
+misspelled label, so retired values belong in the list.
 
 ## Deduplication is deliberately narrow
 
@@ -47,15 +47,15 @@ night** cannot both be real: an animal cannot be admitted twice on the same day
 for the same multi-day stay. Those are safe to collapse.
 
 A **same-day** repeat is a different matter — in and out in the morning, in and
-out again in the afternoon is physically possible. In the Orange County extract
-that intuition is borne out: of the 29 stays recorded twice, 19 of the 20
-multi-day pairs are identical (plain duplication), while 7 of the 9 same-day
-pairs *disagree with each other* about the outcome. Those are a judgment call,
+out again in the afternoon is physically possible. On the OC1 run that
+intuition is borne out: of the 29 stays recorded twice, 19 of the 20 multi-day
+pairs are identical (plain duplication), while 7 of the 9 same-day pairs
+*disagree with each other* about the outcome. Those are a judgment call,
 and they belong to the downstream analysis, which has its own duplicate-stay
 and overlapping-stay screens.
 
-So the `where:` clause carries the weight: without it, this step would collapse
-pairs that may be two genuine visits.
+So the `where:` clause matters: without it, this step would collapse pairs
+that may be two genuine visits.
 
 Which row survives matters only when the compared columns are a **subset**, so
 two matching rows can still differ elsewhere. There the **last** row is kept,

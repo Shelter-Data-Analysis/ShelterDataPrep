@@ -21,7 +21,7 @@ Four files come out, next to each other in `results/`:
 | file | contents |
 |---|---|
 | `OC2_data.csv` | the prepared data |
-| `OC2_data_stats.csv` | the processing ledger: one row per stage, then one row per value each step names |
+| `OC2_data_stats.csv` | the statistics table: one row per stage, then one row per value each step names |
 | `OC2_data_summary.csv` | descriptive statistics of the finished set: joint frequencies and length of stay |
 | `OC2_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
 
@@ -68,7 +68,7 @@ environment it ran in.
 | [The settings file](docs/settings.md) | every top-level key, the path rules, and how dates are handled |
 | [Steps and derived columns](docs/steps.md) | the `cut` / `map` / `dedup` grammar, and the columns the tool builds for you to filter on |
 | [The prepared file and the summary table](docs/outputs.md) | you have been handed a prepared CSV and need to know what its columns mean |
-| [The statistics table](docs/statistics-table.md) | the ledger format — shared with mLOS, so the two files stack into one flow |
+| [The statistics table](docs/statistics-table.md) | the format, shared with mLOS, the length-of-stay analysis this feeds |
 | [Reproducibility and publishing](docs/reproducibility.md) | the run log, the digests, and what travels with a file into a paper |
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
@@ -98,8 +98,8 @@ anything** — go through their statistics tables before trusting a run. Places
 where a judgment was made, or where the old code had a bug worth knowing
 about, are commented in the config itself.
 
-Every config except `example_tiny.yaml` reads an extract we cannot
-distribute, so running one means [supplying the file
+Every config except `example_tiny.yaml` reads an extract that stays outside
+the repository, so running one means [supplying the file
 yourself](docs/getting-started.md#2-put-your-extract-where-a-config-can-see-it).
 
 ## The statistics table
@@ -122,7 +122,7 @@ from shelterprep import load, Prep
 prep = Prep(load("configs/orange_county2.yaml"))
 prep.read().derive()          # frame now has nights, age_group, window_presence
 prep.apply_steps().write()
-prep.statistics.frame()       # the stage ledger as a DataFrame
+prep.statistics.frame()       # the stage table as a DataFrame
 prep.statistics.details()     # the by-value breakdown, on its own
 prep.statistics.report()      # both, stacked -- what gets written to the CSV
 

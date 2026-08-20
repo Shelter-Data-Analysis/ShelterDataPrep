@@ -82,11 +82,10 @@ when present and ignored when absent. Anything else a step or `output_columns`
 names is assumed to exist in the file under that exact name; if it does not,
 the run stops and the error lists what the file does contain.
 
-`columns:` renames file columns to canonical names, in that direction. The
-previous pipeline renamed *outward* (`outcome_date` became `outdate`,
-`outcome_type` became `outcome`) while leaving the originals in the frame, so
-two spellings of the same field circulated at once and different functions
-picked up different ones. Here the output keeps the canonical names.
+`columns:` renames file columns to canonical names, in that direction.
+Renaming outward as well would put two spellings of the same field in the frame
+at once — `outcome_date` beside `outdate` — with different functions reaching
+for different ones. The output keeps the canonical names.
 
 ## The study window
 

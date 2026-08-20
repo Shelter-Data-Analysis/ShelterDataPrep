@@ -63,7 +63,7 @@ unique_report: [animal_id]
 
 # --- ordered filter / map sequence ----------------------------------------
 # Value counts in the comments are for the 44,764 DOG rows of the 2025-10-02
-# extract. A step whose count comes out 0 still earns its place: it catches a
+# extract. A step whose count comes out 0 is still worth keeping: it catches a
 # misspelled label, so retired values are left in the list.
 steps:
   # Species first, then the window, so the window counts are about dogs.

@@ -25,9 +25,9 @@ keep_time:    false
 #
 # The extract is drawn *by intake date* and begins 2018-01-01, so an animal
 # admitted in 2017 and still resident in April 2018 does not appear at all.
-# Early 2018 therefore under-counts the population an LOS study cares about
-# most -- the long stays. The bias decays as the pre-2018 admissions
-# leave, and OC's move to a new facility in spring 2018 (when the shelter
+# Early 2018 therefore under-counts the population a length-of-stay study
+# cares about most -- the long stays. The bias decays as the pre-2018
+# admissions leave, and OC's move to a new facility in spring 2018 (when the shelter
 # almost emptied out) flushed most of them; by 1 June 2018 the resident
 # population is one the extract can fully account for. From that date on, a
 # length-of-stay estimate is free of the downward bias from animals missing in
@@ -70,7 +70,7 @@ age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 19}
 unique_report: [animal_id]
 
 # --- ordered filter / map sequence ----------------------------------------
-# A step whose count comes out 0 still earns its place: it catches a
+# A step whose count comes out 0 is still worth keeping: it catches a
 # misspelled label, so retired values are left in the list.
 steps:
   # Species first, then the window, so the window counts are about dogs.
@@ -86,7 +86,7 @@ steps:
 
   - cut: {intake_type: [DISASTER, BOARDING]}
 
-  # This cut still bites, though it ought to be redundant. These 632 rows are
+  # This cut still removes rows, though it ought to be redundant. These 632 are
   # reached by no other cut: 460 RTO, 108 RTO-TMH, 36 ADOPTION, 15 transfer or
   # foster, 1 EUTH, admitted as STRAY (280), STRAY OWN (282), CONFISCATE (39),
   # FOSTER (30), and OWNER SUR (1). Every one of them would otherwise survive
@@ -163,7 +163,7 @@ steps:
   # --- age_group ----------------------------------------------------------
   # age_group is an output column now, so its sentinels ship to mLOS and have
   # to mean something there. _UNKNOWN_ (no date of birth) already does. Fold
-  # _NEGATIVE_ into it: a date of birth falling after the intake date tells us
+  # _NEGATIVE_ into it: a date of birth falling after the intake date means
   # the record is wrong, not that the animal is young, so the age is unknown.
   # 140 rows.
   #
@@ -192,14 +192,15 @@ steps:
   # eventual size often cannot be judged on intake, so the shelter records the
   # one thing it knows. Take it as "size not yet determinable", which is a
   # narrower and more useful statement than _UNKNOWN_ -- and since PUPPY would
-  # dominate _UNKNOWN_ anyway (4,360 rows against 500), folding it in would
+  # dominate _UNKNOWN_ anyway (4,591 rows against 269), folding it in would
   # relabel the category rather than clean it.
   #
-  # Every PUPPY row is JUVENILE, so animal_size and age_group agree wherever
-  # both are informative and JUVENILE stays a proper superset of PUPPY if the
-  # two are ever combined into a composite animal_group downstream. mLOS
-  # currently strata on animal_size alone (animal_group_columns:
-  # [animal_size]); if it takes up age_group too, this still holds.
+  # After this map a PUPPY row is JUVENILE (4,360 rows) or _UNKNOWN_ (133), so
+  # animal_size and age_group agree wherever both are informative, and JUVENILE
+  # contains every PUPPY row of known age if the two are combined into a
+  # composite animal_group downstream. mLOS currently strata on animal_size
+  # alone (animal_group_columns: [animal_size]); if it takes up age_group too,
+  # this still holds.
   #
   # PUPPY is overridden only where the age says it cannot be true. Listed
   # positively rather than as where_not: {age_group: JUVENILE}, because

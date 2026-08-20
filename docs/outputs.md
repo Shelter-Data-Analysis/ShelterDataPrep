@@ -42,7 +42,8 @@ file](settings.md#dates).
 
 ## The summary table
 
-The ledger says what came out. `OC2_data_summary.csv` says what is left: every
+The statistics table says what came out. `OC2_data_summary.csv` says what is
+left: every
 exported categorical column crossed against intake type and outcome type, with
 length of stay in each cell. It is a convenience for whoever gets the prepared
 file; the analysis works from the prepared CSV.
@@ -56,7 +57,7 @@ file; the analysis works from the prepared CSV.
 animal_size     LARGE       STRAY         LCOM       0   6617                6144          6617        21.34           0         1.0            6.0        17.0        52.0         616
 ```
 
-**Long, not rectangular.** A contingency table written as a grid needs a header
+**One row per cell.** A contingency table written as a grid needs a header
 row *and* a header column, which one CSV cannot carry for several tables at
 once and which neither pandas nor R reads back without being told how. One row
 per cell, dimensions in named columns, goes straight into all three:

@@ -3,8 +3,8 @@
 # Run with:  python3 -m shelterprep configs/example_tiny.yaml
 #
 # This config works on a fresh clone, because its source file is small enough
-# to live in the repository; the others read real extracts we cannot
-# distribute. Its purpose is to show that an install works and to be copied as
+# to live in the repository; the others read real extracts that stay outside
+# it. Its purpose is to show that an install works and to be copied as
 # the starting point for a real config. A real config earns each of its steps
 # against its own shelter's data, and says why in a comment; see
 # configs/orange_county2.yaml.
@@ -58,9 +58,9 @@ age_groups: {JUVENILE: 1, YOUNG: 4, ADULT: 9, SENIOR: 18}
 unique_report: [animal_id]
 
 # --- ordered filter / map sequence ----------------------------------------
-# A step whose count comes out 0 still earns its place: it catches a misspelled
-# label, so retired values are left in the list. BIRD below is one -- named,
-# matching nothing, and visibly so in the by-value breakdown.
+# A step whose count comes out 0 is still worth keeping: it catches a
+# misspelled label, so retired values are left in the list. BIRD below is one
+# -- named, matching nothing, and visibly so in the by-value breakdown.
 steps:
   - cut: {animal_type: [CAT, BIRD]}
 

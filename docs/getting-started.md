@@ -121,7 +121,7 @@ vocabulary. Two habits are worth adopting from the start:
 The full grammar — `cut`, `map`, `dedup`, and the `where:` guards — is in
 [steps and derived columns](steps.md).
 
-## 6. Run it, then read the ledger
+## 6. Run it, then read the statistics table
 
 ```bash
 python3 -m shelterprep configs/my_shelter.yaml

@@ -5,14 +5,14 @@ Notable changes to ShelterDataPrep, newest first.
 The version that matters for a result is the one its run log reports, so an
 entry here is worth reading against the log of the run you are trying to
 reproduce. Anything that could move a number — a new or altered step type, a
-change to how a derived column is built, a change to what the ledger counts —
+change to how a derived column is built, a change to what the table counts —
 is called out as such.
 
 This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and 0.2.0 was never tagged, so
 0.2.1 is the first release with an artifact behind it.
 
-## 0.2.1 — 2026-08-10
+## 0.2.1 (2026-08-10)
 
 Documentation, and one new example config. **No code changed**: `shelterprep/`
 is untouched apart from the version string, so a run of any config produces
@@ -58,7 +58,7 @@ Documentation defects, each of which could have cost someone a working run:
 - Five configs pointed at `orange_county.yaml`, renamed in 0.2.0. They now
   point at `orange_county2.yaml`, where the reasoning they refer to lives.
 
-## 0.2.0 — 2026-08-01
+## 0.2.0 (2026-08-01)
 
 Never tagged, so there is no artifact to cite for it; this entry is
 reconstructed from the commit history rather than written at the time. It
@@ -81,7 +81,7 @@ and are kept only for reference.
   `age_group` — are built before any step runs, so they filter and map like
   columns that came out of the file. Filtering happens in the steps you write:
   out-of-window stays and impossible date orders are removed by ordinary `cut:`
-  steps that land in the ledger like every other exclusion.
+  steps that land in the statistics table like every other exclusion.
 - Steps are an ordered sequence of `cut`, `map`, and `dedup`, with `where:` /
   `where_not:` guards. `map` was made simultaneous rather than sequential, and
   `dedup` keeps the last of each group.
