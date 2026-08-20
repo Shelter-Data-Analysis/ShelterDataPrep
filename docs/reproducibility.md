@@ -43,8 +43,8 @@ under pandas 2" is not a version.
 Four things, in the order a reviewer will want them:
 
 1. **The prepared file, its statistics table, and its run log travel
-   together.** The data file alone cannot say where it came from; the run log
-   is the provenance and the statistics table is the exclusion history.
+   together.** The prepared file alone cannot say where it came from; the run
+   log is the provenance and the statistics table is the exclusion history.
 2. **Archive a tagged release, not a branch.** A GitHub URL is not archival —
    the repository can be rewritten or deleted, so a bare link fails a data
    availability statement. Tag a release and mint a DOI for it, then cite the

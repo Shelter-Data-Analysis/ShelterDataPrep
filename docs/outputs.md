@@ -41,7 +41,7 @@ These conventions run through all of it:
   [deduplication](steps.md#deduplication-is-deliberately-narrow).
 
 The observed levels of every categorical column, for a given run, are
-enumerated in that run's summary file — so a reader can see the whole
+enumerated in that run's summary table — so a reader can see the whole
 vocabulary without opening the data.
 
 How the derived columns are built is in [steps and derived

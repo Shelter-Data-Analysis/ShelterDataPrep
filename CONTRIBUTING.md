@@ -29,7 +29,7 @@ different claims, of which only the second is checkable. Your run log reports
 the version to name.
 
 Those three files plus the version are the whole reproduction. Someone with
-them can rebuild your prepared data byte for byte and see every row you
+them can rebuild your prepared file byte for byte and see every row you
 excluded and why.
 
 More on what travels with a file into a paper: [docs/reproducibility.md](docs/reproducibility.md).

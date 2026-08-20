@@ -20,7 +20,7 @@ Four files come out, next to each other in `results/`:
 
 | file | contents |
 |---|---|
-| `OC2_data.csv` | the prepared data |
+| `OC2_data.csv` | the prepared file |
 | `OC2_data_stats.csv` | the statistics table: one row per stage, then one row per value each step names |
 | `OC2_data_summary.csv` | descriptive statistics of the finished set: joint frequencies and length of stay |
 | `OC2_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
