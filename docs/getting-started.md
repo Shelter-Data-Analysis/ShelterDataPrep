@@ -134,7 +134,7 @@ succeeds is not finished. It is finished when you have gone through
 Three checks, in order:
 
 1. **The `parse_dates` rows.** Any non-zero count is dates your `date_format`
-   could not parse. They became blanks, and a blank `outcome_date` counts
+   could not parse. They became blanks, and a blank `outcome_date` reads
    downstream as "still in care".
 2. **The by-value breakdown, for zeros.** A value at zero is either a retired
    label you kept on purpose or a value you misspelled. The breakdown raises
@@ -152,7 +152,7 @@ Both are why the statistics table exists.
 - **A step that affects 0 rows.** Often correct — a retired label kept as a
   safeguard — but also exactly what a misspelled value looks like. The by-value
   breakdown names every value at zero.
-- **An unparseable date.** It becomes `NaT`, and for `outcome_date` that counts
+- **An unparseable date.** It becomes `NaT`, and for `outcome_date` that reads
   downstream as "still in care". The `parse_dates` row distinguishes the two.
 
 The second one is live in the example config, if you want to see it: row `A013`

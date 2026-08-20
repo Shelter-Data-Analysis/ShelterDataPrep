@@ -13,7 +13,7 @@ file is whatever a run asks for. The meaning of each column is fixed:
 | column | type | values |
 |---|---|---|
 | `animal_id` | text | as in the source. Not unique — an animal with repeat stays has one row per stay |
-| `intake_date` | `YYYY-MM-DD` | populated in practice; a row whose intake date failed to parse shows blank |
+| `intake_date` | `YYYY-MM-DD` | blank where the intake date failed to parse; the shipped configs cut those rows at the window step |
 | `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, either still in care or never recorded |
 | `intake_type` | text | the source vocabulary, as rewritten by the `map:` steps in the config |
 | `outcome_type` | text | likewise. The shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` for mLOS |

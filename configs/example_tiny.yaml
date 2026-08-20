@@ -63,7 +63,10 @@ unique_report: [animal_id]
 # matching nothing, and visibly so in the by-value breakdown.
 steps:
   - cut: {animal_type: [CAT, BIRD]}
-  - cut: {window_presence: [BEFORE, AFTER]}
+
+  # _UNKNOWN_ is a row with no parseable intake date: no stay can be placed
+  # against the window, and nights cannot be computed either. 0 rows here.
+  - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
 
   # An outcome date before the intake date is a data error, not a stay.
   # _UNKNOWN_ stays in: it is a stay still in care.

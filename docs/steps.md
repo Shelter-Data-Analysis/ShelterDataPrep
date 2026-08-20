@@ -83,7 +83,9 @@ is `_NEGATIVE_` (a data error, kept distinct from a missing `dob`, which is
 
 `window_presence` is `AFTER` when the animal arrived after the window closed
 and `BEFORE` when it left before the window opened. `IN` is the default, so an
-animal still in care — no outcome date — stays `IN`. It has not left.
+animal still in care — no outcome date — stays `IN`. It has not left. A row
+with no parseable *intake* date is `_UNKNOWN_`: it cannot be placed against the
+window at all, and every shipped config cuts it there.
 
 **Filtering happens in the steps you write.** Over-age animals, impossible date
 orders, and out-of-window stays are removed by ordinary `cut:` steps in the

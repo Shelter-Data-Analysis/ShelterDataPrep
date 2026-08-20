@@ -133,7 +133,7 @@ ambiguous days. Whatever still fails to parse is **counted**, on its own
 
 **A date that fails to parse becomes `NaT`, which downstream is
 indistinguishable from a date that was never recorded** — for `outcome_date`
-that counts as "still in care". The `parse_dates` row of the statistics table
+that reads as "still in care". The `parse_dates` row of the statistics table
 catches it, so it is worth looking at before trusting a run. A row in that
 state shows in the frame as `outcome_type` set to something real while
 `night_sign` is `_UNKNOWN_`; the old pipeline repaired it by assuming the

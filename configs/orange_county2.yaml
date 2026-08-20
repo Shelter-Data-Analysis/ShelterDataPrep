@@ -172,7 +172,7 @@ steps:
   # upstream because they are different sentences in a methods section, and a
   # future run can decide differently without a code change.
   #
-  # Runs before animal_size, so the PUPPY rule below sees a settled column.
+  # Runs before animal_size, so the PUPPY rule below reads a settled column.
   - map: {age_group: {_NEGATIVE_: _UNKNOWN_}}
 
   # --- animal_size --------------------------------------------------------
