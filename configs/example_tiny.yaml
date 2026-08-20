@@ -1,5 +1,7 @@
 # A runnable example, over the 15-row fixture in tests/fixtures/
 #
+# Shelter database: none -- the fixture is synthetic
+#
 # Run with:  python3 -m shelterprep configs/example_tiny.yaml
 #
 # This config works on a fresh clone, because its source file is small enough

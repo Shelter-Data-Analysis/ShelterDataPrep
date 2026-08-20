@@ -1,5 +1,7 @@
 # Orange County Animal Care -> mLOS input
 #
+# Shelter database: Chameleon
+#
 # Produces results/OC2_data.csv from the raw public-records extract.
 # Run with:  python3 -m shelterprep configs/orange_county2.yaml
 #

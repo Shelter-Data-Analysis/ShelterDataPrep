@@ -1,5 +1,7 @@
 # Irvine Animal Care Center, dogs -> mLOS input
 #
+# Shelter database: Chameleon
+#
 # Best-approximation port of stale/irvine.py. Not yet validated against
 # published results; treat the maps as a starting point, and read the
 # statistics table before trusting a run.

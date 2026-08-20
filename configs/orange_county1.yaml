@@ -1,5 +1,7 @@
 # Orange County Animal Care -> mLOS input
 #
+# Shelter database: Chameleon
+#
 # Superseded by orange_county2.yaml, which produces the mLOS default. This is
 # the first definition, kept and frozen so the dataset behind earlier results
 # can still be rebuilt and compared against. It was called orange_county.yaml,

@@ -19,7 +19,7 @@ runs on a fresh clone with no data of your own. It prints a statistics table
 and writes four files into `results/`. If that worked, everything below is
 editing.
 
-Look at what it printed before moving on — it is the same table you will be
+Look at what it printed before moving on: it is the same table you will be
 reading about your own data in step 6, at a size you can check by hand against
 [tests/fixtures/tiny.csv](../tests/fixtures/tiny.csv).
 
@@ -39,8 +39,8 @@ your-projects/
     └── shelterprep/
 ```
 
-Nothing forces this layout — `source_dir` can point anywhere — but it is the
-layout `../../_shelter_raw` in the shipped configs assumes, and it keeps a
+Nothing forces this layout, since `source_dir` can point anywhere. But this is
+the layout `../../_shelter_raw` assumes in the shipped configs. It keeps a
 config machine-independent, so a colleague with the same two directories runs
 your config unchanged.
 
@@ -50,9 +50,16 @@ the recorded identity does not change.
 
 ## 3. Start from the nearest shipped config
 
-Copy the one whose shelter most resembles yours, and edit it down. A blank
-file starts you without the comments explaining *why* each step exists — the
-part worth inheriting.
+Copy the one whose shelter most resembles yours, and edit it down. Copying is
+helpful, because a blank file would miss the comments that explain *why* each
+step exists.
+
+A good candidate is one whose extract comes from the same shelter database as
+yours — Chameleon, Shelterluv, and others. The initial shelter set, added in
+2026, all read Chameleon exports, which is an accident of geography rather than
+an endorsement, so the guideposts below key on the content of the raw file
+instead of on the database behind it. Each config names its own on a
+`# Shelter database:` line in its header.
 
 | if your extract… | start from |
 |---|---|
@@ -64,10 +71,10 @@ part worth inheriting.
 | uses its own column names throughout | `mission_viejo.yaml` |
 | you just want the smallest thing that runs | `example_tiny.yaml` |
 
-Then set the four paths at the top — `source_dir`, `source_file`, `dest_dir`,
-`dest_file` — and delete the comments that describe someone else's shelter.
-They are specific, and leaving them in place is how a config comes to claim
-something untrue about your data.
+Next, set the four paths at the top — `source_dir`, `source_file`, `dest_dir`,
+`dest_file` — name your own database on the `# Shelter database:` line, and
+delete the comments that describe someone else's shelter. They are specific,
+and a config that keeps them claims something untrue about your data.
 
 ## 4. Name your columns
 
@@ -84,7 +91,7 @@ columns:
 ```
 
 The fastest way through this is to run the config and let it fail. The error
-lists every column your file *does* contain, which is usually faster than
+lists every column your file *does* contain, which is usually easier than
 opening a 70 MB extract to look:
 
 ```
@@ -103,25 +110,32 @@ Then set `date_format`. `ISO8601` covers `YYYY-MM-DD` with or without a time;
 
 ## 5. Say what to exclude
 
-Exclusions are ordinary `cut:` steps you can see, so each lands in the
-statistics table and can be quoted in a methods section. Out-of-window stays,
-impossible date orders, and animals with no recorded outcome are all removed by
-steps you write.
+Exclusions are ordinary `cut:` steps: you can see each one, each lands in the
+statistics table, and each can be quoted in a research paper's methods.
+Out-of-window stays, impossible date orders, and animals with no recorded
+outcome are all removed by steps you write.
 
 Work from the inherited steps and change the values to your shelter's
-vocabulary. Two habits are worth adopting from the start:
+vocabulary. Three habits are worth adopting from the start:
 
-- **Order matters, and it is about the counts.** Cutting species first and the
-  window second means the window's count is about dogs. Reversed, it is about
-  everything. Both are defensible; only one matches the sentence you will write.
-- **Leave retired values in the list.** A value that matches nothing costs one
-  row of zeros in the by-value breakdown, and it catches the label coming back
-  in next year's extract.
+- **Order sometimes affects the content of the prepared file.** Re-mapping
+  `X-LRG` to `LARGE` and then cutting on `LARGE` gives one result. Swap the two
+  and you get another. Treat the steps as a sequence.
+- **Order almost always affects the counts in the statistics table.** Cutting
+  species first and the window second means the window's count is about dogs.
+  Reversed, it is about everything. Both are defensible; only one matches the
+  description you give in a report.
+- **Leave retired values in the list,** if they existed before at this shelter
+  or exist at similar ones. A value that matches nothing costs one row of zeros
+  in the by-value breakdown, and it catches the label resurfacing in another
+  year's extract.
 
 The full grammar — `cut`, `map`, `dedup`, and the `where:` guards — is in
 [steps and derived columns](steps.md). Look at the `dedup:` part before you
-inherit one: it collapses only what is unambiguous, so near-duplicate stays
-reach your analysis intact, and widening `output_columns` narrows it further.
+inherit one: it collapses only what is unambiguous, so **near-duplicate stays
+reach your analysis intact**. The wider the set of `output_columns`, the
+narrower the scope of deduplication, unless you name the columns in the
+`dedup:` step yourself.
 
 ## 6. Run it, then read the statistics table
 
@@ -131,21 +145,21 @@ python3 -m shelterprep configs/my_shelter.yaml
 
 Four files land in `results/`, and the statistics table also prints to the
 console (`-q` suppresses that; the file is written either way). A run that
-succeeds is not finished. It is finished when you have gone through
-`<name>_stats.csv`, which tells you whether the config says what you meant.
-Three checks, in order:
+succeeds is not finished. You need to go through `<name>_stats.csv` and
+confirm that the config says what you meant, and did it. Four checks, in
+order:
 
 1. **The `parse_dates` rows.** Any non-zero count is dates your `date_format`
    could not parse. They became blanks, and a blank `outcome_date` reads
    downstream as "still in care".
 2. **The by-value breakdown, for zeros.** A value at zero is either a retired
-   label you kept on purpose or a value you misspelled. The breakdown raises
-   the question; only you can settle it.
+   label you kept on purpose or a value you misspelled. That is a question for
+   you to answer.
 3. **`rows_out` at the end.** Against your own expectation of roughly how many
-   stays this shelter has. A step that removed ten times what you expected is
-   visible here.
-
-Then open the summary file if you want the shape of what survived.
+   stays this shelter has. If a step removed three times what you expected, you
+   need to investigate.
+4. **The summary table.** Check the shape of what survived. You know the
+   shelter and its data, and can judge whether the result makes sense.
 
 ## The two failures that pass silently
 
@@ -161,12 +175,12 @@ The second one is live in the example config, if you want to see it: row `A013`
 of [tests/fixtures/tiny.csv](../tests/fixtures/tiny.csv) has an outcome date of
 `not a date` and an outcome type of `ADOPTION`. In `results/EX_data.csv` it
 comes out with a real outcome type and a blank outcome date — an animal the
-file now says was adopted and never left. The `parse_dates` line of the stats
-file carries the one row that says so.
+file now says was adopted but never left. The `parse_dates` line of the
+statistics table carries a row that says this.
 
 ## When it stops
 
-Errors are deliberate and name the thing that is wrong. The common ones:
+Error reporting is deliberate and names what is wrong. The common ones:
 
 | message | what to do |
 |---|---|
@@ -175,16 +189,16 @@ Errors are deliberate and name the thing that is wrong. The common ones:
 | `step N names the column X, which does not exist` | a step column that is neither in the file nor derived. If it is a derived one, the message says what building it needs |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
 | `No module named 'openpyxl'` | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
-| `N of M supplied value(s) unparseable` — in the stats table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
+| `N of M supplied value(s) unparseable` — in the statistics table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
 
 ## What this does not tell you
 
 That your config is *correct* for your shelter. Nothing here can. A config is a
-set of claims about someone's data — that `DISPO REQ` is an administrative row,
-that a blank outcome means still in care — and you check one against what you
-know about how that shelter records things, using its statistics table. Of the
-configs shipped here, one has been checked against a previous result; the
-rest are best-approximation ports, and say so.
+set of claims about someone's data, things like: `DISPO REQ` is an
+administrative row; a blank outcome means still in care. Check these against
+your knowledge of shelter recordkeeping, using the statistics table. Of the
+configs shipped here, only one has been checked against a previous result. The
+rest are best-approximation ports, and declare themselves that way.
 
 ---
 

@@ -1,5 +1,7 @@
 # LA County Animal Care & Control, dogs -> mLOS input
 #
+# Shelter database: Chameleon
+#
 # Best-approximation port of stale/losangelescounty.py. Not yet validated
 # against published results.
 #

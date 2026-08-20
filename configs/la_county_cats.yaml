@@ -1,5 +1,7 @@
 # LA County Animal Care & Control, cats -> mLOS input
 #
+# Shelter database: Chameleon
+#
 # Best-approximation port of stale/ladogcat.py. Same source file and the same
 # maps as la_county_dogs.yaml; only the species cut and the window differ.
 # Not yet validated against published results.
