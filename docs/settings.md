@@ -46,11 +46,11 @@ columns](steps.md).
 
 `source_dir` and `dest_dir` are relative, and resolve against the settings file
 rather than the working directory, so a run means the same thing from anywhere.
-The shipped configs keep to relative paths, so a clone of this repo next to a
-`_shelter_raw/` directory runs as written.
 
-They read `../../_shelter_raw` — a sibling of the repo, which keeps the
-extracts outside git — and write to `../results`.
+The shipped configs keep to relative paths, so a clone of this repo next to a
+`_shelter_raw/` directory runs as written. They read `../../_shelter_raw` — a
+sibling of the repo, which keeps the extracts outside git — and write to
+`../results`.
 
 ## The source file
 
@@ -58,42 +58,48 @@ CSV or Excel, decided by the file extension.
 
 **Gzipped CSVs need no setting.** pandas reads `.csv.gz` transparently, so
 `source_file: "OC_raw.csv.gz"` works like the uncompressed name, and the
-shipped configs use that form — a real extract is large enough to be worth it.
-The run log's `source sha256` is taken over the *uncompressed* contents, so
-compressing a file does not change its recorded identity.
+shipped configs use that form. A real extract is large enough to be worth
+compressing. The run log's `source sha256` is a digest that fingerprints the
+file; it is taken over the *uncompressed* contents, so compressing a file does
+not change its recorded identity.
 
-**Excel needs `openpyxl`**, which is an optional dependency: install with
-`python3 -m pip install ".[excel]"` rather than a plain
-`python3 -m pip install .`. `sheet:` names the worksheet; omit it and the
-workbook must contain exactly one, or the run stops and tells you how many it
+**Reading Excel needs `openpyxl`**, which is an optional dependency. Install
+with `python3 -m pip install ".[excel]"` rather than a plain
+`python3 -m pip install .`.
+
+`sheet:` names the **Excel worksheet**. If it is omitted, the workbook must
+contain exactly one sheet; otherwise the run stops and tells you how many it
 found.
 
 **CSVs are read as `utf-8-sig`.** The Orange County and Long Beach exports
 carry a byte-order mark, which otherwise becomes part of the first column name
 and makes every lookup on it fail.
 
-Only the columns a run actually needs are read, which keeps a 70 MB extract
-cheap.
+Only the columns a run actually needs are read, which costs little: a wide
+extract, which is the common case, is still read from disk, but only the needed
+columns are built into the frame. When obtaining data, ask for as many columns
+as are available, so that a later run can serve a new need without re-acquiring
+the raw data.
 
 ## Columns
 
 Five canonical fields must resolve to a column in the file: `animal_id`,
-`intake_date`, `outcome_date`, `intake_type`, `outcome_type`. `dob` is used
-when present and ignored when absent. Anything else a step or `output_columns`
-names is assumed to exist in the file under that exact name; if it does not,
-the run stops and the error lists what the file does contain.
+`intake_date`, `outcome_date`, `intake_type`, `outcome_type`. `dob` (date of
+birth) is used when present and ignored when absent. Anything else a step or
+`output_columns` names is assumed to exist in the file under that exact name;
+if it does not, the run stops and the error lists what the file does contain.
 
-`columns:` renames file columns to canonical names, in that direction.
-Renaming outward as well would put two spellings of the same field in the frame
-at once — `outcome_date` beside `outdate` — with different functions reaching
-for different ones. The output keeps the canonical names.
+`columns:` maps each canonical name to the one column in your file that carries
+it, and the rename happens on the way in. Renaming outward as well would leave
+two spellings of the same field in the frame at once, with different functions
+reaching for different ones. The output keeps the canonical names.
 
 ## The study window
 
 `window_start_date` and `window_end_date` are an optional pair — both or
 neither. They do not filter anything by themselves. They build the
 `window_presence` column, and an ordinary `cut:` step removes what you want
-removed, so the count lands in the statistics table like every other exclusion.
+removed. The count lands in the statistics table like every other exclusion.
 
 The rule is overlap, not intake date: a stay is `BEFORE` when it ended before
 the window opened and `AFTER` when it began after the window closed. See
@@ -102,23 +108,29 @@ the window opened and `AFTER` when it began after the window closed. See
 ## age_groups and unique_report
 
 `age_groups` maps a name to the upper cutoff of that band, in years at intake,
-and builds `age_group`. `unique_report` names the identifier columns the
-statistics table counts distinctly — normally just `animal_id`, which gives
-every stage an animal count alongside its row count.
+and builds `age_group`.
+
+`unique_report` names the identifier columns the statistics table counts
+distinctly. Usually just `animal_id`, which gives every stage an animal count
+alongside its row count.
 
 ## Dates
 
-One rule, and the reason this package exists:
+The package follows a simple rule on datetimes:
 
 > Every date-valued thing here is `datetime64[ns]`, from parse to write.
 
-`keep_time: false` (the default) normalizes to midnight — the time is dropped,
-the dtype is not. `keep_time: true` preserves it. `nights` is computed from
-normalized values either way, so the switch leaves a night count unchanged.
-Dates become `YYYY-MM-DD` strings at the moment they are written.
+The stale pipeline mixed `datetime.date` with `datetime64`, and pandas 2
+refuses to compare the two.
 
-**You state the format.** Left to infer, pandas locks onto one format from the
-first non-null value and silently coerces everything else to `NaT`:
+`keep_time: false` (the default) normalizes to midnight, effectively dropping
+the time without changing the data type. `keep_time: true` preserves time
+information. `nights` is computed from normalized values either way, so the
+switch leaves a night count unchanged. Dates become `YYYY-MM-DD` strings at the
+moment they are written.
+
+**You state the datetime format.** Left to infer, pandas locks onto one format
+from the first non-null value and silently coerces everything else to `NaT`:
 
 ```python
 >>> s = pd.Series(["2018-01-01 14:30:00", "2018-03-02"])
@@ -126,20 +138,23 @@ first non-null value and silently coerces everything else to `NaT`:
 [Timestamp('2018-01-01 14:30:00'), NaT]
 ```
 
-That row would leave the study with no warning. `ISO8601` accepts both
-spellings; `mixed` also accepts US-style `m/d/Y`, at the cost of guessing on
-ambiguous days. Whatever still fails to parse is **counted**, on its own
-`parse_dates` row in the statistics table.
+The second value is a perfectly ordinary date, and inference turns it into
+`NaT`: pandas locked onto the first value's format, which carried a time. In a
+real extract, it is a stay whose date has quietly gone blank, with nothing
+printed to say so. Stating `ISO8601` accepts both spellings instead; `mixed`
+also accepts US-style `m/d/Y`, at the cost of guessing on ambiguous days.
+Whatever still fails to parse is **counted**, on its own `parse_dates` row in
+the statistics table.
 
-**A date that fails to parse becomes `NaT`, which downstream is
-indistinguishable from a date that was never recorded** — for `outcome_date`
-that reads as "still in care". The `parse_dates` row of the statistics table
-catches it, so it is worth looking at before trusting a run. A row in that
-state shows in the frame as `outcome_type` set to something real while
-`night_sign` is `_UNKNOWN_`; the stale pipeline repaired it by assuming the
-animal left the day it arrived (`stale/_PhysicsSubs.py:28-30`). That repair
-has no equivalent here, because a cut or a map cannot rewrite a date. Adding
-it would take a new feature rather than a settings change.
+**A date that fails to parse becomes `NaT`**, which downstream is
+indistinguishable from a **date absent altogether** — for `outcome_date` that
+reads as "still in care". The `parse_dates` row of the statistics table catches
+it. **Look at it before trusting a run.** A row in that state shows in the
+frame as `outcome_type` set to something real while `night_sign` is
+`_UNKNOWN_`; the stale pipeline repaired it by assuming the animal left the day
+it arrived (`stale/_PhysicsSubs.py:28-30`). That repair was only a guess and
+has no equivalent here, because a cut or a map cannot rewrite a date. Adding it
+would take a new feature rather than a settings change.
 
 ---
 
