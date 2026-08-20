@@ -3,7 +3,7 @@
 # Best-approximation port of stale/losangelescounty.py. Not yet validated
 # against published results.
 #
-# Noted in the old module: internal transfers (TRANS_INT) ought to be bridged
+# Noted in the stale module: internal transfers (TRANS_INT) ought to be bridged
 # into a single stay, but the data does not make the pairing clear. The
 # pairing is left alone, so an animal moved between facilities is two stays.
 
@@ -54,7 +54,7 @@ steps:
   # OUTCOME_TYPE was the placeholder UNK9999999 (1,344 rows file-wide).
   #
   # On this extract the step reports 0, and that is the right answer: all
-  # 1,344 of those rows already have a blank OUTCOME_TYPE_GROUP, so the old
+  # 1,344 of those rows already have a blank OUTCOME_TYPE_GROUP, so the stale
   # line was rewriting a blank to a blank. Kept as a tripwire -- if a later
   # extract does populate the group for a placeholder outcome, this fires and
   # the count says so instead of the row being scored as a real outcome.

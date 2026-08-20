@@ -60,7 +60,7 @@ steps:
         TRANSFER:  Transf
         EUTH:      NonL
         DIED:      NonL
-        MISSING:   NonL      # absent from the old table, so dropped uncounted
+        MISSING:   NonL      # absent from the stale table, dropped uncounted
         _UNKNOWN_: InCare
 
   - map:
@@ -80,7 +80,7 @@ steps:
 
   # --- animal_size --------------------------------------------------------
   # KITEN is a cat that slipped the species column and 905V is a junk code.
-  # The old sizeTrans() dispatched on the first letter and folded both into
+  # The stale sizeTrans() dispatched on the first letter and folded both into
   # Medium; here they are named and counted.
   - map:
       animal_size:

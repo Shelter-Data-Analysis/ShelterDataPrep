@@ -139,9 +139,9 @@ and are kept only for reference.
 
 Eight, one per shelter and species. `orange_county2.yaml` is the mLOS default;
 `orange_county.yaml` was retired to `orange_county1.yaml` and frozen as a
-baseline. Only `orange_county1.yaml` has been checked against a known-good
-result — the ports of the `stale/` modules have not been validated against
-anything, and say so in the config and in the README.
+baseline. Only `orange_county1.yaml` was manually derived and checked against
+a previous result — the ports of the stale pipeline's modules have not been
+validated against anything, and say so in the config and in the README.
 
 `SURG SCHED` and `SURG WAIT` map to `INC` rather than `LCOM`: both name an
 animal waiting on surgery, which is a state inside the shelter, not a way of

@@ -34,7 +34,7 @@ keep_time:    false
 # sequence, so narrowing the study period is a one-line edit here and the rows
 # it costs are counted in the statistics table rather than being invisible.
 #
-# For reference, the old stale/orangecounty.py carried sampleStart 2018-07-01
+# For reference, stale/orangecounty.py carried sampleStart 2018-07-01
 # and sampleEnd 2024-10-19, which on this extract costs 9,264 rows; mLOS's own
 # period_dates are narrower still, 2019-01-01 to 2022-10-01.
 window_start_date: 2018-01-01
@@ -75,9 +75,9 @@ steps:
   - cut: {intake_cond: [DEAD, HEAD TEST]}
   - cut: {kennel_no: [FOUND, HOME, HOME EXP, LOST]}
 
-  # DISPOSAL is body disposal, not an outcome of a stay. The old code was of
-  # two minds about it -- filterRawData cut it while getOutCodes mapped it to
-  # non-live -- and orangecounty.py:142-145 flagged that contradiction as a
+  # DISPOSAL is body disposal, not an outcome of a stay. The stale module was
+  # of two minds about it -- filterRawData cut it while getOutCodes mapped it
+  # to non-live -- and orangecounty.py:142-145 flagged that contradiction as a
   # known source of divergence from the R tool. Resolved here, once: it is cut.
   - cut: {outcome_type: [DOA, DISPOSAL, DELETE DUP, HOME EXP, FOUND EXP, LOST EXP,
                          SURG SCHED, SURG WAIT]}
@@ -91,8 +91,9 @@ steps:
   # LiveC = community live (returned to owner, adopted).
   # Transf = other live (transfer, foster, return to field).
   # NonL   = non-live.
-  # RTO-S appears 3 times and was in none of the old code's tables, so the old
-  # pipeline mapped it to NaN and dropped it without counting. Named here.
+  # RTO-S appears 3 times and was in none of the stale module's tables, so the
+  # stale pipeline mapped it to NaN and dropped it without counting. Named
+  # here.
   - map:
       outcome_type:
         ADOPTION:   LiveC
@@ -127,7 +128,7 @@ steps:
 
   # --- animal_size --------------------------------------------------------
   # 905-V and OPS are junk codes and KITTN is a cat that slipped the species
-  # filter. The old sizeTrans() dispatched on the first letter and folded all
+  # filter. The stale sizeTrans() dispatched on the first letter and folded all
   # three silently into Medium; here they are named and counted.
   - map:
       animal_size:

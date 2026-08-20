@@ -3,7 +3,7 @@
 # Best-approximation port of stale/longbeach.py. Not yet validated against
 # published results.
 #
-# Noted in the old module: the shelter ended its relationship with SPCA-LA
+# Noted in the stale module: the shelter ended its relationship with SPCA-LA
 # during the covered period, which shows up in the transfer stream.
 
 # Gzipped working copy, kept outside any git repo (see orange_county2.yaml);

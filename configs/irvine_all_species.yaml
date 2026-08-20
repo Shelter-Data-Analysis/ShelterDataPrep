@@ -41,13 +41,13 @@ steps:
   - cut: {outcome_type: [DISPOSAL, DEAD, EUTH OR]}
 
   # RETURN (73) is genuinely ambiguous -- return to owner, or to a rescue?
-  # The old code had no entry for it, so it was dropped uncounted. Same
+  # The stale module had no entry for it, so it was dropped uncounted. Same
   # decision here, made visible. Move it into the map below if you can settle
   # what it means.
   - cut: {outcome_type: RETURN}
 
   # --- outcome_type -> the canonical mLOS codes ---------------------------
-  # EUTH-ASO, ESCAPED, and RELOCATE were absent from the old table and so were
+  # EUTH-ASO, ESCAPED, and RELOCATE were absent from the stale table and were
   # silently dropped. Their meaning is clear, so they are mapped.
   - map:
       outcome_type:

@@ -183,7 +183,7 @@ That your config is *correct* for your shelter. Nothing here can. A config is a
 set of claims about someone's data — that `DISPO REQ` is an administrative row,
 that a blank outcome means still in care — and you check one against what you
 know about how that shelter records things, using its statistics table. Of the
-configs shipped here, one has been validated against a known-good result; the
+configs shipped here, one has been checked against a previous result; the
 rest are best-approximation ports, and say so.
 
 ---

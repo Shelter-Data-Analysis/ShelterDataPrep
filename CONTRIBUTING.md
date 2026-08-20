@@ -31,8 +31,8 @@ That is the contribution this repository most wants, and there is no process
 for it yet. [docs/getting-started.md](docs/getting-started.md) sets out what a
 config needs to be worth shipping: every step commented with what it claims
 about that shelter's vocabulary, and a statistics table you have gone
-through. Say plainly whether it has been validated against a known-good
-result — most of the shipped configs have not, and say so.
+through. Say plainly whether it has been checked against a previous result —
+most of the shipped configs have not, and say so.
 
 ## If you have found a bug
 

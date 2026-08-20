@@ -70,8 +70,8 @@ names columns, not values, so there is no set to split.
 
 ## Other tools writing this table
 
-The format is shared. mLOS, the length-of-stay analysis downstream, records its
-own screening in these columns, so the two files stack:
+The format is shared. mLOS, the length-of-stay analysis tool downstream,
+records its own screening in these columns, so the two files stack:
 one `read_csv` each, one `concat`, and you have a single flow from the raw
 extract to the rows the models ran on. The chain joins at the handoff, because
 the `write` row here and mLOS's `read` row are the same frame counted twice.

@@ -185,7 +185,7 @@ steps:
 
   # --- animal_size --------------------------------------------------------
   # 905-V and OPS are junk codes and KITTN is a cat that slipped the species
-  # filter. The old sizeTrans() dispatched on the first letter and folded all
+  # filter. The stale sizeTrans() dispatched on the first letter and folded all
   # three silently into Medium; here they are named and counted.
   - map:
       animal_size:

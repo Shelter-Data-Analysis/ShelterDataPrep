@@ -135,7 +135,7 @@ indistinguishable from a date that was never recorded** — for `outcome_date`
 that reads as "still in care". The `parse_dates` row of the statistics table
 catches it, so it is worth looking at before trusting a run. A row in that
 state shows in the frame as `outcome_type` set to something real while
-`night_sign` is `_UNKNOWN_`; the old pipeline repaired it by assuming the
+`night_sign` is `_UNKNOWN_`; the stale pipeline repaired it by assuming the
 animal left the day it arrived (`stale/_PhysicsSubs.py:28-30`). That repair
 has no equivalent here, because a cut or a map cannot rewrite a date. Adding
 it would take a new feature rather than a settings change.
