@@ -89,6 +89,15 @@ steps:
         RETURN:                  OTHER
         FOSTER:                  OTHER
 
+  # --- age_group ----------------------------------------------------------
+  # age_group is an output column, so its sentinels ship to mLOS and have to
+  # mean something there. _UNKNOWN_ (no date of birth) already does. Fold
+  # _NEGATIVE_ into it: a date of birth falling after the intake date means
+  # the record is wrong, not that the animal is young, so the age is unknown.
+  # 12 rows. This export carries no size column, so nothing can stand in for
+  # the age here the way a PUPPY size does in orange_county2.yaml.
+  - map: {age_group: {_NEGATIVE_: _UNKNOWN_}}
+
   - cut: {night_sign: "-1"}
   - cut: {age_group: _OVER_}
 

@@ -24,6 +24,12 @@ This file starts at 0.2.0, the first version stamped in
   rows on OC2, 132 of them dates of birth falling after the intake date, and 2
   on Mission Viejo. No row count changes, and a run using
   `animal_group_columns: [animal_size]` is unaffected.
+- `long_beach.yaml` and `mission_viejo.yaml` fold `age_group` `_NEGATIVE_`
+  into `_UNKNOWN_`, as `orange_county2.yaml` already did, so the three configs
+  that export the column ship the same vocabulary. A date of birth falling
+  after the intake date says the record is wrong rather than that the animal
+  is young. 12 rows on Long Beach and 4 on Mission Viejo, of which the PUPPY
+  step recovers 1. Neither row count moves.
 - `mission_viejo.yaml` exports `age_group`, so the repair above reaches a
   consumer of the prepared file rather than stopping at the statistics table.
   That export also puts an `age_group` table in the summary, and adds the

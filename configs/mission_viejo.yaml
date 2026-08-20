@@ -90,11 +90,17 @@ steps:
         905V:   _UNKNOWN_
 
   # --- age_group ----------------------------------------------------------
+  # age_group is an output column, so its sentinels ship to mLOS and have to
+  # mean something there. _UNKNOWN_ (no date of birth) already does. Fold
+  # _NEGATIVE_ into it: a date of birth falling after the intake date means
+  # the record is wrong, not that the animal is young, so the age is unknown.
+  # 4 rows, 1 of which the next step recovers from the size column.
+  - map: {age_group: {_NEGATIVE_: _UNKNOWN_}}
+
   # Where one field is missing or impossible and another can stand in for it,
   # use the stand-in. A PUPPY size says the animal is juvenile, so it supplies
-  # the age the date of birth failed to give. This config keeps _NEGATIVE_ and
-  # _UNKNOWN_ distinct, so both are named.
-  - map: {age_group: {_NEGATIVE_: JUVENILE, _UNKNOWN_: JUVENILE}}
+  # the age the date of birth failed to give. 2 rows.
+  - map: {age_group: {_UNKNOWN_: JUVENILE}}
     where: {animal_size: PUPPY}
 
   - cut: {night_sign: "-1"}
