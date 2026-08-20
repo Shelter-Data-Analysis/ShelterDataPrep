@@ -258,7 +258,7 @@ def test_dedup_drops_a_repeated_multi_night_stay(tmp_path):
 
 def test_dedup_leaves_a_repeated_same_day_stay_alone(tmp_path):
     # An animal really can come in and go out twice in one day, so this pair
-    # is a judgement call for the downstream analysis, not for us.
+    # is a judgment call for the downstream analysis, not for us.
     prep = prepared(tmp_path, steps=[{"dedup": None, "where": {"night_sign": "1"}}],
                     **_twice(tmp_path, "2020-03-01", "2020-03-01"))
     assert list(prep.frame.animal_id).count("D001") == 2

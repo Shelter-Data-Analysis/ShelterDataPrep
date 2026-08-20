@@ -9,11 +9,10 @@ columns the tool builds for you to filter on, and how blanks behave.*
 
 The sequence is ordered and each entry is a cut, a map, or a dedup.
 
-- **`cut:`** drops matching rows. Multiple columns are ANDed. Always a cut,
-  never a pass.
+- **`cut:`** drops matching rows, and multiple columns must all match.
 - **`map:`** rewrites values in exactly one column. `where:` / `where_not:`
-  restrict which rows it applies to; both are ANDs of columns, and `where_not`
-  negates the whole conjunction.
+  restrict which rows it applies to; both take several columns at once, and
+  `where_not` negates the whole conjunction.
 - **`dedup:`** keeps the **last** of each group of rows matching across the
   listed columns — or across every output column if none are listed — and cuts
   the earlier ones. Takes `where:` / `where_not:` like a map.
@@ -22,11 +21,11 @@ A scalar is accepted anywhere a set is meant (`intake_cond: DEAD` is
 `[DEAD]`). Values compare as text, so `night_sign: "-1"` matches.
 
 Two restrictions are deliberate: a cut takes no `where:` (add the column to the
-cut, which already ANDs), and a map takes one column (a statistics row
-describing two columns at once cannot be read unambiguously — use two steps).
+cut, which already requires every column to match), and a map takes one column
+(a statistics row describing two columns at once is ambiguous — use two steps).
 
-A step whose count comes out zero is not dead weight. It is how a misspelled
-label gets caught, so retired values are worth leaving in place.
+A step whose count comes out zero still earns its place: it catches a
+misspelled label, so retired values are worth leaving in the list.
 
 ## Deduplication is deliberately narrow
 
@@ -55,7 +54,7 @@ pairs *disagree with each other* about the outcome. Those are a judgment call,
 and they belong to the downstream analysis, which has its own duplicate-stay
 and overlapping-stay screens.
 
-So the `where:` clause is not a detail. Without it this step would collapse
+So the `where:` clause carries the weight: without it, this step would collapse
 pairs that may be two genuine visits.
 
 Which row survives matters only when the compared columns are a **subset**, so
@@ -67,7 +66,7 @@ one earlier in the file is dropped").
 ## Derived columns
 
 Built after the dates are parsed and before any step runs, so they filter and
-map exactly like columns that came out of the file.
+map like columns that came out of the file.
 
 | column | |
 |---|---|
@@ -84,12 +83,12 @@ is `_NEGATIVE_` (a data error, kept distinct from a missing `dob`, which is
 
 `window_presence` is `AFTER` when the animal arrived after the window closed
 and `BEFORE` when it left before the window opened. `IN` is the default, so an
-animal still in care — no outcome date — is never `BEFORE`. It has not left.
+animal still in care — no outcome date — stays `IN`. It has not left.
 
-**Nothing is filtered automatically.** Over-age animals, impossible date
-orders, and out-of-window stays are all removed by ordinary `cut:` steps you
-can see in the settings file, so each lands in the statistics table like
-everything else.
+**Filtering happens in the steps you write.** Over-age animals, impossible date
+orders, and out-of-window stays are removed by ordinary `cut:` steps in the
+settings file, so each lands in the statistics table like every other
+exclusion.
 
 `nights` is nights, not length of stay. mLOS defines `LOS = nights + 1` and
 derives it from the two dates itself.
@@ -98,7 +97,8 @@ derives it from the two dates itself.
 
 Every non-date value is text, and blank, whitespace-only, and missing all become
 `_UNKNOWN_` — the same sentinel mLOS uses. Because it is an ordinary value, a
-cut or a map can name it and nothing downstream has to special-case NaN.
+cut or a map can name it, and downstream code can treat it like any other
+value.
 
 ---
 

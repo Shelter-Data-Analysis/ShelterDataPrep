@@ -4,8 +4,8 @@
 # against published results.
 #
 # Noted in the old module: internal transfers (TRANS_INT) ought to be bridged
-# into a single stay, but the data does not make the pairing clear. Nothing
-# here attempts it, so an animal moved between facilities appears as two stays.
+# into a single stay, but the data does not make the pairing clear. The
+# pairing is left alone, so an animal moved between facilities is two stays.
 
 # Gzipped working copy, kept outside any git repo (see orange_county2.yaml) and
 # shared with la_county_cats.yaml; original left in
@@ -14,7 +14,7 @@
 source_dir:   "../../_shelter_raw"
 source_file:  "LA_raw.csv.gz"
 
-# NOT ISO. This export writes "2021/09/14 07:00:00+00" -- slashes, and an
+# Not ISO: this export writes "2021/09/14 07:00:00+00" -- slashes, and an
 # offset on every value. That parses to a timezone-aware column, which
 # shelterprep converts back to plain datetime64 by keeping the UTC wall clock.
 # The offsets are 07:00/08:00, i.e. local midnight, so the calendar date is

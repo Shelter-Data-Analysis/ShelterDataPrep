@@ -4,8 +4,6 @@
 # maps as la_county_dogs.yaml; only the species cut and the window differ.
 # Not yet validated against published results.
 
-# The same extract la_county_dogs.yaml reads; only the species cut and the
-# window differ between the two configs.
 source_dir:   "../../_shelter_raw"
 source_file:  "LA_raw.csv.gz"
 
@@ -40,7 +38,7 @@ steps:
 
   # The UNK9999999 placeholder rule; see la_county_dogs.yaml. Reports 0 on
   # this extract, because those rows already have a blank outcome group.
-  # Kept as a tripwire against a later extract that does not.
+  # Kept as a tripwire against a later extract that populates it.
   - map:
       outcome_type:
         ADOPTION:     _UNKNOWN_

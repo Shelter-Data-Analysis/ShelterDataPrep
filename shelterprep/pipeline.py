@@ -403,7 +403,7 @@ def _environment():
     """The interpreter and libraries this run actually used.
 
     Recorded because a result is only reproducible against a stated
-    environment: pandas has changed the behaviour of date parsing, of groupby
+    environment: pandas has changed the behavior of date parsing, of groupby
     and of nullable integers across minor versions, and "it ran under pandas 2"
     is not a version.  Optional libraries are listed as absent rather than
     omitted, so the line means the same thing whether or not they were needed.

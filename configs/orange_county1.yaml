@@ -10,10 +10,10 @@
 #
 # The companion mLOS/data/OC1_settings.yaml expects outcome_type in
 # {LiveC, Transf, NonL, InCare} and reads animal_size as animal_group, so the
-# maps below have to land on exactly those labels.
+# maps below have to land on those labels.
 #
-# Nothing here should change. An edit makes the baseline disagree with the
-# numbers it was recorded against, which is the one thing it exists to rule out.
+# The settings here are frozen. An edit makes the baseline disagree with the
+# numbers it was recorded against.
 
 # --- source ---------------------------------------------------------------
 # Gzipped working copy of the raw extract, in a directory alongside this
@@ -44,9 +44,9 @@ window_end_date:   2025-10-03
 # Relative paths are resolved against this settings file, not the working
 # directory, so the run means the same thing from anywhere.
 #
-# Results land in ShelterDataPrep/results/, which is gitignored. A run never
-# writes into mLOS: copying a prepared file across is a separate, conscious
-# decision, not a side effect of re-running the prep.
+# Results land in ShelterDataPrep/results/, which is gitignored. Copying a
+# prepared file across to mLOS is a separate, conscious decision, so re-running
+# the prep leaves that copy as it was.
 dest_dir:   "../results"
 dest_file:  "OC1_data.csv"
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type, animal_size]
@@ -63,14 +63,14 @@ unique_report: [animal_id]
 
 # --- ordered filter / map sequence ----------------------------------------
 # Value counts in the comments are for the 44,764 DOG rows of the 2025-10-02
-# extract. A step whose count comes out 0 is not dead weight: it is how a
-# misspelled label gets caught, so retired values are left in place.
+# extract. A step whose count comes out 0 still earns its place: it catches a
+# misspelled label, so retired values are left in the list.
 steps:
   # Species first, then the window, so the window counts are about dogs.
   - cut: {animal_type: [CAT, BIRD, OTHER, LIVESTOCK]}
   - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
 
-  # --- administrative rows that are not shelter stays ---------------------
+  # --- administrative rows -----------------------------------------------
   - cut: {intake_type: [DISPO REQ, EUTH REQ, WILD, SURGERY, FOUND, LOST]}
   - cut: {intake_cond: [DEAD, HEAD TEST]}
   - cut: {kennel_no: [FOUND, HOME, HOME EXP, LOST]}

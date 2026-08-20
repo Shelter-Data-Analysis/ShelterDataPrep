@@ -10,7 +10,7 @@ columns through ``.dt.date`` and then compared the result against
 
     TypeError: Invalid comparison between dtype=datetime64[ns] and date
 
-Normalising to midnight keeps the dtype uniform while discarding the time,
+Normalizing to midnight keeps the dtype uniform while discarding the time,
 which is what "a date with no time attached" ought to mean in pandas.  Values
 only leave this representation at the very end, in `to_iso`, on their way to
 the output file.
@@ -71,7 +71,7 @@ def _drop_timezone(parsed, values, date_format):
     if isinstance(parsed.dtype, pd.DatetimeTZDtype):
         return parsed.dt.tz_localize(None)
     if parsed.dtype == object:
-        # Mixed offsets: normalise to UTC first, then drop the zone.
+        # Mixed offsets: normalize to UTC first, then drop the zone.
         coerced = pd.to_datetime(values, format=date_format,
                                  errors="coerce", utc=True)
         return coerced.dt.tz_localize(None)
@@ -91,7 +91,7 @@ def to_timestamp(value):
 def nights_between(start, end):
     """Whole nights from *start* to *end*, as nullable ``Int64``.
 
-    Both sides are normalised first, so enabling ``keep_time`` can never shift
+    Both sides are normalized first, so enabling ``keep_time`` can never shift
     a night count.  ``Int64`` rather than ``int`` because an animal still in
     care has no outcome date, and that absence must stay distinguishable from
     a stay of zero nights.

@@ -1,7 +1,7 @@
 # ShelterDataPrep
 
 Turns a raw animal shelter extract (CSV, gzipped CSV, or Excel) into a tidy CSV,
-plus a statistics table recording exactly what every step removed or changed.
+plus a statistics table recording what each step removed or changed.
 
 A run is one YAML settings file:
 
@@ -25,9 +25,9 @@ Four files come out, next to each other in `results/`:
 | `OC2_data_summary.csv` | descriptive statistics of the finished set: joint frequencies and length of stay |
 | `OC2_data_run.txt` | provenance: source path, SHA-256, versions, timestamp |
 
-`results/` is gitignored, and a run writes nowhere else. Handing a prepared
-file to the downstream analysis is a copy you make deliberately, not something
-that happens because you re-ran the prep.
+`results/` is gitignored. Handing a prepared file to the downstream analysis
+is a copy you make deliberately, so re-running the prep leaves that copy as it
+was.
 
 `-q` suppresses the console table; the files are written either way. Installing
 the package also puts a `shelterprep` command on your path, so
@@ -42,8 +42,8 @@ pip install -r requirements.txt
 python3 -m shelterprep configs/example_tiny.yaml
 ```
 
-Run from the repository root, which is where `configs/` and `shelterprep/` are.
-Or install it properly, so `shelterprep` works from anywhere:
+Run from the repository root, where `configs/` and `shelterprep/` live. Or
+install it properly, so `shelterprep` works from anywhere:
 
 ```bash
 pip install .
@@ -56,9 +56,9 @@ leaves out `openpyxl`, and an Excel source will fail without it:
 pip install ".[excel]"
 ```
 
-Everything else is pandas and PyYAML. `pytest` is only needed to run the tests.
-The run log records the version of each, because a result is only reproducible
-against a stated environment.
+Everything else is pandas and PyYAML; `pytest` runs the tests. The run log
+records the version of each, because reproducing a result means stating the
+environment it ran in.
 
 ## Documentation
 
@@ -90,25 +90,25 @@ between versions, and flags anything that could move a number.
 | `la_county_dogs.yaml` | LA County, dogs | 97,990 | offset-stamped dates; large blank-outcome share |
 | `la_county_cats.yaml` | LA County, cats | 76,402 | same file and maps as the dogs config |
 
-Only `orange_county1.yaml` has been checked against a known-good result;
+`orange_county1.yaml` has been checked against a known-good result.
 `orange_county2.yaml` is a deliberate revision of it, reviewed against its own
-statistics table and the analysis it feeds rather than against a prior file.
-**The other six are best-approximation ports of the modules in `stale/` and
-have not been validated against anything** — read their statistics tables
-before trusting a run. Places where a judgment was made, or where the old
-code had a bug worth knowing about, are commented in the config itself.
+statistics table and the analysis it feeds. **The rest are best-approximation
+ports of the modules in `stale/` and have not been validated against
+anything** — go through their statistics tables before trusting a run. Places
+where a judgment was made, or where the old code had a bug worth knowing
+about, are commented in the config itself.
 
-Every config except `example_tiny.yaml` reads an extract that is not
-distributable, so running one means [supplying the file
+Every config except `example_tiny.yaml` reads an extract we cannot
+distribute, so running one means [supplying the file
 yourself](docs/getting-started.md#2-put-your-extract-where-a-config-can-see-it).
 
 ## The statistics table
 
 One row per stage, in execution order — the shape of a CONSORT flow diagram, so
 it can go into a supplement more or less as is. Underneath it, in the same
-file, one row per value the settings name, which is what makes a step that cut
-nothing visible. The format is shared with mLOS, so the two files stack into a
-single flow from the raw extract to the rows the models ran on.
+file, one row per value the settings name, which makes a step that cut nothing
+visible. The format is shared with mLOS, so the two files stack into a single
+flow from the raw extract to the rows the models ran on.
 
 **[Full specification →](docs/statistics-table.md)**
 
@@ -130,14 +130,13 @@ from shelterprep import summary
 summary.summarize(prep.frame, prep.settings)   # the descriptive tables
 ```
 
-`Prep(load(path)).run()` is the whole thing, and is what the command line calls.
+The command line calls `Prep(load(path)).run()`, which is the whole thing.
 
 ## Scope
 
-Preparation only: read, derive, filter and map, write. The weekly-cumulative
+Preparation only: read, derive, filter, map, and write. The weekly-cumulative
 "physics" (`getCumulative`, `AnimDays`, the 17-week differencing) stays in
-`stale/`, unported. `stale/` is kept for reference and does not run under
-pandas 2.
+`stale/`, unported and kept for reference; it does not run under pandas 2.
 
 ## Tests
 
@@ -146,15 +145,14 @@ python3 -m pytest tests/ -q
 ```
 
 83 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
-documented in `docs/`, so a test name reads as the rule it protects — the age
+documented in `docs/`, so a test name states the rule it protects — the age
 cutoff falling in the lower group, a map being simultaneous rather than
-sequential, a still-in-care animal never being `BEFORE` the window. The
-uncovered remainder is defensive branches and the console printing.
+sequential, a still-in-care animal staying `IN` the window. The uncovered
+remainder is defensive branches and the console printing.
 
-What the tests do **not** establish is that any config is *correct* for its
-shelter. Only `orange_county1.yaml` has been checked against a known-good
-result. A config is a set of claims about someone's data, and the way to check
-one is to read its statistics table.
+The tests do **not** establish that a config is *correct* for its shelter. A
+config is a set of claims about someone's data, and you check one by going
+through its statistics table.
 
 ## License and citation
 

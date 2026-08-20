@@ -1,20 +1,19 @@
 # The prepared file and the summary table
 
 *For whoever receives a prepared CSV — which may well be someone who never runs
-this tool. Everything here is about what the columns mean, not about how to
-produce them.*
+this tool. It covers what the columns mean.*
 
 [← ShelterDataPrep](../README.md)
 
 ## The prepared file
 
 `output_columns` decides which columns are written and in what order, so the
-file is whatever a run asks for. What each of those columns *means* is fixed:
+file is whatever a run asks for. The meaning of each column is fixed:
 
 | column | type | values |
 |---|---|---|
 | `animal_id` | text | as in the source. Not unique — an animal with repeat stays has one row per stay |
-| `intake_date` | `YYYY-MM-DD` | never blank; a row with no parseable intake date can still exist, and shows as blank |
+| `intake_date` | `YYYY-MM-DD` | populated in practice; a row whose intake date failed to parse shows blank |
 | `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, either still in care or never recorded |
 | `intake_type` | text | the source vocabulary, as rewritten by the `map:` steps in the config |
 | `outcome_type` | text | likewise. The shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` for mLOS |
@@ -26,10 +25,10 @@ file is whatever a run asks for. What each of those columns *means* is fixed:
 
 Three conventions run through all of it:
 
-- **`_UNKNOWN_` is the only missing-value marker in a text column.** Blank,
-  whitespace, and absent all become it, before any step runs. A cut or a map can
-  name it, and nothing downstream special-cases NaN.
-- **A blank date is genuinely blank**, never `NaN` or `NaT` as text.
+- **`_UNKNOWN_` marks a missing value in a text column.** Blank, whitespace,
+  and absent all become it, before any step runs. A cut or a map can name it,
+  and downstream code can treat it like any other value.
+- **A blank date is an empty cell**, rather than the text `NaN` or `NaT`.
 - **One row is one stay**, not one animal. `animal_id_distinct` in the summary
   is the animal count where you need it.
 
@@ -46,7 +45,7 @@ file](settings.md#dates).
 The ledger says what came out. `OC2_data_summary.csv` says what is left: every
 exported categorical column crossed against intake type and outcome type, with
 length of stay in each cell. It is a convenience for whoever gets the prepared
-file, and nothing downstream depends on it.
+file; the analysis works from the prepared CSV.
 
 ```
       field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_min  nights_p25  nights_median  nights_p75  nights_p90  nights_max
@@ -89,9 +88,9 @@ collapse. `margin` counts how many of the two axes are collapsed, so:
 - `margin == 2` — both, i.e. the total for that field level (or the grand total
   in the `_NONE_` table).
 
-Sums over a field are not repeated per field, because they are exactly the
-`_NONE_` table. So every number appears once, and the `margin == 2` rows of any
-field table add up to the `margin == 2` row of `_NONE_`.
+Sums over a field are not repeated per field, because they are the `_NONE_`
+table. So every number appears once, and the `margin == 2` rows of any field
+table add up to the `margin == 2` row of `_NONE_`.
 
 **The measures**, per cell, are the frequency and the one descriptive that
 matters for a length-of-stay study:
@@ -108,8 +107,8 @@ matters for a length-of-stay study:
 and mLOS defines `LOS = nights + 1`. A cell with `rows` but no `nights_known`
 is entirely still in care, and its night columns are blank rather than zero.
 
-The run log carries the one fact this table cannot, since it counts stays
-rather than dates: the span the surviving rows actually cover.
+The run log carries what this table cannot, since it counts stays rather than
+dates: the span the surviving rows cover.
 
 ---
 

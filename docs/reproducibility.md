@@ -5,9 +5,9 @@ travels with a prepared file into a paper.*
 
 [← ShelterDataPrep](../README.md)
 
-A run is deterministic: same settings, same source file, same output, with no
-sampling, no randomness, and no dependence on the working directory or on the
-order of anything. So the run log is enough to reproduce it.
+A run is deterministic: the same settings over the same source file give the
+same output, and paths resolve against the settings file, so the working
+directory makes no difference. The run log is enough to reproduce a result.
 
 ```
 shelterprep   0.2.0
@@ -53,14 +53,13 @@ Four things, in the order a reviewer will want them:
    Zenodo does this from a GitHub release, but **enable the repository in
    Zenodo before you tag**: the integration archives releases made after it is
    switched on and does not reach back for earlier ones. A release tagged first
-   and remembered later has no DOI, which is the one thing this step exists to
-   prevent.
+   and remembered later has no DOI.
 3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
    public records; they belong in a repository with a persistent identifier,
    not in git history. That is why `source_dir` points outside this repo.
 4. **The statistics table is the flow diagram.** It is shaped after CONSORT and
    goes into a supplement more or less as is; the by-value breakdown underneath
-   it is what turns "147,385 rows were excluded" into a defensible sentence.
+   it turns "147,385 rows were excluded" into a defensible sentence.
 
 ## Citation
 

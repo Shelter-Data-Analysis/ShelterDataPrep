@@ -7,7 +7,7 @@ order you will need them.*
 
 [← ShelterDataPrep](../README.md)
 
-A run is one YAML settings file. These are all fourteen top-level keys:
+A run is one YAML settings file. These are the top-level keys:
 
 ```yaml
 source_dir:   "../../_shelter_raw"
@@ -36,9 +36,8 @@ steps:
     where: {outcome_subtype: [TRANSFER, RESCUE]}
 ```
 
-An unknown top-level key is an error, not a warning. A misspelled setting that
-quietly skips an exclusion is the failure mode that survives into a published
-table.
+An unknown top-level key is an error, not a warning. A misspelled setting can
+quietly skip an exclusion, and that failure survives into a published table.
 
 `steps:` has a grammar of its own, in [steps and derived
 columns](steps.md).
@@ -47,21 +46,21 @@ columns](steps.md).
 
 `source_dir` and `dest_dir` are relative, and resolve against the settings file
 rather than the working directory, so a run means the same thing from anywhere.
-Nothing in `configs/` names a home directory or a machine, so a clone of this
-repo next to a `_shelter_raw/` directory runs as written.
+The shipped configs keep to relative paths, so a clone of this repo next to a
+`_shelter_raw/` directory runs as written.
 
-The shipped configs read `../../_shelter_raw` — a sibling of the repo, so the
-extracts can never be committed — and write to `../results`.
+They read `../../_shelter_raw` — a sibling of the repo, which keeps the
+extracts outside git — and write to `../results`.
 
 ## The source file
 
 CSV or Excel, decided by the file extension.
 
 **Gzipped CSVs need no setting.** pandas reads `.csv.gz` transparently, so
-`source_file: "OC_raw.csv.gz"` works exactly like the uncompressed name, and
-every shipped config uses that form — a real extract is large enough to be
-worth it. The run log's `source sha256` is taken over the *uncompressed*
-contents, so compressing a file does not change its recorded identity.
+`source_file: "OC_raw.csv.gz"` works like the uncompressed name, and the
+shipped configs use that form — a real extract is large enough to be worth it.
+The run log's `source sha256` is taken over the *uncompressed* contents, so
+compressing a file does not change its recorded identity.
 
 **Excel needs `openpyxl`**, which is an optional dependency: install with
 `pip install ".[excel]"` rather than plain `pip install .`. `sheet:` names the
@@ -83,11 +82,11 @@ when present and ignored when absent. Anything else a step or `output_columns`
 names is assumed to exist in the file under that exact name; if it does not,
 the run stops and the error lists what the file does contain.
 
-`columns:` renames file columns to canonical names — and only ever in that
-direction. The previous pipeline renamed *outward* (`outcome_date` became
-`outdate`, `outcome_type` became `outcome`) while leaving the originals in the
-frame, so two spellings of the same field circulated at once and different
-functions read different ones. Nothing here is renamed on the way out.
+`columns:` renames file columns to canonical names, in that direction. The
+previous pipeline renamed *outward* (`outcome_date` became `outdate`,
+`outcome_type` became `outcome`) while leaving the originals in the frame, so
+two spellings of the same field circulated at once and different functions
+picked up different ones. Here the output keeps the canonical names.
 
 ## The study window
 
@@ -103,24 +102,23 @@ the window opened and `AFTER` when it began after the window closed. See
 ## age_groups and unique_report
 
 `age_groups` maps a name to the upper cutoff of that band, in years at intake,
-and is what builds `age_group`. `unique_report` names the identifier columns
-the statistics table counts distinctly — normally just `animal_id`, which gives
+and builds `age_group`. `unique_report` names the identifier columns the
+statistics table counts distinctly — normally just `animal_id`, which gives
 every stage an animal count alongside its row count.
 
 ## Dates
 
 One rule, and the reason this package exists:
 
-> Every date-valued thing here is `datetime64[ns]`. Never `datetime.date`,
-> never a mix.
+> Every date-valued thing here is `datetime64[ns]`, from parse to write.
 
 `keep_time: false` (the default) normalizes to midnight — the time is dropped,
 the dtype is not. `keep_time: true` preserves it. `nights` is computed from
-normalized values either way, so the switch can never shift a night count.
-Dates become `YYYY-MM-DD` strings only at the moment they are written.
+normalized values either way, so the switch leaves a night count unchanged.
+Dates become `YYYY-MM-DD` strings at the moment they are written.
 
-**Format is always explicit.** Left to infer, pandas locks onto one format from
-the first non-null value and silently coerces everything else to `NaT`:
+**You state the format.** Left to infer, pandas locks onto one format from the
+first non-null value and silently coerces everything else to `NaT`:
 
 ```python
 >>> s = pd.Series(["2018-01-01 14:30:00", "2018-03-02"])
@@ -135,14 +133,13 @@ ambiguous days. Whatever still fails to parse is **counted**, on its own
 
 **A date that fails to parse becomes `NaT`, which downstream is
 indistinguishable from a date that was never recorded** — for `outcome_date`
-that reads as "still in care". The `parse_dates` row of the statistics table
-is what catches it, so it is worth looking at before trusting a run. A row in
-that state is visible in the frame as `outcome_type` set to something real
-while `night_sign` is `_UNKNOWN_`; the old pipeline repaired it by assuming
-the animal left the day it arrived (`stale/_PhysicsSubs.py:28-30`). That
-repair is **not** reproduced here, because a cut or a map cannot rewrite a
-date. If you want it, it needs to be a new feature rather than a settings
-change.
+that counts as "still in care". The `parse_dates` row of the statistics table
+catches it, so it is worth looking at before trusting a run. A row in that
+state shows in the frame as `outcome_type` set to something real while
+`night_sign` is `_UNKNOWN_`; the old pipeline repaired it by assuming the
+animal left the day it arrived (`stale/_PhysicsSubs.py:28-30`). That repair
+has no equivalent here, because a cut or a map cannot rewrite a date. Adding
+it would take a new feature rather than a settings change.
 
 ---
 

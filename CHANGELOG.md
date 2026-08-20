@@ -10,8 +10,7 @@ is called out as such.
 
 This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and 0.2.0 was never tagged, so
-0.2.1 is the first release with an artifact behind it. Nothing before it was
-depended on by anyone.
+0.2.1 is the first release with an artifact behind it.
 
 ## 0.2.1 — 2026-08-10
 
@@ -24,7 +23,7 @@ own.
 ### Added
 
 - `configs/example_tiny.yaml`, which reads the 15-row fixture in
-  `tests/fixtures/` and is therefore the one config that runs on a fresh clone.
+  `tests/fixtures/` and therefore runs on a fresh clone.
   It is meant to be copied as the starting point for a real config.
 - `docs/`, six audience-scoped documents split out of the README:
   `getting-started` (you have an extract from a shelter this repo has never
@@ -51,7 +50,7 @@ Documentation defects, each of which could have cost someone a working run:
 - An Excel source needs `pip install ".[excel]"`. `openpyxl` is an optional
   dependency, so a plain `pip install .` left a workbook failing on import,
   with nothing in the README to explain it.
-- The tests command read `python -m pytest` where the rest of the README said
+- The tests command gave `python -m pytest` while the rest of the README said
   `python3`.
 - The by-value section referred to a `dedup` "`on:`" key. There is no such key
   — the columns are the argument of `dedup:` itself — so following it earned an
@@ -75,12 +74,12 @@ and are kept only for reference.
   two of the shipped extracts carry a byte-order mark. Only the columns a run
   needs are read.
 - Every date-valued thing is `datetime64[ns]`, never `datetime.date` and never
-  a mix, and the format is always explicit — inferring it is how pandas
-  silently coerces a whole column to `NaT`. Unparseable values are counted on
+  a mix, and you state the format — inferring it is how pandas silently
+  coerces a whole column to `NaT`. Unparseable values are counted on
   their own `parse_dates` row rather than disappearing.
 - Derived columns — `nights`, `night_sign`, `window_presence`, `age`,
   `age_group` — are built before any step runs, so they filter and map like
-  columns that came out of the file. Nothing is filtered automatically:
+  columns that came out of the file. Filtering happens in the steps you write:
   out-of-window stays and impossible date orders are removed by ordinary `cut:`
   steps that land in the ledger like every other exclusion.
 - Steps are an ordered sequence of `cut`, `map`, and `dedup`, with `where:` /

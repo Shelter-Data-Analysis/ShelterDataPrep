@@ -11,7 +11,7 @@
 source_dir:   "../../_shelter_raw"
 source_file:  "CIall_raw.csv.gz"
 
-# NOT ISO. This export writes US m/d/yy -- "3/29/24", "4/10/15". Under
+# Not ISO: this export writes US m/d/yy -- "3/29/24", "4/10/15". Under
 # ISO8601 every row parses to NaT and the run produces nothing.
 date_format:  mixed
 keep_time:    false
@@ -48,7 +48,7 @@ steps:
 
   # --- outcome_type -> the canonical mLOS codes ---------------------------
   # EUTH-ASO, ESCAPED, and RELOCATE were absent from the old table and so were
-  # silently dropped. Their meaning is not in doubt, so they are mapped.
+  # silently dropped. Their meaning is clear, so they are mapped.
   - map:
       outcome_type:
         ADOPTION:  LiveC

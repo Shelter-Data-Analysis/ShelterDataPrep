@@ -23,8 +23,8 @@ dest_file:  "MV_data.csv"
 output_columns: [animal_id, intake_date, outcome_date, outcome_type, intake_type,
                  animal_size]
 
-# This export uses its own names throughout. Renaming happens on the way in
-# only, so nothing downstream ever sees intype/outdate/petsize.
+# This export uses its own names throughout. Renaming happens on the way in,
+# so downstream sees the canonical names.
 columns:
   animal_id:    animalid
   intake_date:  indate

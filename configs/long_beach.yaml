@@ -44,8 +44,8 @@ steps:
   - cut: {window_presence: [BEFORE, AFTER, _UNKNOWN_]}
 
   # Both of these are 0 on the October 2024 extract: it is already dogs only
-  # and already alive-on-intake only. Kept so that an extract which is not
-  # would be caught rather than quietly analyzed.
+  # and already alive-on-intake only. Kept so that a later extract carrying
+  # either would be caught rather than quietly analyzed.
   - cut: {"Animal Type": [CAT, BIRD, OTHER, RABBIT, LIVESTOCK]}
   - cut: {intake_is_dead: "Dead on Intake"}
 

@@ -1,7 +1,7 @@
 # Contributing
 
-*Placeholder. The most useful thing you can do with this tool is not a pull
-request, so that part comes first.*
+*Placeholder. The most useful thing you can do with this tool is deposit what
+you prepared, so that part comes first.*
 
 ## If you have prepared a shelter's data
 
@@ -16,8 +16,8 @@ identifier — Figshare, Zenodo, Dryad, an institutional repository:
 Then **cite ShelterDataPrep by the DOI of the version you actually used**, not
 by a link to the repository. A GitHub URL is not archival: the repository can
 be rewritten or deleted, and "the GitHub repository" and "version 0.2.1" are
-different claims, of which only the second is checkable. The version to name is
-the one your run log reports.
+different claims, of which only the second is checkable. Your run log reports
+the version to name.
 
 Those three files plus the version are the whole reproduction. Someone with
 them can rebuild your prepared data byte for byte and see every row you
@@ -28,10 +28,10 @@ More on what travels with a file into a paper: [docs/reproducibility.md](docs/re
 ## If you have a config for a new shelter
 
 That is the contribution this repository most wants, and there is no process
-for it yet. What a config needs to be worth shipping is set out in
-[docs/getting-started.md](docs/getting-started.md): every step commented with
-what it claims about that shelter's vocabulary, and a statistics table you have
-actually read. Say plainly whether it has been validated against a known-good
+for it yet. [docs/getting-started.md](docs/getting-started.md) sets out what a
+config needs to be worth shipping: every step commented with what it claims
+about that shelter's vocabulary, and a statistics table you have gone
+through. Say plainly whether it has been validated against a known-good
 result — most of the shipped configs have not, and say so.
 
 ## If you have found a bug
