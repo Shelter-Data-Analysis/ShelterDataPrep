@@ -134,7 +134,11 @@ The command line calls `Prep(load(path)).run()`, which is the whole thing.
 
 ## Scope
 
-Preparation only: read, derive, filter, map, and write. The weekly-cumulative
+Preparation only: read, derive, filter, map, and write. The `dedup:` step
+collapses only stays identical in every column written, so screening
+near-duplicates against what an analysis counts belongs
+[downstream](docs/steps.md#deduplication-is-deliberately-narrow). The
+weekly-cumulative
 "physics" (`getCumulative`, `AnimDays`, the 17-week differencing) stays in
 `stale/`, unported and kept for reference; it does not run under pandas 2.
 

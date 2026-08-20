@@ -30,6 +30,11 @@ This file starts at 0.2.0, the first version stamped in
   after the intake date says the record is wrong rather than that the animal
   is young. 12 rows on Long Beach and 4 on Mission Viejo, of which the PUPPY
   step recovers 1. Neither row count moves.
+- `docs/steps.md` and `docs/outputs.md` say what `dedup:` does and does not
+  settle: the bare form compares every output column, so widening the output
+  narrows the step; naming the columns deduplicates harder; and same-day
+  repeats, overlapping stays, and rows disagreeing about the outcome survive
+  by design, for a screen in the analysis downstream.
 - `mission_viejo.yaml` exports `age_group`, so the repair above reaches a
   consumer of the prepared file rather than stopping at the statistics table.
   That export also puts an `age_group` table in the summary, and adds the

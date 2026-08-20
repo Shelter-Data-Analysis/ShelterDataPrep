@@ -50,12 +50,27 @@ A **same-day** repeat is a different matter — in and out in the morning, in an
 out again in the afternoon is physically possible. On the OC1 run that
 intuition is borne out: of the 29 stays recorded twice, 19 of the 20 multi-day
 pairs are identical (plain duplication), while 7 of the 9 same-day pairs
-*disagree with each other* about the outcome. Those are a judgment call,
-and they belong to the downstream analysis, which has its own duplicate-stay
-and overlapping-stay screens.
+*disagree with each other* about the outcome. Those are a judgment call.
 
 So the `where:` clause matters: without it, this step would collapse pairs
 that may be two genuine visits.
+
+**The bare form is tied to `output_columns`, so widening the output narrows
+the step.** Each column added is one more that two rows have to agree on
+before either is dropped. The list form decouples the two: the
+`[animal_id, intake_date, outcome_date]` example above treats two multi-day
+stays as one whenever the animal and both dates agree, whatever the outcome
+type or the size says. That is the more aggressive reading, and a claim about
+the shelter rather than about the file, so it belongs in a config only where
+the recording practice supports it. Either way the cost is small on the
+shipped extracts: the wider form drops one further row on each of OC1, OC2,
+and Long Beach, and none elsewhere.
+
+**What the step leaves for the analysis.** Same-day repeats, overlapping
+stays, and rows agreeing on both dates while disagreeing about the outcome all
+survive by design, because settling them means knowing what the analysis
+counts. An analysis that treats a stay as a unit wants a screen of its own,
+which is where mLOS keeps its duplicate-stay and overlapping-stay screens.
 
 Which row survives matters only when the compared columns are a **subset**, so
 two matching rows can still differ elsewhere. There the **last** row is kept,

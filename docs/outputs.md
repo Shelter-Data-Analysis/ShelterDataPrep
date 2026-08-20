@@ -23,7 +23,7 @@ file is whatever a run asks for. The meaning of each column is fixed:
 | `window_presence` | text | `BEFORE`, `IN`, `AFTER`, `_UNKNOWN_` |
 | `age_group` | text | the `age_groups` names, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
 
-Three conventions run through all of it:
+These conventions run through all of it:
 
 - **`_UNKNOWN_` marks a missing value in a text column.** Blank, whitespace,
   and absent all become it, before any step runs. A cut or a map can name it,
@@ -31,6 +31,14 @@ Three conventions run through all of it:
 - **A blank date is an empty cell**, rather than the text `NaN` or `NaT`.
 - **One row is one stay**, not one animal. `animal_id_distinct` in the summary
   is the animal count where you need it.
+- **Stays that look duplicated can be real, and survive on purpose.** The
+  preparation collapses only multi-day stays identical in every column it
+  wrote. A same-day repeat, an overlapping stay, and two rows agreeing on the
+  animal and both dates while disagreeing about the outcome all reach you
+  intact, because deciding those needs to know what the analysis counts. An
+  analysis that treats a stay as a unit wants a screen of its own; the
+  statistics table says what the preparation already removed. See
+  [deduplication](steps.md#deduplication-is-deliberately-narrow).
 
 The observed levels of every categorical column, for a given run, are
 enumerated in that run's summary file — so a reader can see the whole

@@ -119,7 +119,9 @@ vocabulary. Two habits are worth adopting from the start:
   in next year's extract.
 
 The full grammar — `cut`, `map`, `dedup`, and the `where:` guards — is in
-[steps and derived columns](steps.md).
+[steps and derived columns](steps.md). Look at the `dedup:` part before you
+inherit one: it collapses only what is unambiguous, so near-duplicate stays
+reach your analysis intact, and widening `output_columns` narrows it further.
 
 ## 6. Run it, then read the statistics table
 
