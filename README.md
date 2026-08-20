@@ -162,8 +162,9 @@ python3 -m pytest tests/ -q
 83 tests, 96% line coverage of `shelterprep/`. Most of them pin down a decision
 documented in `docs/`, so a test name reads as the rule it protects. For
 example, the age cutoff falling in the lower group, a map being simultaneous
-rather than sequential, a still-in-care animal staying `IN` the window. The
-non-covered portion is defensive branches and the console printing.
+rather than sequential, a still-in-care animal staying `IN` however old its
+intake. The non-covered portion is defensive branches and the console
+printing.
 
 The tests do **not** establish that a config is *correct* for its shelter. A
 config is a set of claims about the data. Check its statistics table for clues
