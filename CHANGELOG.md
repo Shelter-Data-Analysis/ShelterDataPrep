@@ -82,9 +82,9 @@ Documentation defects, each of which could have cost someone a working run:
 
 - `.csv.gz` sources are read transparently and every shipped config uses one,
   which the README never said.
-- An Excel source needs `pip install ".[excel]"`. `openpyxl` is an optional
-  dependency, so a plain `pip install .` left a workbook failing on import,
-  with nothing in the README to explain it.
+- An Excel source needs `python3 -m pip install ".[excel]"`. `openpyxl` is an
+  optional dependency, so a plain `python3 -m pip install .` left a workbook
+  failing on import, with nothing in the README to explain it.
 - The tests command gave `python -m pytest` while the rest of the README said
   `python3`.
 - The by-value section referred to a `dedup` "`on:`" key. There is no such key

@@ -3,7 +3,7 @@
 Every date-valued thing here is ``datetime64[ns]``.  Never ``datetime.date``,
 never a mix of the two.
 
-This is not a stylistic preference.  The previous pipeline round-tripped date
+This is not a stylistic preference.  The stale pipeline round-tripped date
 columns through ``.dt.date`` and then compared the result against
 ``datetime64`` columns and against a ``datetime.date`` sampling axis.  pandas
 2 rejects that outright::

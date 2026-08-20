@@ -151,7 +151,7 @@ def test_dates_are_datetime64_never_date_objects(tmp_path):
     frame = prepared(tmp_path).frame
     for column in ("intake_date", "outcome_date", "dob"):
         assert frame[column].dtype == "datetime64[ns]"
-    # The comparison that raised TypeError in the old code.
+    # The comparison that raised TypeError in the stale pipeline.
     assert (frame["intake_date"] > pd.Timestamp("2019-01-01")).any()
 
 

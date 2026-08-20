@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 # Floors, not pins.  pandas 2 is required outright: this package exists partly
-# because pandas 2 rejects the datetime handling the previous pipeline relied
+# because pandas 2 rejects the datetime handling the stale pipeline relied
 # on, and the date rules here assume its behavior.  The exact versions a given
 # result was produced under are recorded in that run's log, which is the record
 # that matters for reproducing it.
