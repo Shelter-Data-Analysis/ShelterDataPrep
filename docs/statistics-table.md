@@ -9,7 +9,7 @@ two.*
 One row per stage, in execution order — the shape of a CONSORT flow diagram, so
 it can go into a supplement more or less as is. Reading, date parsing, and
 column derivation also get rows, so the chain of counts is continuous and a
-gap is visible rather than inferred. On the OC2 run:
+gap is visible. On the OC2 run:
 
 ```
  step     action        column  rows_in  rows_affected  rows_out  animal_id_in  animal_id_out
@@ -19,8 +19,8 @@ gap is visible rather than inferred. On the OC2 run:
 ```
 
 For each field in `unique_report` there is an `_in` / `_affected` / `_out`
-triple. `_in` minus `_out` is the number of animals that left the study
-*entirely* at that stage.
+triple. `animal_id_in` minus `animal_id_out` is the number of animals that left
+the study *entirely* at that stage.
 
 Every step computes its mask, records the statistics, and only then applies the
 change, so the numbers describe the frame the step actually saw.
@@ -43,28 +43,28 @@ section leaves the other's columns blank, so the file is still one CSV that
     3    cut  intake_type      cut      FOUND     rows cut              0                   0
 ```
 
-This exists mostly for the zeros. Settings files deliberately keep values that
-no longer occur, so that a label reappearing in a future extract is caught
-rather than passed through — and a summary of what *did* happen cannot show
-them. `FOUND` above is one: named in the cut, matching nothing, and now visibly
-so.
+This exists mostly for the zeros. Settings files may deliberately keep values
+that no longer occur, so that a label reappearing in a future extract is caught
+rather than passed through, and such carryovers appear here with zero hits.
+`FOUND` above is one: named in the cut, matching nothing, its effect (or lack
+of one) visible.
 
 Two things to read carefully:
 
 - **`role`** says which part of the step the value came from: `cut`, `map from`
   (a key of the map table), `where`, or `where_not`.
 - **`scope`** says what the count is over, and names the step that produced
-  it: `rows cut`, `rows mapped`, or `rows dropped` for a dedup. A `where_not`
-  value cannot appear in a row the step touched — the guard kept it out — so
-  those are counted over the rows the guard **held back**, the number that says
+  it: `rows cut`, `rows mapped`, `rows dropped` for a dedup, or `rows excluded
+  by where_not`. That last one is counted differently: a `where_not` value
+  cannot appear in a row the step touched — the guard kept it out — so those
+  are counted over the rows the guard **held back**, the number that says
   whether it fired.
 
 A conjunction is broken down one part at a time, not by combination. For
 `cut: {animal_type: [CAT, DOG], intake_type: DISPO REQ}` you get counts for
 `animal_type` and counts for `intake_type` over the same set of cut rows. Since
 a row holds one value per column, the counts within a column add up to the
-stage's `rows_affected` — if a column does not add up, its value set is missing
-something.
+scope they are counted over.
 
 `dedup` breaks down only its `where` / `where_not` guards. Its own argument
 names columns, not values, so there is no set to split.
@@ -72,27 +72,26 @@ names columns, not values, so there is no set to split.
 ## Other tools writing this table
 
 The format is shared. mLOS, the length-of-stay analysis tool downstream,
-records its own screening in these columns, so the two files stack:
-one `read_csv` each, one `concat`, and you have a single flow from the raw
-extract to the rows the models ran on. The chain joins at the handoff, because
+records its own screening in the same column form, so the two files stack,
+giving you a single flow from the raw extract to the rows the models ran on.
+The chain joins at the handoff, because
 the `write` row here and mLOS's `read` row are the same frame counted twice.
 
 Two things to expect from a file this project did not write.
 
 - **The vocabularies are open.** `action` and `role` are documented above as
   what *this* tool emits, not as the closed set. A conforming tool may add
-  verbs for stages preparation has no equivalent of. mLOS adds `split`, for
+  verbs for stages that do not arise in preparation. mLOS adds `split`, for
   breaking a stay into the periods it is observed in, and `pass`, for a
   keep-only filter, whose named values are counted over the rows it kept rather
   than the rows it cut.
 - **`rows_out` may exceed `rows_in`.** Preparation removes rows, so a stage
   here narrows or holds, and it is tempting to take that as a property of the
-  format. An analysis stage can multiply rows: one stay observed in three
-  periods becomes three rows. A reader that assumes the count falls
-  monotonically down a stacked file will be wrong about the second half of it.
+  format. An analysis stage can multiply rows, which is what mLOS does with
+  `split`.
 
 The columns are the contract; what a writer puts in them is its own business.
-An extra column would break the concatenation, which is why mLOS keeps its
+An extra column would break the concatenation. That is why mLOS keeps its
 internal stage names out of the file and identifies a stage the way this one
 does, by `action`, `column`, and `detail`.
 
