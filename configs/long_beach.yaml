@@ -81,6 +81,12 @@ steps:
         MISSING:           NonL
         _UNKNOWN_:         InCare
 
+  # A real outcome code with no outcome date: the date failed to parse, or was
+  # never recorded. Either way the row is not still in care, so it is marked
+  # rather than left to read as one. mLOS discards _NODATE_ rows.
+  - map: {outcome_type: {LiveC: _NODATE_, Transf: _NODATE_, NonL: _NODATE_}}
+    where: {night_sign: _UNKNOWN_}
+
   - map:
       intake_type:
         STRAY:                   STRAY

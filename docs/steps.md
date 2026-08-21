@@ -98,9 +98,12 @@ map like columns that came out of the file.
 | `age_group` | per `age_groups`, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
 
 Age cutoffs fall in the **lower** group: with `JUVENILE: 1`, an age of exactly
-1 is JUVENILE. Above the last cutoff is `_OVER_`; a `dob` after the intake date
-is `_NEGATIVE_` (a data error, kept distinct from a missing `dob`, which is
-`_UNKNOWN_`).
+1 is JUVENILE. Each cutoff admits one further day, because shelter staff record
+an age as a whole number of years and `age` divides days by 365.25 — so the
+same guess reads 0.99932 when the year held no leap day and 1.00205 when it
+held one. Without the extra day those two land in different groups. Above the
+last cutoff is `_OVER_`; a `dob` after the intake date is `_NEGATIVE_` (a data
+error, kept distinct from a missing `dob`, which is `_UNKNOWN_`).
 
 `window_presence` is `AFTER` if the animal arrived after the window closed and
 `BEFORE` if it left before the window opened. An animal still in care has no

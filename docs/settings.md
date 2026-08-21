@@ -108,7 +108,9 @@ the window opened and `AFTER` when it began after the window closed. See
 ## age_groups and unique_report
 
 `age_groups` maps a name to the upper cutoff of that band, in years at intake,
-and builds `age_group`.
+and builds `age_group`. Write the cutoffs as whole years: each one admits a
+further day, so a round-year age falls in the same band whether or not its year
+held a leap day. See [derived columns](steps.md#derived-columns).
 
 `unique_report` names the identifier columns the statistics table counts
 distinctly. Usually just `animal_id`, which gives every stage an animal count
@@ -155,6 +157,18 @@ frame as `outcome_type` set to something real while `night_sign` is
 it arrived (`stale/_PhysicsSubs.py:28-30`). That repair was only a guess and
 has no equivalent here, because a cut or a map cannot rewrite a date. Adding it
 would take a new feature rather than a settings change.
+
+What a settings file can do is mark the row, since a real outcome code with no
+date is visible as `night_sign: _UNKNOWN_`. The shipped configs carry the step,
+which relabels the outcome rather than letting it read as still in care:
+
+```yaml
+  - map: {outcome_type: {LCOM: _NODATE_, TRAN: _NODATE_, NONL: _NODATE_}}
+    where: {night_sign: _UNKNOWN_}
+```
+
+It runs after the map to canonical codes, so the codes exist to match. What
+happens to those rows then belongs to the analysis; mLOS discards them.
 
 ---
 

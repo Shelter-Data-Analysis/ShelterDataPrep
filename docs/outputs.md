@@ -16,7 +16,7 @@ file is whatever a run asks for. The meaning of each column is fixed:
 | `intake_date` | `YYYY-MM-DD` | blank where the date failed to parse; the shipped configs cut those rows |
 | `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, still in care or never recorded |
 | `intake_type` | text | the source vocabulary, as rewritten by the config's `map:` steps |
-| `outcome_type` | text | likewise; the shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` |
+| `outcome_type` | text | likewise; the shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` / `_NODATE_` |
 | `animal_size`, `animal_type`, … | text | any other source column the config keeps |
 | `nights` | number | the stay in whole nights. Blank where a date is missing |
 | `age` | number | years at intake, unrounded: 12.11 rather than 12 |
@@ -32,6 +32,11 @@ These conventions run through all of it:
 - **A blank date is an empty cell**, rather than the text `NaN` or `NaT`.
 - **One row is one stay**, not one animal. `animal_id_distinct` in the summary
   is the animal count where you need it.
+- **`_NODATE_` is an outcome that carries no date.** A blank `outcome_date`
+  otherwise reads as still in care, which is wrong when the row names a real
+  outcome — the date failed to parse, or was never recorded. The shipped
+  configs relabel those rows so the two are distinguishable. Decide what your
+  analysis does with them; mLOS discards them.
 
 **Stays that look duplicated can reach the prepared file.** It depends on the
 steps in the config, and no deduplication is mandatory. A bare `dedup:`
@@ -59,13 +64,26 @@ categorical column crossed against intake type and outcome type, with length of
 stay in each cell. It is a convenience for whoever gets the primary product,
 the prepared file.
 
+The five leftmost columns say which cell a row is, and the rest measure it:
+
 ```
-      field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_min  nights_p25  nights_median  nights_p75  nights_p90  nights_max
-     _NONE_    _NONE_       STRAY         LCOM       0  19446               18586         19446        11.22           0         1.0            5.0         9.0        20.0         616
-     _NONE_    _NONE_       STRAY         TRAN       0   4275                4272          4275        27.29           0         5.0           10.0        24.5        67.0         618
-     _NONE_    _NONE_       STRAY        _ALL_       1  24832               23864         24696        14.19           0         1.0            5.0        11.0        28.0         618
-     _NONE_    _NONE_       _ALL_        _ALL_       2  34718               28230         34513        15.40           0         1.0            5.0        12.0        33.0         730
-animal_size     LARGE       STRAY         LCOM       0   6617                6144          6617        21.34           0         1.0            6.0        17.0        52.0         616
+      field     value intake_type outcome_type  margin   rows  animal_id_distinct
+     _NONE_    _NONE_       STRAY         LCOM       0  19446               18586
+     _NONE_    _NONE_       STRAY         TRAN       0   4275                4272
+     _NONE_    _NONE_       STRAY        _ALL_       1  24832               23864
+     _NONE_    _NONE_       _ALL_        _ALL_       2  34718               28230
+animal_size     LARGE       STRAY         LCOM       0   6617                6144
+```
+
+The night columns follow on the same rows, dropped here for width:
+
+```
+ nights_known  nights_mean  nights_min  nights_p25  nights_median  nights_p75  nights_p90  nights_max
+        19446        11.22           0         1.0            5.0         9.0        20.0         616
+         4275        27.29           0         5.0           10.0        24.5        67.0         618
+        24696        14.19           0         1.0            5.0        11.0        28.0         618
+        34513        15.40           0         1.0            5.0        12.0        33.0         730
+         6617        21.34           0         1.0            6.0        17.0        52.0         616
 ```
 
 **One row per cell.** A contingency table written as a grid needs a header

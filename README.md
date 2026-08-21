@@ -90,11 +90,11 @@ generates).
 |---|---|---|---|
 | `example_tiny.yaml` | none — the test fixture | 11 | runs on a clean clone; the starting point to copy |
 | `orange_county2.yaml` | Orange County, dogs | 34,718 | the mLOS default; new outcome codes, `age_group` exported |
-| `orange_county1.yaml` | Orange County, dogs | 36,564 | superseded by the above; frozen, so earlier results can be rebuilt and differences traced |
+| `orange_county1.yaml` | Orange County, dogs | 36,567 | superseded by the above; frozen, so earlier results can be rebuilt and differences traced |
 | `irvine_dogs.yaml` | Irvine, dogs | 11,022 | no dob, no size — no `animal_group` |
 | `irvine_all_species.yaml` | Irvine, all species | 20,690 | US `m/d/yy` dates; `animal_type` is the stratifier |
-| `long_beach.yaml` | Long Beach, dogs | 12,183 | no size; `age_group` is the stratifier |
-| `mission_viejo.yaml` | Mission Viejo, dogs | 4,661 | its own column names throughout |
+| `long_beach.yaml` | Long Beach, dogs | 12,184 | no size; `age_group` is the stratifier |
+| `mission_viejo.yaml` | Mission Viejo, dogs | 4,662 | its own column names throughout |
 | `la_county_dogs.yaml` | LA County, dogs | 97,990 | offset-stamped dates; large blank-outcome share |
 | `la_county_cats.yaml` | LA County, cats | 76,402 | same file and maps as the dogs config |
 

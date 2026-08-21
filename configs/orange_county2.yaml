@@ -150,6 +150,13 @@ steps:
         SURG WAIT:  INC
         _UNKNOWN_:  INC    # no outcome recorded: still in care
 
+  # A real outcome code with no outcome date: the date failed to parse, or was
+  # never recorded. Either way the row is not still in care, so it is marked
+  # rather than left to read as one. mLOS discards _NODATE_ rows.
+  - map:
+      outcome_type: {LCOM: _NODATE_, TRAN: _NODATE_, NONL: _NODATE_}
+    where: {night_sign: _UNKNOWN_}
+
   # --- intake_type -> STRAY / OWNER / RET / OTH -------------------------------
   - map:
       intake_type:
@@ -204,13 +211,13 @@ steps:
   # _UNKNOWN_ -- and since PUPPY would dominate _UNKNOWN_ anyway (4,591 rows
   # against 269), folding it in would relabel the category, not clean it.
   #
-  # On this extract every surviving PUPPY row comes out JUVENILE (4,493 rows),
+  # On this extract every surviving PUPPY row comes out JUVENILE (4,497 rows),
   # so animal_size and age_group agree, and JUVENILE contains every PUPPY row
   # if the two are combined into a composite animal_group downstream. mLOS
   # currently strata on animal_size alone (animal_group_columns:
   # [animal_size]); if it takes up age_group too, this still holds.
   #
-  # PUPPY is overridden where the age says it cannot be true: 98 rows. The
+  # PUPPY is overridden where the age says it cannot be true: 94 rows. The
   # groups are listed positively rather than as where_not: {age_group:
   # JUVENILE}, because "not JUVENILE" also catches _UNKNOWN_, and a PUPPY row
   # with an unusable date of birth belongs in JUVENILE rather than stripped of

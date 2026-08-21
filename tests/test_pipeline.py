@@ -64,6 +64,21 @@ def test_age_cutoff_falls_in_the_lower_group():
                       "ADULT", "ADULT", "SENIOR", "SENIOR"]
 
 
+def test_a_round_year_guess_lands_in_one_group_whatever_the_leap_days():
+    # Staff record an age as a whole number of years, so dob falls exactly N
+    # years before intake.  365 days without a leap day and 366 with one are
+    # the same guess, and belong in the same group.
+    age = pd.Series([365 / 365.25, 366 / 365.25,        # one year
+                     3287 / 365.25, 3288 / 365.25])     # nine years
+    assert list(_age_group(age, AGE_GROUPS)) == ["JUVENILE", "JUVENILE",
+                                                 "ADULT", "ADULT"]
+
+
+def test_a_cutoff_still_excludes_an_age_a_week_above_it():
+    age = pd.Series([1 + 7 / 365.25, 9 + 7 / 365.25])
+    assert list(_age_group(age, AGE_GROUPS)) == ["YOUNG", "SENIOR"]
+
+
 def test_age_sentinels_are_distinct():
     age = pd.Series([18.1, np.nan, -0.2])
     assert list(_age_group(age, AGE_GROUPS)) == [OVER, UNKNOWN, NEGATIVE]
@@ -218,9 +233,10 @@ def test_where_restricts_a_map(tmp_path):
 def test_where_not_negates_the_whole_conjunction(tmp_path):
     prep = prepared(tmp_path, steps=[
         {"map": {"animal_size": {"PUPPY": "MED"}},
-         "where_not": {"age_group": "JUVENILE"}}])
+         "where_not": {"age_group": "SENIOR"}}])
     frame = prep.frame.set_index("animal_id")
-    # A004 is a PUPPY aged 1.002 years, so YOUNG, so not exempt.
+    # A004 is a PUPPY recorded as one year old, so JUVENILE, so not exempt
+    # from a guard that names SENIOR.
     assert frame.loc["A004", "animal_size"] == "MED"
 
 

@@ -377,6 +377,10 @@ def _window_presence(frame, start, end):
     return presence
 
 
+#: One day, in the fractional years `age` is measured in.  See `_age_group`.
+_ONE_DAY = 1.0 / 365.25
+
+
 def _age_group(age, age_groups):
     """Bin ages, with the cutoff falling in the *lower* group.
 
@@ -384,9 +388,17 @@ def _age_group(age, age_groups):
     exactly that rule: with a JUVENILE cutoff of 1, an age of exactly 1 is
     JUVENILE.  Three sentinels sit outside the bins, kept separate because
     each is a different sentence in a methods section.
+
+    Each cutoff admits one further day, which is what a leap year adds to a
+    round-year guess.  Shelter staff routinely record an age as a whole number
+    of years, so `dob` lands exactly N years before intake; `age` divides days
+    by 365.25, so the same guess reads 0.99932 when the interval held no leap
+    day and 1.00205 when it held one.  Without the extra day those two fall in
+    different groups.  Cutoffs at a multiple of four are unaffected either way,
+    since four years is 1461 days and 4 * 365.25 is 1461 exactly.
     """
     names = list(age_groups)
-    edges = [-np.inf] + [float(cutoff) for cutoff in age_groups.values()]
+    edges = [-np.inf] + [float(cutoff) + _ONE_DAY for cutoff in age_groups.values()]
     group = pd.cut(age, bins=edges, labels=names, right=True).astype(object)
     group[age > edges[-1]] = OVER
     group[age < 0] = NEGATIVE       # date of birth after intake: a data error

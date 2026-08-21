@@ -41,6 +41,23 @@ claims were wrong, and a reader who relied on any of them was misinformed:
 
 ### Changed
 
+- An age cutoff admits one further day. Shelter staff record an age as a whole
+  number of years, so `dob` lands exactly N years before intake, and `age`
+  divides days by 365.25 — so the same guess reads 0.99932 when the year held
+  no leap day and 1.00205 when it held one, and the two fell in different
+  groups. **This moves a number**: 692 rows change `age_group` on OC2, 690 on
+  OC1, and fewer elsewhere. It also moves three row counts, because a cutoff
+  that no longer overshoots stops sending rows to `_OVER_`, which several
+  configs cut: Long Beach 12,183 to 12,184, Mission Viejo 4,661 to 4,662, and
+  `orange_county1.yaml` 36,564 to 36,567. Cutoffs at a multiple of four are
+  unaffected, since four years is 1461 days and 4 x 365.25 is 1461 exactly.
+- Every config marks an outcome that carries no date. A real outcome code with
+  a blank `outcome_date` otherwise reads downstream as still in care, which it
+  is not: the date failed to parse, or was never recorded. A `map:` guarded by
+  `night_sign: _UNKNOWN_` relabels those rows `_NODATE_`, so the count lands in
+  the statistics table and the analysis can decide; mLOS discards them. One row
+  each on OC1, Mission Viejo, LA County dogs, LA County cats, and the fixture,
+  and none on OC2.
 - `orange_county2.yaml` and `mission_viejo.yaml` take a `PUPPY` size as the
   age when the date of birth cannot supply one. Where one field is missing or
   impossible and another can stand in for it, the config uses the stand-in, as

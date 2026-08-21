@@ -72,6 +72,7 @@ steps:
 
   # An outcome date before the intake date is a data error, not a stay.
   # _UNKNOWN_ stays in: it is a stay still in care.
+
   - cut: {night_sign: "-1"}
 
   # An administrative row rather than a stay. Which of your intake types are
@@ -94,6 +95,13 @@ steps:
         TRANSFER:  TRAN
         EUTH:      NONL
         _UNKNOWN_: INC
+
+
+  # A real outcome code with no outcome date: the date failed to parse, or was
+  # never recorded. Either way the row is not still in care, so it is marked
+  # rather than left to read as one. mLOS discards _NODATE_ rows.
+  - map: {outcome_type: {LCOM: _NODATE_, TRAN: _NODATE_, NONL: _NODATE_}}
+    where: {night_sign: _UNKNOWN_}
 
   # The narrowest safe deduplication: two rows identical in every output
   # column, covering a stay of at least one night, cannot both be real.

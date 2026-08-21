@@ -169,7 +169,9 @@ Both are why the statistics table exists.
   safeguard — but also exactly what a misspelled value looks like. The by-value
   breakdown names every value at zero.
 - **An unparseable date.** It becomes `NaT`, and for `outcome_date` that reads
-  downstream as "still in care". The `parse_dates` row distinguishes the two.
+  downstream as "still in care". The `parse_dates` row distinguishes the two,
+  and the inherited `_NODATE_` step marks any row that names an outcome
+  without carrying its date.
 
 The second one is live in the example config, if you want to see it: row `A013`
 of [tests/fixtures/tiny.csv](../tests/fixtures/tiny.csv) has an outcome date of

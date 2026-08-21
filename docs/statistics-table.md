@@ -12,15 +12,17 @@ column derivation also get rows, so the chain of counts is continuous and a
 gap is visible. On the OC2 run:
 
 ```
- step     action        column  rows_in  rows_affected  rows_out  animal_id_in  animal_id_out
-    0       read           ...   192149              0    192149        160819         160819
-    1        cut   animal_type   192149         147385     44764        160819          37305
-    2        cut  ...
+ step  action       column  rows_in  rows_affected  rows_out  animal_id_in  animal_id_affected  animal_id_out
+    0    read          ...   192149              0    192149        160819                   0         160819
+    1     cut  animal_type   192149         147385     44764        160819              123514          37305
+    2     cut  ...
 ```
 
 For each field in `unique_report` there is an `_in` / `_affected` / `_out`
 triple. `animal_id_in` minus `animal_id_out` is the number of animals that left
-the study *entirely* at that stage.
+the study *entirely* at that stage, which is fewer than `animal_id_affected`:
+an animal with several stays can lose one and keep another, so a step touches
+it without removing it.
 
 Every step computes its mask, records the statistics, and only then applies the
 change, so the numbers describe the frame the step actually saw.
