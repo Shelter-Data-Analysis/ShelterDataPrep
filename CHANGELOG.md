@@ -12,7 +12,7 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and 0.2.0 was never tagged, so
 0.2.1 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.2.2 (2026-08-20)
 
 ### Fixed
 

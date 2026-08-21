@@ -14,4 +14,4 @@ of any config still produces byte-identical output, and CHANGELOG.md says which
 is which.
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
