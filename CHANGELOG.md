@@ -12,6 +12,27 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
+## 0.3.1 (2026-08-22)
+
+Documentation. **No code changed**: `shelterprep/` is untouched apart from the
+version string, so a run of any config produces byte-identical output to
+0.3.0. The version moves because what a citation points at has changed.
+
+### Added
+
+- ShelterDataPrep has a DOI:
+  [10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338), the
+  concept DOI, which resolves to the newest release. `CITATION.cff` carries it
+  in `doi:`, and the README, `CONTRIBUTING.md`, and `docs/reproducibility.md`
+  name it in the three places that until now said the version number was the
+  whole citation.
+- What the shipped configs produce is deposited at
+  [10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368), CC BY
+  4.0: each prepared file with its statistics table, its run log, and the
+  settings file behind it. Those files were produced under 0.3.0, and this
+  release does not move them — the deposit stays valid because 0.3.1 writes
+  the same bytes.
+
 ## 0.3.0 (2026-08-21)
 
 **Numbers move** — in the age cutoff, in outcomes carrying no date, and in two

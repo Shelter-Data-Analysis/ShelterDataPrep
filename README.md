@@ -113,6 +113,10 @@ the repository. All six are deposited at
 4.0, so a shipped config runs once its extract is downloaded into [the layout
 the configs
 expect](docs/getting-started.md#2-put-your-extract-where-a-config-can-see-it).
+What those configs produce is deposited too, at
+[10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368) — the
+prepared files with their statistics tables and run logs, for anyone who wants
+the result rather than the run.
 
 ## The statistics table
 
@@ -179,7 +183,8 @@ MIT — see [LICENSE](LICENSE). Use it, change it, redistribute it, keep the
 notice, no warranty.
 
 `CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
-repository" button and Zenodo picks it up when minting a DOI. Cite the version
-number the run log reports, not "the GitHub repository": those are different
-claims, and only the first one is checkable. [More on publishing
-→](docs/reproducibility.md)
+repository" button and Zenodo reads it when minting a DOI. Cite
+[10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338) together
+with the version number the run log reports, not "the GitHub repository":
+those are different claims, and only the first pair is checkable. [More on
+publishing →](docs/reproducibility.md)

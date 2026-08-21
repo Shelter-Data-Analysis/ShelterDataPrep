@@ -62,8 +62,9 @@ Four things reviewers care about:
    log is the provenance and the statistics table is the exclusion history.
 2. **Name a version, not a branch.** A GitHub URL is not archival — the
    repository can be rewritten or deleted, so a bare link fails a data
-   availability statement. Cite the version the run log records, and the DOI
-   alongside it once ShelterDataPrep has one.
+   availability statement. Cite the version the run log records, and
+   [10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338)
+   alongside it.
 3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
    public records; they belong in a repository with a persistent identifier,
    not in git history. That is why `source_dir` points outside this repo. The
@@ -72,7 +73,11 @@ Four things reviewers care about:
    4.0. Cite that version rather than the concept DOI
    ([10.5281/zenodo.22051090](https://doi.org/10.5281/zenodo.22051090)), which
    follows the newest version: a run log pins its source by digest, and only
-   the version DOI is guaranteed to still hold those bytes.
+   the version DOI is guaranteed to still hold those bytes. What the shipped
+   configs make from them is deposited as well, at
+   [10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368) — the
+   prepared files, their statistics tables, their run logs, and the settings
+   files that produced them.
 4. **The statistics table is the flow diagram.** It is shaped after CONSORT and
    goes into a supplement more or less as is; the by-value breakdown underneath
    it turns "147,385 rows were excluded" into a defensible sentence.
@@ -80,10 +85,15 @@ Four things reviewers care about:
 ## Citation
 
 `CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
-repository" button and Zenodo picks it up when minting a DOI. Cite the version
-number the run log reports, not "the GitHub repository": those are different
-claims, and only the first one is checkable. ShelterDataPrep has no DOI yet, so
-the version number is the whole citation for now.
+repository" button and Zenodo reads it when minting a DOI. Cite
+[10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338) together
+with the version number the run log reports, not "the GitHub repository":
+those are different claims, and only the first pair is checkable.
+
+That DOI is the concept DOI, which resolves to the newest release. It is the
+right one to cite because the version beside it says which release ran, and
+that version is checkable against the run log. The DOI of a single release
+exists too, and is what a deposit of results should name.
 
 ---
 

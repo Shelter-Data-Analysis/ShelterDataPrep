@@ -24,7 +24,9 @@ cff-version: 1.2.0
 message: >-
   If you use this software, please cite it as below.  If you use the Orange
   County and Los Angeles County data that the shipped configs cover, also cite
-  the deposit it comes from, 10.5281/zenodo.22051091, alongside it.
+  the deposit it comes from: 10.5281/zenodo.22051091 for the raw extracts, or
+  10.5281/zenodo.22051368 if you took the prepared files rather than preparing
+  them yourself.
 title: "ShelterDataPrep"
 abstract: >-
   Config-driven preparation of animal shelter intake and outcome extracts for
@@ -37,9 +39,10 @@ authors:
   - family-names: "Mavrovouniotis"
     given-names: "Michael Loizos"
     orcid: "https://orcid.org/0009-0009-9896-2761"
-version: "0.3.0"
-date-released: "2026-08-21"
+version: "0.3.1"
+date-released: "2026-08-22"
 license: MIT
+doi: "10.5281/zenodo.22051338"
 repository-code: "https://github.com/Shelter-Data-Analysis/ShelterDataPrep"
 keywords:
   - animal shelter
@@ -47,13 +50,13 @@ keywords:
   - data preparation
   - reproducible research
 
-# The extracts the shipped configs read, cited by their VERSION DOI rather
-# than the concept DOI (10.5281/zenodo.22051090) -- the opposite of the rule
-# for `doi:` above, and for the same underlying reason.  A run log pins its
-# source by digest, so only the version DOI is guaranteed to still hold the
-# bytes that produced a result.  If the deposit's own title or author list
-# changes, change it here too: a citation that does not match the record is
-# not a citation.
+# The two deposits this software sits between: the extracts the shipped
+# configs read, and the files they produce.  Both are cited by their VERSION
+# DOI rather than their concept DOI -- the opposite of the rule for `doi:`
+# above, and for the same underlying reason.  A run log pins a file by digest,
+# so only a version DOI is guaranteed to still hold the bytes that produced a
+# result.  If a deposit's own title or author list changes, change it here
+# too: a citation that does not match the record is not a citation.
 references:
   - type: data
     title: >-
@@ -71,3 +74,20 @@ references:
       The six extracts read by every shipped config except example_tiny.yaml.
       A run over your own shelter's extract has nothing to do with this
       deposit and should not cite it.
+  - type: data
+    title: >-
+      Processed animal-level data, with descriptive statistics, from
+      government-operated animal shelters in Orange County and Los Angeles
+      County, California
+    authors:
+      - family-names: "Mavrovouniotis"
+        given-names: "Michael Loizos"
+        orcid: "https://orcid.org/0009-0009-9896-2761"
+    doi: "10.5281/zenodo.22051368"
+    year: 2026
+    license: CC-BY-4.0
+    notes: >-
+      What the shipped configs produce from the extracts above, under version
+      0.3.0, with each prepared file's statistics table, run log, and settings
+      file.  Cite this instead of rerunning if you used those files as they
+      are.

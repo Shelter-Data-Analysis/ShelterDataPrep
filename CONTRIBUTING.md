@@ -22,12 +22,14 @@ whether it has been checked against a previous result. Checking is preferable
 but not always practical. (Most of the shipped configs have not been checked,
 and say so clearly.)
 
-Then **cite ShelterDataPrep by the DOI of the version you actually used**, not
+Then **cite ShelterDataPrep by its DOI, naming the version you actually
+used**, not
 by a link to the repository. A GitHub URL is not archival: the repository can
 be rewritten or deleted, and "the GitHub repository" and "version 0.3.0" are
 different claims, of which only the second is checkable. Your run log reports
-the version to name; until ShelterDataPrep has a DOI, that version is the whole
-citation.
+the version to name, and
+[10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338) is the DOI
+to name it with.
 
 Those three files plus the version are the whole reproduction. Someone with
 them can rebuild your prepared file byte for byte and see every row you
