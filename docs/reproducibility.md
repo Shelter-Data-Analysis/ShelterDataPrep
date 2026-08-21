@@ -38,10 +38,9 @@ paths are absolute, since `source_dir` and `dest_dir` resolve against the
 settings file rather than the working directory.
 
 `sheet`, `date_format`, `keep_time`, and `window` echo the settings that decide
-how the source is read and what the derived columns say, so the log states the
-reading of the file as well as its identity. The statistics table then follows
-in the same file, rendered as text — the same content `<name>_stats.csv` holds
-for a machine to read.
+how the source is read and what the derived columns say. The statistics table
+then follows in the same file, rendered as text — the same content held by
+`<name>_stats.csv` for easy conversion to a spreadsheet or pandas frame.
 
 The two digests bracket the run. **`source sha256`** identifies the extract —
 taken over the *uncompressed* contents, so it does not move if the file is
@@ -56,20 +55,15 @@ under pandas 2" is not a version.
 
 ## For a paper
 
-Four things, in the order a reviewer will want them:
+Four things reviewers care about:
 
 1. **The prepared file, its statistics table, and its run log travel
    together.** The prepared file alone cannot say where it came from; the run
    log is the provenance and the statistics table is the exclusion history.
-2. **Archive a tagged release, not a branch.** A GitHub URL is not archival —
-   the repository can be rewritten or deleted, so a bare link fails a data
-   availability statement. Tag a release and mint a DOI for it, then cite the
-   DOI and the version number the run log records.
-
-   Zenodo does this from a GitHub release, but **enable the repository in
-   Zenodo before you tag**: the integration archives releases made after it is
-   switched on and does not reach back for earlier ones. A release tagged first
-   and remembered later has no DOI.
+2. **Name a version, not a branch.** A GitHub URL is not archival — the
+   repository can be rewritten or deleted, so a bare link fails a data
+   availability statement. Cite the version the run log records, and the DOI
+   alongside it once ShelterDataPrep has one.
 3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
    public records; they belong in a repository with a persistent identifier,
    not in git history. That is why `source_dir` points outside this repo.
@@ -82,7 +76,8 @@ Four things, in the order a reviewer will want them:
 `CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
 repository" button and Zenodo picks it up when minting a DOI. Cite the version
 number the run log reports, not "the GitHub repository": those are different
-claims, and only the first one is checkable.
+claims, and only the first one is checkable. ShelterDataPrep has no DOI yet, so
+the version number is the whole citation for now.
 
 ---
 
