@@ -89,7 +89,7 @@ one earlier in the file is dropped").
 Built after the dates are parsed and before any step runs, so they filter and
 map like columns that came out of the file.
 
-| column | |
+| column | meaning |
 |---|---|
 | `nights` | `outcome_date - intake_date`, in whole nights |
 | `night_sign` | `-1`, `0`, `1`, or `_UNKNOWN_` |
