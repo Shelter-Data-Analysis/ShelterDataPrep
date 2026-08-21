@@ -14,6 +14,31 @@ This file starts at 0.2.0, the first version stamped in
 
 ## Unreleased
 
+### Fixed
+
+Every document was reviewed against the code and against live runs. Four
+claims were wrong, and a reader who relied on any of them was misinformed:
+
+- **`window_presence` on a still-in-care animal.** `docs/steps.md` said such a
+  row stays `IN`. It does not: the assignments run default `IN`, then `BEFORE`
+  where `outcome_date < start`, then `AFTER` where `intake_date > end`, so an
+  animal admitted after the window closed and not yet released comes out
+  `AFTER`. Eight rows of the OC2 run are in that state. What holds, and what
+  the code's own docstring claims, is that such a row cannot be `BEFORE`.
+  `README.md` compressed the neighboring test the same way.
+- **`age` is not rounded.** `docs/outputs.md` described `nights` and `age`
+  together as whole numbers. `age` is `(intake_date - dob).dt.days / 365.25`
+  and keeps its fraction: 12.106776 on the OC2 run, whole in fewer than 5% of
+  rows.
+- **`scope` has four values, not three.** `rows excluded by where_not` was
+  missing from `docs/statistics-table.md`, which described that case at length
+  without naming it. No shipped config uses `where_not`, so it appears in no
+  output.
+- **The sample run log had drifted from the artifact.** It showed an old
+  version and an old output digest, relative paths the log does not print, and
+  omitted `sheet`, `date_format`, `keep_time`, and `window` — four fields that
+  are half the reason the run log is enough to reproduce a result.
+
 ### Changed
 
 - `orange_county2.yaml` and `mission_viejo.yaml` take a `PUPPY` size as the
