@@ -12,13 +12,14 @@ file is whatever a run asks for. The meaning of each column is fixed:
 
 | column | type | values |
 |---|---|---|
-| `animal_id` | text | as in the source. Not unique — an animal with repeat stays has one row per stay |
-| `intake_date` | `YYYY-MM-DD` | blank where the intake date failed to parse; the shipped configs cut those rows at the window step |
-| `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, either still in care or never recorded |
-| `intake_type` | text | the source vocabulary, as rewritten by the `map:` steps in the config |
-| `outcome_type` | text | likewise. The shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` for mLOS |
-| `animal_size`, `animal_type`, … | text | any other source column the config keeps, as rewritten |
-| `nights`, `age` | number | whole nights, and years at intake. Blank where a date is missing |
+| `animal_id` | text | as in the source. Not unique — one row per stay |
+| `intake_date` | `YYYY-MM-DD` | blank where the date failed to parse; the shipped configs cut those rows |
+| `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, still in care or never recorded |
+| `intake_type` | text | the source vocabulary, as rewritten by the config's `map:` steps |
+| `outcome_type` | text | likewise; the shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` |
+| `animal_size`, `animal_type`, … | text | any other source column the config keeps |
+| `nights` | number | the stay in whole nights. Blank where a date is missing |
+| `age` | number | years at intake, unrounded: 12.11 rather than 12 |
 | `night_sign` | text | `-1`, `0`, `1`, `_UNKNOWN_` |
 | `window_presence` | text | `BEFORE`, `IN`, `AFTER`, `_UNKNOWN_` |
 | `age_group` | text | the `age_groups` names, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
@@ -26,19 +27,21 @@ file is whatever a run asks for. The meaning of each column is fixed:
 These conventions run through all of it:
 
 - **`_UNKNOWN_` marks a missing value in a text column.** Blank, whitespace,
-  and absent all become it, before any step runs. A cut or a map can name it,
-  and downstream code can treat it like any other value.
+  and absent all become `_UNKNOWN_`, before any step runs. A cut or a map can
+  name it, and downstream code can treat it like any other value.
 - **A blank date is an empty cell**, rather than the text `NaN` or `NaT`.
 - **One row is one stay**, not one animal. `animal_id_distinct` in the summary
   is the animal count where you need it.
-- **Stays that look duplicated can be real, and survive on purpose.** The
-  preparation collapses only multi-day stays identical in every column it
-  wrote. A same-day repeat, an overlapping stay, and two rows agreeing on the
-  animal and both dates while disagreeing about the outcome all reach you
-  intact, because deciding those needs to know what the analysis counts. An
-  analysis that treats a stay as a unit wants a screen of its own; the
-  statistics table says what the preparation already removed. See
-  [deduplication](steps.md#deduplication-is-deliberately-narrow).
+
+**Stays that look duplicated can reach the prepared file.** It depends on the
+steps in the config, and no deduplication is mandatory. A bare `dedup:`
+collapses rows identical in every column written. The shipped configs add a
+guard so that it collapses only multi-day stays, and then a same-day repeat, an
+overlapping stay, and two rows agreeing on the animal and both dates while
+disagreeing in any other column all reach you intact. Deciding those depends on
+the downstream analysis, which should probably have a screen of its own. The
+statistics table says what the preparation already removed. See
+[deduplication](steps.md#deduplication-is-deliberately-narrow).
 
 The observed levels of every categorical column, for a given run, are
 enumerated in that run's summary table — so a reader can see the whole
@@ -50,11 +53,11 @@ file](settings.md#dates).
 
 ## The summary table
 
-The statistics table says what came out. `OC2_data_summary.csv` says what is
-left: every
-exported categorical column crossed against intake type and outcome type, with
-length of stay in each cell. It is a convenience for whoever gets the prepared
-file; the analysis works from the prepared CSV.
+The statistics table says what was removed or transformed.
+`OC2_data_summary.csv` says what made it to the prepared file: every exported
+categorical column crossed against intake type and outcome type, with length of
+stay in each cell. It is a convenience for whoever gets the primary product,
+the prepared file.
 
 ```
       field     value intake_type outcome_type  margin   rows  animal_id_distinct  nights_known  nights_mean  nights_min  nights_p25  nights_median  nights_p75  nights_p90  nights_max
@@ -67,7 +70,7 @@ animal_size     LARGE       STRAY         LCOM       0   6617                614
 
 **One row per cell.** A contingency table written as a grid needs a header
 row *and* a header column, which one CSV cannot carry for several tables at
-once and which neither pandas nor R reads back without being told how. One row
+once and which neither pandas nor R reads back readily. One row
 per cell, dimensions in named columns, goes straight into all three:
 
 ```python
@@ -104,20 +107,22 @@ table add up to the `margin == 2` row of `_NONE_`.
 **The measures**, per cell, are the frequency and the one descriptive that
 matters for a length-of-stay study:
 
-| column | |
+| column | meaning |
 |---|---|
 | `rows` | stays in the cell |
-| `animal_id_distinct` | distinct animals — one per `unique_report` field; below `rows` where an animal has repeat stays |
+| `animal_id_distinct` | distinct animals, one per `unique_report` field; below `rows` where an animal has repeat stays |
 | `nights_known` | stays with a night count; `rows` minus this is the stays still in care |
 | `nights_min`, `nights_max` | shortest and longest stay, as whole nights |
-| `nights_mean`, `nights_p25`, `nights_median`, `nights_p75`, `nights_p90` | the distribution over the known ones. `p90` because mLOS leans on it; the quartiles because a length of stay is skewed enough that the extremes alone mislead |
+| `nights_mean`, `nights_p25`, `nights_median`, `nights_p75`, `nights_p90` | the distribution over the known ones |
+
+`p90` is there because mLOS leans on it, and the quartiles because a length of
+stay is skewed enough that the extremes alone mislead.
 
 `nights` counts nights, not days — an animal in and out the same day scores 0,
 and mLOS defines `LOS = nights + 1`. A cell with `rows` but no `nights_known`
 is entirely still in care, and its night columns are blank rather than zero.
 
-The run log carries what this table cannot, since it counts stays rather than
-dates: the span the surviving rows cover.
+The run log carries the span the surviving rows cover.
 
 ---
 
