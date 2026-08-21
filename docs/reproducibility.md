@@ -10,22 +10,38 @@ same output, and paths resolve against the settings file, so the working
 directory makes no difference. The run log is enough to reproduce a result.
 
 ```
-shelterprep   0.2.0
-run at        2026-08-01T18:23:27
+ShelterDataPrep run log
+
+shelterprep   0.2.1
+run at        2026-08-20T17:26:10
 settings      configs/orange_county2.yaml
-source        ../../_shelter_raw/OC_raw.csv.gz
+source        /Users/you/projects/_shelter_raw/OC_raw.csv.gz
 source sha256 fbc5fa49...  (of the uncompressed contents)
-destination   results/OC2_data.csv
-output sha256 e7b04f9a...
+sheet         (csv)
+date_format   ISO8601
+keep_time     False
+window        2018-06-01 to 2025-10-02
+destination   /Users/you/projects/ShelterDataPrep/results/OC2_data.csv
+output sha256 aed363f4...
 output rows   34718
 final span    intake 2018-01-22 to 2025-10-02, last outcome 2025-10-03, 205 still in care
 
-python        3.9.6 on macOS-26.5.2-arm64-arm-64bit
+python        3.9.6 on macOS-26.6.2-arm64-arm-64bit
 pandas        2.3.1
 numpy         2.0.2
 PyYAML        6.0.3
 openpyxl      3.1.5
 ```
+
+The digests here are shortened to fit; the log carries them in full. The two
+paths are absolute, since `source_dir` and `dest_dir` resolve against the
+settings file rather than the working directory.
+
+`sheet`, `date_format`, `keep_time`, and `window` echo the settings that decide
+how the source is read and what the derived columns say, so the log states the
+reading of the file as well as its identity. The statistics table then follows
+in the same file, rendered as text — the same content `<name>_stats.csv` holds
+for a machine to read.
 
 The two digests bracket the run. **`source sha256`** identifies the extract —
 taken over the *uncompressed* contents, so it does not move if the file is

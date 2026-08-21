@@ -53,10 +53,11 @@ Two things to read carefully:
 
 - **`role`** says which part of the step the value came from: `cut`, `map from`
   (a key of the map table), `where`, or `where_not`.
-- **`scope`** says what the count is over. For everything except `where_not`
-  that is the rows the step cut or mapped. A `where_not` value cannot appear in
-  a row the step touched — the guard kept it out — so those are counted over
-  the rows the guard **held back**, the number that says whether it fired.
+- **`scope`** says what the count is over, and names the step that produced
+  it: `rows cut`, `rows mapped`, or `rows dropped` for a dedup. A `where_not`
+  value cannot appear in a row the step touched — the guard kept it out — so
+  those are counted over the rows the guard **held back**, the number that says
+  whether it fired.
 
 A conjunction is broken down one part at a time, not by combination. For
 `cut: {animal_type: [CAT, DOG], intake_type: DISPO REQ}` you get counts for
