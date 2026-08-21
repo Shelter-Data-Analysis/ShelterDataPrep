@@ -108,8 +108,11 @@ from the stale pipeline because that pipeline appears to have had a bug, are
 commented in the config itself.
 
 Every config except `example_tiny.yaml` reads an extract that stays outside
-the repository, so running one means [supplying the file
-yourself](docs/getting-started.md#2-put-your-extract-where-a-config-can-see-it).
+the repository. All six are deposited at
+[10.5281/zenodo.22051091](https://doi.org/10.5281/zenodo.22051091) under CC BY
+4.0, so a shipped config runs once its extract is downloaded into [the layout
+the configs
+expect](docs/getting-started.md#2-put-your-extract-where-a-config-can-see-it).
 
 ## The statistics table
 

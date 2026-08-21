@@ -9,7 +9,8 @@
 # to mLOS as the stratifier.
 
 # Gzipped working copy, kept outside any git repo (see orange_county2.yaml);
-# original left in OneDrive/Journal Physics LOS/PRA/Irvine/IrvineAllSpecies.csv
+# deposited as CIall_raw.csv.gz in 10.5281/zenodo.22051091; original left in
+# OneDrive/Journal Physics LOS/PRA/Irvine/IrvineAllSpecies.csv
 source_dir:   "../../_shelter_raw"
 source_file:  "CIall_raw.csv.gz"
 

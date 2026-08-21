@@ -6,6 +6,8 @@
 # maps as la_county_dogs.yaml; only the species cut and the window differ.
 # Not yet validated against published results.
 
+# Gzipped working copy, kept outside any git repo (see orange_county2.yaml);
+# deposited as LA_raw.csv.gz in 10.5281/zenodo.22051091.
 source_dir:   "../../_shelter_raw"
 source_file:  "LA_raw.csv.gz"
 

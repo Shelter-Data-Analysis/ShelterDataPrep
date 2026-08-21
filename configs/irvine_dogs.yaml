@@ -7,7 +7,8 @@
 # statistics table before trusting a run.
 
 # Gzipped working copy, kept outside any git repo (see orange_county2.yaml);
-# original left in OneDrive/Journal Physics LOS/PRA/Irvine/IrvineDogs.csv
+# deposited as IR_raw.csv.gz in 10.5281/zenodo.22051091; original left in
+# OneDrive/Journal Physics LOS/PRA/Irvine/IrvineDogs.csv
 source_dir:   "../../_shelter_raw"
 source_file:  "IR_raw.csv.gz"
 date_format:  ISO8601

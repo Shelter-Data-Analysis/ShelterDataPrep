@@ -24,7 +24,7 @@ and say so clearly.)
 
 Then **cite ShelterDataPrep by the DOI of the version you actually used**, not
 by a link to the repository. A GitHub URL is not archival: the repository can
-be rewritten or deleted, and "the GitHub repository" and "version 0.2.1" are
+be rewritten or deleted, and "the GitHub repository" and "version 0.3.0" are
 different claims, of which only the second is checkable. Your run log reports
 the version to name; until ShelterDataPrep has a DOI, that version is the whole
 citation.

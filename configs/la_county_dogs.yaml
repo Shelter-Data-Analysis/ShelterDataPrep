@@ -10,7 +10,8 @@
 # pairing is left alone, so an animal moved between facilities is two stays.
 
 # Gzipped working copy, kept outside any git repo (see orange_county2.yaml) and
-# shared with la_county_cats.yaml; original left in
+# shared with la_county_cats.yaml; deposited as LA_raw.csv.gz in
+# 10.5281/zenodo.22051091; original left in
 # OneDrive/Journal Physics LOS/PRA/LA County Open Data full database/
 #   Animal_Care_PawStats_Data 20241016.csv
 source_dir:   "../../_shelter_raw"

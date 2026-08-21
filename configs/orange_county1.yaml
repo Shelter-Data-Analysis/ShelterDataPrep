@@ -20,8 +20,9 @@
 # --- source ---------------------------------------------------------------
 # Gzipped working copy of the raw extract, in a directory alongside this
 # repository rather than inside it: raw extracts are published data and belong
-# in a figshare deposit with their own DOI, not in git history. pandas reads
-# .csv.gz transparently.
+# in a deposit with their own DOI, not in git history. This extract and the
+# five others the shipped configs read are deposited at
+# 10.5281/zenodo.22051091, CC BY 4.0. pandas reads .csv.gz transparently.
 # Original, left where it was:
 #   OneDrive/Journal Physics LOS/PRA/Orange County 2018-2024/
 #     25-5969 Intakes and Outcomes 2018 to 20251002 1.csv

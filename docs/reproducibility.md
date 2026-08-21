@@ -12,8 +12,8 @@ directory makes no difference. The run log is enough to reproduce a result.
 ```
 ShelterDataPrep run log
 
-shelterprep   0.2.2
-run at        2026-08-20T17:26:10
+shelterprep   0.3.0
+run at        2026-08-21T15:05:09
 settings      configs/orange_county2.yaml
 source        /Users/you/projects/_shelter_raw/OC_raw.csv.gz
 source sha256 fbc5fa49...  (of the uncompressed contents)
@@ -66,7 +66,13 @@ Four things reviewers care about:
    alongside it once ShelterDataPrep has one.
 3. **Deposit the raw extract separately**, with its own DOI. Raw extracts are
    public records; they belong in a repository with a persistent identifier,
-   not in git history. That is why `source_dir` points outside this repo.
+   not in git history. That is why `source_dir` points outside this repo. The
+   extracts the shipped configs read are deposited at
+   [10.5281/zenodo.22051091](https://doi.org/10.5281/zenodo.22051091), CC BY
+   4.0. Cite that version rather than the concept DOI
+   ([10.5281/zenodo.22051090](https://doi.org/10.5281/zenodo.22051090)), which
+   follows the newest version: a run log pins its source by digest, and only
+   the version DOI is guaranteed to still hold those bytes.
 4. **The statistics table is the flow diagram.** It is shaped after CONSORT and
    goes into a supplement more or less as is; the by-value breakdown underneath
    it turns "147,385 rows were excluded" into a defensible sentence.

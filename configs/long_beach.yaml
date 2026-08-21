@@ -9,7 +9,8 @@
 # during the covered period, which shows up in the transfer stream.
 
 # Gzipped working copy, kept outside any git repo (see orange_county2.yaml);
-# original left in OneDrive/Journal Physics LOS/PRA/Long Beach October 2024/
+# deposited as LB_raw.csv.gz in 10.5281/zenodo.22051091; original left in
+# OneDrive/Journal Physics LOS/PRA/Long Beach October 2024/
 #   animal-shelter-intakes-and-outcomes.csv
 source_dir:   "../../_shelter_raw"
 source_file:  "LB_raw.csv.gz"

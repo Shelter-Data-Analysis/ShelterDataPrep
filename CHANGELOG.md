@@ -9,10 +9,14 @@ change to how a derived column is built, a change to what the table counts —
 is called out as such.
 
 This file starts at 0.2.0, the first version stamped in
-`shelterprep/version.py`. There was no 0.1.x, and 0.2.0 was never tagged, so
-0.2.1 is the first release with an artifact behind it.
+`shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
+tagged, so 0.3.0 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.3.0 (2026-08-21)
+
+**Numbers move** — in the age cutoff, in outcomes carrying no date, and in two
+configs that now take a size as a stand-in for a missing age — and each is
+called out where it appears. The rest corrects documentation against the code.
 
 ### Fixed
 
@@ -88,8 +92,17 @@ claims were wrong, and a reader who relied on any of them was misinformed:
   way. `orange_county1.yaml` builds `age_group` and does not export it, and
   stays that way: it is frozen as a baseline. The remaining configs have no
   date of birth, so they have no `age_group` to export.
+- The raw extracts the shipped configs read are deposited at
+  10.5281/zenodo.22051091, CC BY 4.0, so running one no longer depends on
+  having been sent the file. The README, `docs/getting-started.md`,
+  `docs/reproducibility.md`, and every config that reads an extract name the
+  deposit. `CITATION.cff` carries the deposit as a `references` entry, and its
+  `message` asks anyone using that data to cite it alongside the software.
+  No output changes.
 
 ## 0.2.1 (2026-08-10)
+
+Never tagged either, so like 0.2.0 it has no artifact to cite.
 
 Documentation, and one new example config. **No code changed**: `shelterprep/`
 is untouched apart from the version string, so a run of any config produces

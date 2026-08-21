@@ -7,6 +7,11 @@ __pycache__/
 # mLOS by hand, as a separate decision.
 results/
 
+# Stages a results deposit out of results/ and configs/. A local packaging
+# step, kept here so the next deposit is one command, and out of git because
+# it is no part of what a run needs.
+tools/make_deposit.py
+
 # Editable/build artefacts
 *.egg-info/
 build/

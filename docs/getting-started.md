@@ -27,7 +27,9 @@ reading about your own data in step 6, at a size you can check by hand against
 
 Raw extracts stay outside the repository. They are public records that belong
 in a deposit with their own DOI, and keeping them out of git makes that
-possible later. The shipped configs expect a sibling directory:
+possible later — the six this repository's configs read are deposited at
+[10.5281/zenodo.22051091](https://doi.org/10.5281/zenodo.22051091). The shipped
+configs expect a sibling directory:
 
 ```
 your-projects/

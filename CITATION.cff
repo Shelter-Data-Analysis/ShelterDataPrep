@@ -21,7 +21,10 @@
 ####   earlier ones.
 
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+message: >-
+  If you use this software, please cite it as below.  If you use the Orange
+  County and Los Angeles County data that the shipped configs cover, also cite
+  the deposit it comes from, 10.5281/zenodo.22051091, alongside it.
 title: "ShelterDataPrep"
 abstract: >-
   Config-driven preparation of animal shelter intake and outcome extracts for
@@ -34,8 +37,8 @@ authors:
   - family-names: "Mavrovouniotis"
     given-names: "Michael Loizos"
     orcid: "https://orcid.org/0009-0009-9896-2761"
-version: "0.2.2"
-date-released: "2026-08-20"
+version: "0.3.0"
+date-released: "2026-08-21"
 license: MIT
 repository-code: "https://github.com/Shelter-Data-Analysis/ShelterDataPrep"
 keywords:
@@ -43,3 +46,28 @@ keywords:
   - length of stay
   - data preparation
   - reproducible research
+
+# The extracts the shipped configs read, cited by their VERSION DOI rather
+# than the concept DOI (10.5281/zenodo.22051090) -- the opposite of the rule
+# for `doi:` above, and for the same underlying reason.  A run log pins its
+# source by digest, so only the version DOI is guaranteed to still hold the
+# bytes that produced a result.  If the deposit's own title or author list
+# changes, change it here too: a citation that does not match the record is
+# not a citation.
+references:
+  - type: data
+    title: >-
+      Raw animal-level data from government-operated animal shelters in Orange
+      County and Los Angeles County, California
+    authors:
+      - family-names: "Mavrovouniotis"
+        given-names: "Michael Loizos"
+        orcid: "https://orcid.org/0009-0009-9896-2761"
+    doi: "10.5281/zenodo.22051091"
+    version: "1"
+    year: 2026
+    license: CC-BY-4.0
+    notes: >-
+      The six extracts read by every shipped config except example_tiny.yaml.
+      A run over your own shelter's extract has nothing to do with this
+      deposit and should not cite it.
