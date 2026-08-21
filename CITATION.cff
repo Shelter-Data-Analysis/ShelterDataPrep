@@ -4,7 +4,10 @@
 #
 ####   On each tagged release, bump `version` and `date-released` to match.
 ####   The version here should equal the one a run log reports, or the citation
-####   names software that did not produce the result.
+####   names software that did not produce the result.  `version` is bumped
+####   when the work is done rather than when the tag lands, so `date-released`
+####   runs ahead of the tag until CHANGELOG.md's Unreleased section is given
+####   its number; check it at tag time.
 #
 ####   For `doi:`, use Zenodo's CONCEPT DOI -- the version-independent one that
 ####   always resolves to the newest release -- not the DOI of a single release.
