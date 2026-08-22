@@ -19,6 +19,11 @@
 ####   Enable the repository in Zenodo BEFORE tagging.  Zenodo archives
 ####   releases made after it is switched on and does not reach back for
 ####   earlier ones.
+#
+####   AFTER publishing a release, edit the Zenodo record's `version` field to
+####   drop the leading `v`.  Zenodo takes that field from the tag name rather
+####   than from `version` above, so the record reads `v0.3.1` where a run log
+####   reads `0.3.1`, and the pair a reader checks is the DOI and the version.
 
 cff-version: 1.2.0
 message: >-
