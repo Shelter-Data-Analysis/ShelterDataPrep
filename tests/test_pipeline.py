@@ -7,6 +7,7 @@ name should read as the rule it protects.
 from __future__ import annotations
 
 import hashlib
+import re
 import sys
 from pathlib import Path
 
@@ -576,6 +577,23 @@ def test_the_citation_names_the_version_that_is_actually_here():
     assert citation["version"] == shelterprep.__version__
     assert (root / "LICENSE").exists()
     assert citation["license"] == "MIT"
+
+
+def test_the_readme_states_the_number_of_tests_there_are(collected_suite):
+    # A count written into prose goes stale the day a test is added, and
+    # nothing else here reads it: two tests arrived in August 2026 and the
+    # sentence stayed at 83 through two tagged releases.  The coverage figure
+    # beside it is left unchecked on purpose, since measuring it would make
+    # the suite need coverage.py installed to run at all.
+    if not collected_suite["whole_suite"]:
+        pytest.skip("run narrowed, so the collected count is a subset")
+    root = Path(__file__).resolve().parent.parent
+    stated = re.search(r"^(\d+) tests, \d+% line coverage",
+                       (root / "README.md").read_text(), re.M)
+    assert stated, "README.md no longer states its test count in this form"
+    assert int(stated.group(1)) == collected_suite["count"], (
+        "README.md says {0} tests, the suite collects {1}".format(
+            stated.group(1), collected_suite["count"]))
 
 
 def test_every_run_log_states_the_version_that_wrote_it(tmp_path):
