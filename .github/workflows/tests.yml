@@ -1,0 +1,43 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # The supported matrix: every Python the package claims in requires-python,
+  # against pandas as the requirements actually pin it.
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pip list
+      - run: python -m pytest tests/ -q
+
+  # Deliberately past the pandas<3 cap, to answer the question the cap defers:
+  # what actually breaks under pandas 3, and whether any output number moves.
+  # Advisory -- a red result here is a to-do, not a broken main.
+  pandas3:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pip install "pandas>=3"
+      - run: python -m pip list
+      - run: python -m pytest tests/ -q

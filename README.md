@@ -1,5 +1,7 @@
 # ShelterDataPrep
 
+[![tests](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/actions/workflows/tests.yml/badge.svg)](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/actions/workflows/tests.yml)
+
 Turns a raw animal shelter extract (CSV, gzipped CSV, or Excel) into a tidy CSV,
 plus a statistics table recording what each step removed or changed.
 
@@ -169,7 +171,10 @@ python3 -m pytest tests/ -q
 86 tests, 96% line coverage of `shelterprep/`. One of the tests reads that
 count back out of this file and compares it against the suite it describes, so
 a test added without touching this line fails the run; the coverage figure
-beside it is maintained by hand. Most of them pin down a decision documented in
+beside it is maintained by hand. GitHub Actions runs the suite on every push
+and pull request, across each Python the package claims, plus one advisory job
+that installs pandas 3 past the cap to keep the cost of that migration
+visible. Most of them pin down a decision documented in
 `docs/`, so a test name reads as the rule it protects. For example, the age
 cutoff falling in the lower group, a map being simultaneous rather than
 sequential, a still-in-care animal staying `IN` however old its intake. The
