@@ -16,8 +16,8 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip
@@ -32,12 +32,28 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
       - run: python -m pip install "pandas>=3"
       - run: python -m pip list
-      - run: python -m pytest tests/ -q
+      # Captured to the run summary, which is readable on a public repository
+      # without admin rights.  The job log is not, and the point of this job is
+      # that the answer can be read.
+      - name: Run the suite under pandas 3
+        run: |
+          set -o pipefail
+          python -m pytest tests/ -q 2>&1 | tee /tmp/pandas3.txt
+      - name: Publish the result to the run summary
+        if: always()
+        run: |
+          {
+            printf '## Suite under pandas 3\n\n'
+            printf '`%s`\n\n' "$(python -c 'import pandas; print("pandas", pandas.__version__)')"
+            printf '```\n'
+            tail -c 12000 /tmp/pandas3.txt
+            printf '\n```\n'
+          } >> "$GITHUB_STEP_SUMMARY"
