@@ -12,6 +12,24 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
+## Unreleased
+
+### Fixed
+
+- pandas is capped below 3. pandas 3.0 was released in January 2026 and
+  installs on Python 3.11 and newer, so the floor-only `pandas>=2.0` had begun
+  resolving to it. pandas 3 infers microsecond resolution when parsing date
+  strings, where pandas 2 always gave nanoseconds, so a parsed column arrives
+  as `datetime64[us]`. `shelterprep/dates.py` states `datetime64[ns]` as the
+  one date rule in the package and two tests assert it by name, which made a
+  fresh install on a recent Python a failing suite.
+
+  **No numbers move** for an install that already resolved to pandas 2, which
+  is every install on Python 3.10 or older and any environment holding pandas
+  2 deliberately. Whether pandas 3 would move a number is untested, and
+  answering that is part of the migration the cap defers: the module has to
+  say whether it promises one resolution or only a naive `datetime64`.
+
 ## 0.3.1 (2026-08-22)
 
 Documentation. **No code changed**: `shelterprep/` is untouched apart from the

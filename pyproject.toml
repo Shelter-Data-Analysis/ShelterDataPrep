@@ -19,13 +19,21 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
-# Floors, not pins.  pandas 2 is required outright: this package exists partly
-# because pandas 2 rejects the datetime handling the stale pipeline relied
-# on, and the date rules here assume its behavior.  The exact versions a given
-# result was produced under are recorded in that run's log, which is the record
-# that matters for reproducing it.
+# Floors, not pins, with one exception.  pandas 2 is required outright: this
+# package exists partly because pandas 2 rejects the datetime handling the
+# stale pipeline relied on, and the date rules here assume its behavior.  The
+# exact versions a given result was produced under are recorded in that run's
+# log, which is the record that matters for reproducing it.
+#
+# The exception is the upper bound.  pandas 3 infers microsecond resolution
+# where pandas 2 always gave nanoseconds, so parsing a string column yields
+# datetime64[us].  `shelterprep.dates` states datetime64[ns] as a package-wide
+# rule and two tests assert it, so a floor-only requirement gives a failing
+# suite wherever pandas 3 installs -- Python 3.11 and newer.  The cap holds
+# until that rule is either made resolution-agnostic or set to one unit
+# deliberately.
 dependencies = [
-    "pandas>=2.0",
+    "pandas>=2.0,<3",
     "PyYAML>=6.0",
 ]
 

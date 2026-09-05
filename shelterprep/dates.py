@@ -14,6 +14,12 @@ Normalizing to midnight keeps the dtype uniform while discarding the time,
 which is what "a date with no time attached" ought to mean in pandas.  Values
 only leave this representation at the very end, in `to_iso`, on their way to
 the output file.
+
+The ``[ns]`` half of that rule is specific to pandas 2, which is why
+`pyproject.toml` caps pandas below 3.  pandas 3 infers microsecond resolution
+from strings, so the same parse returns ``datetime64[us]``.  Lifting the cap
+means deciding first whether this module promises one unit or only a naive
+``datetime64``, and saying so here.
 """
 
 from __future__ import annotations
