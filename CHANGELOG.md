@@ -14,21 +14,36 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ## Unreleased
 
-### Fixed
+### Changed
 
-- pandas is capped below 3. pandas 3.0 was released in January 2026 and
+- pandas 3 is supported, and the cap added earlier in this cycle is lifted.
+  The two tests that failed under it asserted `dtype == "datetime64[ns]"`,
+  which pinned the resolution by accident: pandas 3 infers `[us]` from
+  strings. The rule this package actually holds to is `datetime64` rather than
+  `datetime.date`, and naive rather than tz-aware, so that is what the tests
+  now assert and what `shelterprep/dates.py` now states. **No numbers move**:
+  CI prepares `configs/example_tiny.yaml` under pandas 2 and pandas 3 on every
+  push and compares the prepared file, the statistics table, and the summary
+  byte for byte.
+
+### Added
+
+- GitHub Actions runs the suite on every push and pull request across Python
+  3.9 through 3.13, which covers both pandas majors, plus the output
+  comparison above. The README carries a status badge; the coverage figure
+  beside the test count stays hand-maintained.
+
+### Superseded within this cycle
+
+- pandas was capped below 3. pandas 3.0 was released in January 2026 and
   installs on Python 3.11 and newer, so the floor-only `pandas>=2.0` had begun
   resolving to it. pandas 3 infers microsecond resolution when parsing date
   strings, where pandas 2 always gave nanoseconds, so a parsed column arrives
   as `datetime64[us]`. `shelterprep/dates.py` states `datetime64[ns]` as the
   one date rule in the package and two tests assert it by name, which made a
-  fresh install on a recent Python a failing suite.
-
-  **No numbers move** for an install that already resolved to pandas 2, which
-  is every install on Python 3.10 or older and any environment holding pandas
-  2 deliberately. Whether pandas 3 would move a number is untested, and
-  answering that is part of the migration the cap defers: the module has to
-  say whether it promises one resolution or only a naive `datetime64`.
+  fresh install on a recent Python a failing suite. The cap held for as long
+  as it took to answer whether pandas 3 moved a number; it did not, and the
+  cap is gone. No release went out with it.
 
 ## 0.3.1 (2026-08-22)
 

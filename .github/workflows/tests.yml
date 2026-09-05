@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The supported matrix: every Python the package claims in requires-python,
-  # against pandas as the requirements actually pin it.
+  # Every Python the package claims in requires-python.  pandas resolves to 2
+  # on 3.9 and 3.10 and to 3 on 3.11 and newer, so the matrix covers both
+  # major versions without asking for either by name.
   tests:
     runs-on: ubuntu-latest
     strategy:
@@ -25,49 +26,14 @@ jobs:
       - run: python -m pip list
       - run: python -m pytest tests/ -q
 
-  # Deliberately past the pandas<3 cap, to answer the question the cap defers:
-  # what actually breaks under pandas 3, and whether any output number moves.
-  # Advisory -- a red result here is a to-do, not a broken main.
-  pandas3:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-      - run: python -m pip install --upgrade pip
-      - run: python -m pip install -r requirements.txt
-      - run: python -m pip install "pandas>=3"
-      - run: python -m pip list
-      # Captured to the run summary, which is readable on a public repository
-      # without admin rights.  The job log is not, and the point of this job is
-      # that the answer can be read.
-      - name: Run the suite under pandas 3
-        run: |
-          set -o pipefail
-          python -m pytest tests/ -q 2>&1 | tee /tmp/pandas3.txt
-      - name: Publish the result to the run summary
-        if: always()
-        run: |
-          {
-            printf '## Suite under pandas 3\n\n'
-            printf '`%s`\n\n' "$(python -c 'import pandas; print("pandas", pandas.__version__)')"
-            printf '```\n'
-            tail -c 12000 /tmp/pandas3.txt
-            printf '\n```\n'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  # The cap defers a question the test suite cannot answer: not whether the
-  # tests pass under pandas 3, but whether any number moves.  One config runs
-  # under each pandas and the three data files are compared byte for byte.
-  # The run log is left out, since it records versions and a timestamp and so
-  # differs by design.  Advisory, like the job above, and the verdict goes to
-  # an annotation because those are readable on a public repository without
-  # admin rights.
+  # A passing suite is not the same claim as an unchanged result.  One config
+  # runs under each pandas and the three data files are compared byte for
+  # byte; the run log is left out, since it records versions and a timestamp
+  # and so differs by design.  The verdict goes to an annotation, which is
+  # readable on a public repository without admin rights, unlike job logs and
+  # run summaries.
   output-diff:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -77,6 +43,7 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - name: Prepare under pandas 2
         run: |
+          python -m pip install "pandas<3"
           python -c "import pandas; print('pandas', pandas.__version__)"
           python -m shelterprep configs/example_tiny.yaml -q
           mkdir -p /tmp/pandas2
@@ -93,9 +60,9 @@ jobs:
       - name: Compare
         run: |
           if diff -ru /tmp/pandas2 /tmp/pandas3 > /tmp/diff.txt; then
-            echo "::notice title=pandas 3 output::identical to pandas 2 on configs/example_tiny.yaml"
+            echo "::notice title=pandas 2 and 3::identical output on configs/example_tiny.yaml"
           else
-            echo "::error title=pandas 3 output::differs from pandas 2 on configs/example_tiny.yaml"
+            echo "::error title=pandas 2 and 3::output differs on configs/example_tiny.yaml"
             head -60 /tmp/diff.txt
             exit 1
           fi

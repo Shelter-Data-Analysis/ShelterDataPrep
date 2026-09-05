@@ -172,9 +172,10 @@ python3 -m pytest tests/ -q
 count back out of this file and compares it against the suite it describes, so
 a test added without touching this line fails the run; the coverage figure
 beside it is maintained by hand. GitHub Actions runs the suite on every push
-and pull request, across each Python the package claims, plus one advisory job
-that installs pandas 3 past the cap to keep the cost of that migration
-visible. Most of them pin down a decision documented in
+and pull request, across each Python the package claims, which covers pandas 2
+and pandas 3 both. A separate job prepares the example config under each of
+them and compares the output byte for byte, so a pandas upgrade that would
+move a number fails visibly rather than quietly. Most of them pin down a decision documented in
 `docs/`, so a test name reads as the rule it protects. For example, the age
 cutoff falling in the lower group, a map being simultaneous rather than
 sequential, a still-in-care animal staying `IN` however old its intake. The

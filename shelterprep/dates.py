@@ -1,7 +1,9 @@
 """The one date rule in this package.
 
-Every date-valued thing here is ``datetime64[ns]``.  Never ``datetime.date``,
-never a mix of the two.
+Every date-valued thing here is a naive ``datetime64``.  Never
+``datetime.date``, never tz-aware, never a mix.  The resolution is pandas's
+to choose: pandas 2 gives ``[ns]``, pandas 3 infers ``[us]`` from strings, and
+nothing here depends on which.
 
 This is not a stylistic preference.  The stale pipeline round-tripped date
 columns through ``.dt.date`` and then compared the result against
@@ -14,12 +16,6 @@ Normalizing to midnight keeps the dtype uniform while discarding the time,
 which is what "a date with no time attached" ought to mean in pandas.  Values
 only leave this representation at the very end, in `to_iso`, on their way to
 the output file.
-
-The ``[ns]`` half of that rule is specific to pandas 2, which is why
-`pyproject.toml` caps pandas below 3.  pandas 3 infers microsecond resolution
-from strings, so the same parse returns ``datetime64[us]``.  Lifting the cap
-means deciding first whether this module promises one unit or only a naive
-``datetime64``, and saying so here.
 """
 
 from __future__ import annotations
@@ -37,7 +33,7 @@ DATE_FORMATS = (ISO8601, MIXED)
 
 
 def to_datetime(values, date_format=ISO8601, keep_time=False):
-    """Parse *values* to ``datetime64[ns]``; unparseable entries become ``NaT``.
+    """Parse *values* to a naive ``datetime64``; unparseable entries become ``NaT``.
 
     The explicit ``date_format`` is load-bearing, not decorative.  Left to
     infer, pandas locks onto one format from the first non-null value and
@@ -61,7 +57,7 @@ def to_datetime(values, date_format=ISO8601, keep_time=False):
 
 
 def _drop_timezone(parsed, values, date_format):
-    """Force a tz-aware or mixed-offset parse back to plain ``datetime64[ns]``.
+    """Force a tz-aware or mixed-offset parse back to a naive ``datetime64``.
 
     Some exports stamp an offset on every value -- the LA County open-data
     extract writes ``2021/09/14 07:00:00+00``, which is local midnight

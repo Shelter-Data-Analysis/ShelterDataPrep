@@ -139,6 +139,22 @@ def test_filtering_on_window_presence_without_a_window_is_an_error(tmp_path):
 
 # --- dates -----------------------------------------------------------------
 
+def assert_naive_datetime64(values):
+    """Assert the package's date rule, without pinning the resolution.
+
+    pandas 2 always parsed to ``[ns]``; pandas 3 infers ``[us]`` from strings.
+    The resolution was never the rule -- the rule is `datetime64` rather than
+    `datetime.date`, and naive rather than tz-aware -- so comparing the dtype
+    against a literal pinned it by accident.  ``kind`` alone is not enough
+    either: a tz-aware dtype also reports ``"M"``, which would let the LA
+    County regression back in unnoticed.
+    """
+    dtype = values.dtype
+    assert not isinstance(dtype, pd.DatetimeTZDtype), "tz-aware: {0}".format(dtype)
+    assert dtype.kind == "M", "not datetime64: {0}".format(dtype)
+
+
+
 def test_iso8601_keeps_rows_that_format_inference_would_destroy():
     # The regression this package exists for: pandas locks onto the first
     # value's format and coerces the rest to NaT.
@@ -152,7 +168,7 @@ def test_an_offset_stamped_source_still_parses_to_naive_datetime64():
     # datetime64[ns, UTC] for that, which would break every later comparison.
     values = pd.Series(["2021/09/14 07:00:00+00", "2022/01/20 08:00:00+00", ""])
     parsed = dates.to_datetime(values, dates.MIXED)
-    assert parsed.dtype == "datetime64[ns]"
+    assert_naive_datetime64(parsed)
     assert list(parsed.dt.strftime("%Y-%m-%d")[:2]) == ["2021-09-14", "2022-01-20"]
 
 
@@ -166,7 +182,7 @@ def test_mixed_parses_us_style_two_digit_years():
 def test_dates_are_datetime64_never_date_objects(tmp_path):
     frame = prepared(tmp_path).frame
     for column in ("intake_date", "outcome_date", "dob"):
-        assert frame[column].dtype == "datetime64[ns]"
+        assert_naive_datetime64(frame[column])
     # The comparison that raised TypeError in the stale pipeline.
     assert (frame["intake_date"] > pd.Timestamp("2019-01-01")).any()
 
