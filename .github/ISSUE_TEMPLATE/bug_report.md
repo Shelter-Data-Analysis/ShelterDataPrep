@@ -7,11 +7,9 @@ labels: bug
 
 <!--
 Fill in under each heading below.
-
 The data itself is generally not yours to send, and is usually not needed: the
 settings, the table, and the log locate most things between them.  If a row's
 contents matter, describe the row rather than pasting it.
-
 These lines are a comment and will not appear in the posted issue.
 -->
 

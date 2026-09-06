@@ -7,9 +7,7 @@ labels: question
 
 <!--
 Fill in under each heading below.
-
 This is a small academic project, so answers come when they come.
-
 These lines are a comment and will not appear in the posted issue.
 -->
 

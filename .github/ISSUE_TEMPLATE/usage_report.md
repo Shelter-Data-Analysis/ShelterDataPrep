@@ -7,10 +7,8 @@ labels: usage report
 
 <!--
 Fill in under each heading below.  A few paragraphs is plenty.
-
 This is read as a report of experience, not a feature request that anyone has
 undertaken to fill.
-
 These lines are a comment and will not appear in the posted issue.
 -->
 
