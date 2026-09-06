@@ -120,10 +120,12 @@ alongside its row count.
 
 The package follows a simple rule on datetimes:
 
-> Every date-valued thing here is `datetime64[ns]`, from parse to write.
+> Every date-valued thing here is a naive `datetime64`, from parse to write.
 
 The stale pipeline mixed `datetime.date` with `datetime64`, and pandas 2
-refuses to compare the two.
+refuses to compare the two. The resolution is pandas's to choose — pandas 2
+gives `[ns]`, pandas 3 infers `[us]` from strings — and nothing here depends
+on which.
 
 `keep_time: false` (the default) normalizes to midnight, effectively dropping
 the time without changing the data type. `keep_time: true` preserves time
