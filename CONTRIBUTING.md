@@ -1,7 +1,8 @@
 # Contributing
 
 Four things, in order of how much they help: report what you did with the
-tool, report a bug, ask a question, change the code.
+tool, report a bug, ask a question, change the code. The first three are
+issues, and each has a template that asks for what an answer usually needs.
 
 ## If you have prepared a shelter's data
 
