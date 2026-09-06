@@ -1,8 +1,17 @@
 ---
 name: Question
 about: Help with a config, a statistics table, or a run
+title: "Question: "
 labels: question
 ---
+
+<!--
+Fill in under each heading below.
+
+This is a small academic project, so answers come when they come.
+
+These lines are a comment and will not appear in the posted issue.
+-->
 
 **What you are trying to do.**
 
@@ -11,5 +20,3 @@ statistics table usually help here too.
 
 **What you have already read** in `docs/`, if anything — that says what was
 not clear enough, which is worth knowing on its own.
-
-This is a small academic project, so answers come when they come.
