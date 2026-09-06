@@ -28,6 +28,11 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ### Added
 
+- `CONTRIBUTING.md` now says where to take a bug, a question, and a patch, not
+  only what to do with prepared data, and asks for a short usage report — what
+  was most useful, what was less useful, what is missing — deposited with the
+  extract, the settings, and the result, and posted to the issue tracker. The
+  README points at all of it.
 - GitHub Actions runs the suite on every push and pull request across Python
   3.9 through 3.13, which covers both pandas majors, plus the output
   comparison above. The README carries a status badge; the coverage figure

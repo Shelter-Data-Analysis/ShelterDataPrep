@@ -80,11 +80,14 @@ because reproducing a result means stating the environment it ran in.
 | [Reproducibility and publishing](docs/reproducibility.md) | reproducibility and publishing: the run log, the digests, and what travels with a file into a paper |
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
-prepared. In a nutshell, deposit the extract, the settings, and the result
-together, and cite the version you actually ran. [CHANGELOG.md](CHANGELOG.md)
-records what changed between versions, and flags anything that could move a
-number (that is, anything affecting the data and statistics this tool
-generates).
+prepared — deposit the extract, the settings, the result, and a short usage
+report together, and cite the version you actually ran — and where to take a
+bug, a question, or a patch. All three go to [the issue
+tracker](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/issues).
+
+[CHANGELOG.md](CHANGELOG.md) records what changed between versions, and flags
+anything that could move a number (that is, anything affecting the data and
+statistics this tool generates).
 
 ## The shipped configs
 
