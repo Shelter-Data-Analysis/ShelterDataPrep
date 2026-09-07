@@ -26,6 +26,44 @@ jobs:
       - run: python -m pip list
       - run: python -m pytest tests/ -q
 
+  # The jobs above run from a clone against requirements.txt, so nothing there
+  # exercises the install the README documents: the console script on the
+  # PATH, and the `excel` extra that a workbook source needs.  Two throwaway
+  # virtualenvs, because the claim that a plain install leaves openpyxl out
+  # cannot be checked in an environment that already has it.
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: A plain install leaves openpyxl out
+        run: |
+          python -m venv /tmp/plain
+          /tmp/plain/bin/python -m pip install --upgrade pip
+          /tmp/plain/bin/python -m pip install .
+          if /tmp/plain/bin/python -c "import openpyxl" 2>/dev/null; then
+            echo "::error title=install::a plain install pulled in openpyxl"
+            exit 1
+          fi
+      - name: The excel extra adds it
+        run: |
+          python -m venv /tmp/excel
+          /tmp/excel/bin/python -m pip install --upgrade pip
+          /tmp/excel/bin/python -m pip install ".[excel]"
+          /tmp/excel/bin/python -c "import openpyxl"
+      # From outside the clone, so the import resolves to the installed
+      # package rather than to the source tree sitting in the working
+      # directory.  The example config's paths are relative to the settings
+      # file, so it still finds its fixture and still writes to results/.
+      - name: The console script prepares the example
+        run: |
+          cd /tmp
+          /tmp/excel/bin/shelterprep --help
+          /tmp/excel/bin/shelterprep "$GITHUB_WORKSPACE/configs/example_tiny.yaml" -q
+          test -s "$GITHUB_WORKSPACE/results/EX_data.csv"
+
   # A passing suite is not the same claim as an unchanged result.  One config
   # runs under each pandas and the three data files are compared byte for
   # byte; the run log is left out, since it records versions and a timestamp

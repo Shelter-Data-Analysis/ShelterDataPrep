@@ -200,7 +200,9 @@ Actions runs the suite on every push and pull request, across each Python the
 package claims, which covers pandas 2 and pandas 3 both. A separate job
 prepares the example config under each of them and compares the output byte
 for byte, so a pandas upgrade that would move a number fails visibly rather
-than quietly.
+than quietly. A third installs the package into a clean virtualenv and runs
+the console script from outside the clone, since running from a clone proves
+nothing about the install above.
 
 The tests do **not** establish that a config is *correct* for its shelter. A
 config is a set of claims about the data. Check its statistics table for clues

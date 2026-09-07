@@ -37,8 +37,11 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
   the version rather than leaving a reporter to guess what locates a problem.
 - GitHub Actions runs the suite on every push and pull request across Python
   3.9 through 3.13, which covers both pandas majors, plus the output
-  comparison above. The README carries a status badge; the coverage figure
-  beside the test count stays hand-maintained.
+  comparison above. A third job checks the install the README documents — a
+  plain one, the `excel` extra, and the console script run from outside the
+  clone — none of which the other two touch, since they run from a clone
+  against `requirements.txt`. The README carries a status badge; the coverage
+  figure beside the test count stays hand-maintained.
 
 ### Superseded within this cycle
 
