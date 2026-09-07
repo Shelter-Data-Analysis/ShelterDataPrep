@@ -95,8 +95,10 @@ because reproducing a result means stating the environment it ran in.
 [CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
 prepared — deposit the extract, the settings, the result, and a short usage
 report together, and cite the version you actually ran — and where to take a
-bug, a question, or a patch. All three go to [the issue
-tracker](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/issues).
+bug, a question, or a patch. All of it goes to [the issue
+tracker](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/issues): the
+usage report, the bug, and the question each have a template, and a patch
+starts as an issue too.
 
 [CHANGELOG.md](CHANGELOG.md) records what changed between versions, and flags
 anything that could move a number (that is, anything affecting the data and
@@ -184,18 +186,21 @@ pandas 2.
 python3 -m pytest tests/ -q
 ```
 
-86 tests, 96% line coverage of `shelterprep/`. One of the tests reads that
-count back out of this file and compares it against the suite it describes, so
-a test added without touching this line fails the run; the coverage figure
-beside it is maintained by hand. GitHub Actions runs the suite on every push
-and pull request, across each Python the package claims, which covers pandas 2
-and pandas 3 both. A separate job prepares the example config under each of
-them and compares the output byte for byte, so a pandas upgrade that would
-move a number fails visibly rather than quietly. Most of them pin down a decision documented in
-`docs/`, so a test name reads as the rule it protects. For example, the age
-cutoff falling in the lower group, a map being simultaneous rather than
-sequential, a still-in-care animal staying `IN` however old its intake. The
-non-covered portion is defensive branches and the console printing.
+86 tests, 96% line coverage of `shelterprep/`. Most of them pin down a
+decision documented in `docs/`, so a test name reads as the rule it protects.
+For example, the age cutoff falling in the lower group, a map being
+simultaneous rather than sequential, a still-in-care animal staying `IN`
+however old its intake. The non-covered portion is defensive branches and the
+console printing.
+
+One of the tests reads the test count back out of this file and compares it
+against the suite it describes, so a test added without touching that line
+fails the run; the coverage figure beside it is maintained by hand. GitHub
+Actions runs the suite on every push and pull request, across each Python the
+package claims, which covers pandas 2 and pandas 3 both. A separate job
+prepares the example config under each of them and compares the output byte
+for byte, so a pandas upgrade that would move a number fails visibly rather
+than quietly.
 
 The tests do **not** establish that a config is *correct* for its shelter. A
 config is a set of claims about the data. Check its statistics table for clues

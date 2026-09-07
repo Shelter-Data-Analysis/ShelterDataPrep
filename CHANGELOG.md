@@ -32,9 +32,9 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
   only what to do with prepared data, and asks for a short usage report — what
   was most useful, what was less useful, what is missing — deposited with the
   extract, the settings, and the result, and posted to the issue tracker. The
-  README points at all of it. The three have issue templates, which ask for
-  the settings file, the statistics table, and the version rather than leaving
-  a reporter to guess what locates a problem.
+  README points at all of it. The bug, the question, and the usage report have
+  issue templates, which ask for the settings file, the statistics table, and
+  the version rather than leaving a reporter to guess what locates a problem.
 - GitHub Actions runs the suite on every push and pull request across Python
   3.9 through 3.13, which covers both pandas majors, plus the output
   comparison above. The README carries a status badge; the coverage figure

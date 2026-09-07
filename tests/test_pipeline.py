@@ -154,7 +154,6 @@ def assert_naive_datetime64(values):
     assert dtype.kind == "M", "not datetime64: {0}".format(dtype)
 
 
-
 def test_iso8601_keeps_rows_that_format_inference_would_destroy():
     # The regression this package exists for: pandas locks onto the first
     # value's format and coerces the rest to NaT.
