@@ -5,6 +5,19 @@
 Turns a raw animal shelter extract (CSV, gzipped CSV, or Excel) into a tidy CSV,
 plus a statistics table recording what each step removed or changed.
 
+Every shelter exports differently — its own column names, date formats, and
+outcome vocabularies — so preparing an extract has meant a script per shelter,
+with the decisions that shape the sample buried in code and nothing to hand a
+reviewer. `stale/` holds the per-shelter scripts this replaces. ShelterDataPrep
+puts those decisions in a settings file that can be read, deposited, and cited,
+and makes the run account for them: [the statistics
+table](docs/statistics-table.md) counts every row removed and every value
+mapped, including the values that matched nothing, and [the run
+log](docs/reproducibility.md) pins the version and the digests of what went in
+and what came out. It is for anyone holding a shelter extract and a
+length-of-stay question; [preparing a shelter this repository has never
+seen](docs/getting-started.md) is six steps.
+
 A run is one YAML settings file:
 
 ```bash
