@@ -12,7 +12,14 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.4.0 (2026-09-07)
+
+pandas 3 is supported. **No numbers move**: a run of any config produces
+byte-identical output to 0.3.1, and CI compares the two majors byte for byte on
+every push. The minor version moves because the supported dependency range
+does, not because a result did. The prepared files deposited at
+[10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368) were
+produced under 0.3.0 and stay valid, since 0.4.0 writes the same bytes.
 
 ### Changed
 

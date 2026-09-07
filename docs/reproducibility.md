@@ -12,7 +12,7 @@ directory makes no difference. The run log is enough to reproduce a result.
 ```
 ShelterDataPrep run log
 
-shelterprep   0.3.0
+shelterprep   0.4.0
 run at        2026-08-21T15:05:09
 settings      configs/orange_county2.yaml
 source        /Users/you/projects/_shelter_raw/OC_raw.csv.gz

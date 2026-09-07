@@ -22,8 +22,8 @@
 #
 ####   AFTER publishing a release, edit the Zenodo record's `version` field to
 ####   drop the leading `v`.  Zenodo takes that field from the tag name rather
-####   than from `version` above, so the record reads `v0.3.1` where a run log
-####   reads `0.3.1`, and the pair a reader checks is the DOI and the version.
+####   than from `version` above, so the record reads `v0.4.0` where a run log
+####   reads `0.4.0`, and the pair a reader checks is the DOI and the version.
 
 cff-version: 1.2.0
 message: >-
@@ -44,8 +44,8 @@ authors:
   - family-names: "Mavrovouniotis"
     given-names: "Michael Loizos"
     orcid: "https://orcid.org/0009-0009-9896-2761"
-version: "0.3.1"
-date-released: "2026-08-22"
+version: "0.4.0"
+date-released: "2026-09-07"
 license: MIT
 doi: "10.5281/zenodo.22051338"
 repository-code: "https://github.com/Shelter-Data-Analysis/ShelterDataPrep"
