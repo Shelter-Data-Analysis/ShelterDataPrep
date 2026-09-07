@@ -51,8 +51,16 @@ def to_datetime(values, date_format=ISO8601, keep_time=False):
     the dtype is unchanged, so the result still compares cleanly against every
     other date in the package.
     """
-    parsed = pd.to_datetime(values, format=date_format, errors="coerce")
-    parsed = _drop_timezone(parsed, values, date_format)
+    try:
+        parsed = pd.to_datetime(values, format=date_format, errors="coerce")
+    except ValueError:
+        # Non-uniform offsets, as pandas 3 reports them: it raises rather
+        # than handing back the object column pandas 2 gives, and
+        # ``errors="coerce"`` does not suppress it.  A parse that fails for
+        # any other reason raises again from here, unchanged.
+        parsed = _via_utc(values, date_format)
+    else:
+        parsed = _drop_timezone(parsed, values, date_format)
     return parsed if keep_time else parsed.dt.normalize()
 
 
@@ -61,23 +69,29 @@ def _drop_timezone(parsed, values, date_format):
 
     Some exports stamp an offset on every value -- the LA County open-data
     extract writes ``2021/09/14 07:00:00+00``, which is local midnight
-    expressed in UTC.  pandas returns ``datetime64[ns, UTC]`` for that, or
-    ``object`` when the offsets are not uniform.  Either would quietly break
-    the rule this module exists to enforce, and the breakage would surface far
-    away, as a comparison that no longer works.
+    expressed in UTC.  pandas returns ``datetime64[ns, UTC]`` for that.  When
+    the offsets are not uniform, pandas 2 returns ``object`` instead; pandas 3
+    raises there, which `to_datetime` catches.  Any of these would quietly
+    break the rule this module exists to enforce, and the breakage would
+    surface far away, as a comparison that no longer works.
+    """
+    if isinstance(parsed.dtype, pd.DatetimeTZDtype):
+        return parsed.dt.tz_localize(None)
+    if parsed.dtype == object:
+        return _via_utc(values, date_format)
+    return parsed
+
+
+def _via_utc(values, date_format):
+    """Re-parse *values* as UTC, then drop the zone.
 
     The UTC wall clock is kept as the naive value, so the calendar date is the
     one the export encoded.  For an extract that means local midnight -- the
     common case, and true of LA County -- that is the intended date.
     """
-    if isinstance(parsed.dtype, pd.DatetimeTZDtype):
-        return parsed.dt.tz_localize(None)
-    if parsed.dtype == object:
-        # Mixed offsets: normalize to UTC first, then drop the zone.
-        coerced = pd.to_datetime(values, format=date_format,
-                                 errors="coerce", utc=True)
-        return coerced.dt.tz_localize(None)
-    return parsed
+    coerced = pd.to_datetime(values, format=date_format,
+                             errors="coerce", utc=True)
+    return coerced.dt.tz_localize(None)
 
 
 def to_timestamp(value):

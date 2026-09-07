@@ -171,6 +171,44 @@ def test_an_offset_stamped_source_still_parses_to_naive_datetime64():
     assert list(parsed.dt.strftime("%Y-%m-%d")[:2]) == ["2021-09-14", "2022-01-20"]
 
 
+def test_a_source_with_disagreeing_offsets_still_parses_to_naive_datetime64():
+    # Not the case above: there every value carries +00, and pandas hands back
+    # one tz-aware column.  When the offsets disagree there is no single zone
+    # to report, and the two pandas majors say so differently -- pandas 2
+    # returns an object column, pandas 3 raises.  Both have to arrive naive,
+    # on the UTC wall clock, or the LA County regression is back.
+    values = pd.Series(["2021-09-14 07:00:00+00:00",
+                        "2021-11-14 07:00:00-08:00", ""])
+    parsed = dates.to_datetime(values, dates.MIXED)
+    assert_naive_datetime64(parsed)
+    assert list(parsed.dt.strftime("%Y-%m-%d")[:2]) == ["2021-09-14",
+                                                        "2021-11-14"]
+
+
+def test_the_pandas_3_offset_error_is_handled_where_pandas_2_returns_a_column(
+        monkeypatch):
+    # The test above takes whichever path the installed pandas provides, so
+    # the other one goes unexercised -- and pandas 3 needs Python 3.11, which
+    # is not every machine this suite runs on.  Standing in for the raise
+    # keeps the handling covered wherever the suite runs.  The message is
+    # pandas's own, from tools/datetimes.py.
+    real = pd.to_datetime
+
+    def raising(values, **kwargs):
+        if not kwargs.get("utc"):
+            raise ValueError(
+                "Mixed timezones detected. Pass utc=True in to_datetime or "
+                "tz='UTC' in DatetimeIndex to convert to a common timezone.")
+        return real(values, **kwargs)
+
+    monkeypatch.setattr(pd, "to_datetime", raising)
+    values = pd.Series(["2021-09-14 07:00:00+00:00",
+                        "2021-11-14 07:00:00-08:00"])
+    parsed = dates.to_datetime(values, dates.MIXED)
+    assert_naive_datetime64(parsed)
+    assert list(parsed.dt.strftime("%Y-%m-%d")) == ["2021-09-14", "2021-11-14"]
+
+
 def test_mixed_parses_us_style_two_digit_years():
     values = pd.Series(["3/29/24", "4/10/15", "9/9/24"])
     parsed = dates.to_datetime(values, dates.MIXED)

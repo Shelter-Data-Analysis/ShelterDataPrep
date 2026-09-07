@@ -26,6 +26,18 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
   push and compares the prepared file, the statistics table, and the summary
   byte for byte.
 
+### Fixed
+
+- A source whose values carry *disagreeing* offsets now prepares under pandas
+  3, where it raised `ValueError: Mixed timezones detected`. pandas 2 hands
+  such a column back as `object` dtype, which `shelterprep/dates.py` has
+  always re-parsed as UTC and then made naive; pandas 3 raises instead, and
+  `errors="coerce"` does not suppress it, so the parse never reached that
+  handling. Both majors now take the same path. **No numbers move**: under
+  pandas 2 the result is unchanged, and under pandas 3 the runs this affected
+  did not finish at all. A uniform offset on every value — the LA County case,
+  `+00` throughout — was never affected.
+
 ### Added
 
 - `CONTRIBUTING.md` now says where to take a bug, a question, and a patch, not
