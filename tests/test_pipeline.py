@@ -305,6 +305,59 @@ def test_a_map_leaves_unlisted_values_alone(tmp_path):
     assert "LRG" in sizes and "SMALL" in sizes and "LARGE" not in sizes
 
 
+# Every animal_size value in tiny.csv, the blank (A014) included.
+_ALL_SIZES = {"LARGE": "LARGE", "SMALL": "SMALL", "MED": "MED", "PUPPY": "SMALL",
+              "X-LRG": "LARGE", "905-V": UNKNOWN, "TOY": "SMALL", UNKNOWN: UNKNOWN}
+
+
+def test_a_complete_map_covering_every_value_runs(tmp_path):
+    prep = prepared(tmp_path, steps=[
+        {"map": {"animal_size": dict(_ALL_SIZES)}, "complete": True}])
+    assert set(prep.frame.animal_size) == {"LARGE", "SMALL", "MED", UNKNOWN}
+
+
+def test_a_complete_map_stops_on_a_value_it_has_no_entry_for(tmp_path):
+    table = {k: v for k, v in _ALL_SIZES.items() if k not in ("TOY", UNKNOWN)}
+    with pytest.raises(SourceError) as caught:
+        prepared(tmp_path, steps=[{"map": {"animal_size": table}, "complete": True}])
+    message = str(caught.value)
+    assert "'TOY': 1 row(s)" in message and "'_UNKNOWN_': 1 row(s)" in message
+    assert "MED" not in message
+
+
+def test_a_complete_map_checks_only_the_rows_its_where_reaches(tmp_path):
+    # TOY (A011) and the blank (A014) are both STRAY, so the guard keeps them
+    # out of reach and the shorter table suffices.
+    table = {k: v for k, v in _ALL_SIZES.items() if k not in ("TOY", UNKNOWN)}
+    prep = prepared(tmp_path, steps=[
+        {"map": {"animal_size": table}, "complete": True,
+         "where_not": {"intake_type": "STRAY"}}])
+    assert "TOY" in set(prep.frame.animal_size)
+
+
+def test_complete_false_is_the_default(tmp_path):
+    prep = prepared(tmp_path, steps=[
+        {"map": {"animal_size": {"LARGE": "LRG"}}, "complete": False}])
+    assert "SMALL" in set(prep.frame.animal_size)
+
+
+def test_complete_is_a_step_option_so_a_value_may_be_called_complete(tmp_path):
+    table = dict(_ALL_SIZES, MED="complete")
+    prep = prepared(tmp_path, steps=[
+        {"map": {"animal_size": table}, "complete": True}])
+    assert "complete" in set(prep.frame.animal_size)
+
+
+@pytest.mark.parametrize("step", [
+    {"cut": {"animal_type": "CAT"}, "complete": True},
+    {"dedup": None, "complete": True},
+    {"map": {"animal_size": {"LARGE": "LRG"}}, "complete": "yes please"},
+])
+def test_complete_is_rejected_off_a_map_or_when_not_a_boolean(tmp_path, step):
+    with pytest.raises(SettingsError, match="complete"):
+        load(write_settings(tmp_path, steps=[step]))
+
+
 # --- deduplication ---------------------------------------------------------
 
 def _twice(tmp_path, intake, outcome, second_size="MED"):

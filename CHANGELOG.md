@@ -12,6 +12,17 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
+## Unreleased
+
+**No numbers move**: an existing config produces byte-identical output.
+
+### Added
+
+- `complete: true` on a map step stops the run when a row the step reaches
+  holds a value the map has no entry for, and lists those values with their
+  row counts. Without it, such a value passes through unmapped. See
+  [complete maps](docs/steps.md#complete-maps).
+
 ## 0.4.0 (2026-09-07)
 
 pandas 3 is supported. **No numbers move**: a run of any config produces

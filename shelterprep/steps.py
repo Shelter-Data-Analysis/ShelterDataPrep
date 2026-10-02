@@ -61,6 +61,19 @@ def selection(frame, step):
     return frame[step.column].isin(step.table) & _restrict(frame, step)
 
 
+def unmapped(frame, step):
+    """Counts of the values a complete map reaches but has no entry for.
+
+    Empty for a map that is not complete, and for a complete one whose table
+    covers the column.  The rows checked are the ones the step's ``where:``
+    and ``where_not:`` let it reach, so a guarded map vouches only for those.
+    """
+    if not (isinstance(step, Map) and step.complete):
+        return pd.Series(dtype=int)
+    reached = frame.loc[_restrict(frame, step), step.column]
+    return reached[~reached.isin(step.table)].value_counts()
+
+
 def breakdown(frame, step, chosen):
     """How a step's work splits across each value its settings name.
 

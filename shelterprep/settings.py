@@ -56,7 +56,7 @@ _TOP_LEVEL_KEYS = frozenset({
     "columns", "age_groups", "unique_report", "steps",
 })
 
-_STEP_KEYS = frozenset({"cut", "map", "dedup", "where", "where_not"})
+_STEP_KEYS = frozenset({"cut", "map", "dedup", "where", "where_not", "complete"})
 
 _ACTIONS = ("cut", "map", "dedup")
 
@@ -132,6 +132,10 @@ class Map:
     One column per step, because a step produces one statistics row and a row
     describing two columns at once cannot be read unambiguously.  Two rewrites
     are two steps.
+
+    ``complete`` makes the table a claim about the data: every value the step
+    reaches has an entry, so a value the config never anticipated stops the
+    run instead of passing through unmapped.
     """
 
     index: int
@@ -139,6 +143,7 @@ class Map:
     table: Dict[str, str]
     where: Dict[str, FrozenSet[str]] = field(default_factory=dict)
     where_not: Dict[str, FrozenSet[str]] = field(default_factory=dict)
+    complete: bool = False
 
     action = "map"
 
@@ -154,6 +159,8 @@ class Map:
             pairs += " where " + _describe(self.where)
         if self.where_not:
             pairs += " where not " + _describe(self.where_not)
+        if self.complete:
+            pairs += " (complete)"
         return pairs
 
 
@@ -222,6 +229,15 @@ def _parse_step(index, raw):
                 index, ", ".join("'{0}:'".format(name) for name in _ACTIONS)))
     action = present[0]
 
+    if "complete" in raw:
+        if action != "map":
+            raise SettingsError(
+                "step {0}: 'complete:' applies to a map, not a {1}".format(index, action))
+        if not isinstance(raw["complete"], bool):
+            raise SettingsError(
+                "step {0}: 'complete:' takes true or false, got {1!r}".format(
+                    index, raw["complete"]))
+
     if action == "cut":
         if "where" in raw or "where_not" in raw:
             raise SettingsError(
@@ -265,6 +281,7 @@ def _parse_step(index, raw):
         table={str(source): str(target) for source, target in table.items()},
         where=_conditions(raw.get("where"), "step {0} where".format(index)),
         where_not=_conditions(raw.get("where_not"), "step {0} where_not".format(index)),
+        complete=raw.get("complete", False),
     )
 
 

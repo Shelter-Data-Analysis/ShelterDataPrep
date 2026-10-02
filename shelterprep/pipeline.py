@@ -241,6 +241,7 @@ class Prep:
         for step in self.settings.steps:
             step = self._with_defaults(step)
             before = self.frame
+            self._check_complete(before, step)
             chosen = steps.selection(before, step)
             after = steps.apply(before, step, chosen)
             self.statistics.record(
@@ -249,6 +250,18 @@ class Prep:
                 breakdown=steps.breakdown(before, step, chosen))
             self.frame = after
         return self
+
+    def _check_complete(self, frame, step):
+        """Stop on values a ``complete: true`` map has no entry for."""
+        missing = steps.unmapped(frame, step)
+        if missing.empty:
+            return
+        listed = "\n".join("  {0!r}: {1} row(s)".format(value, int(count))
+                           for value, count in missing.items())
+        raise SourceError(
+            "step {0} maps {1} with 'complete: true', but has no entry for "
+            "{2} value(s):\n{3}\nadd each to the map, mapping a value to "
+            "itself to keep it".format(step.index, step.column, len(missing), listed))
 
     def _with_defaults(self, step):
         """Fill in a dedup step's default column list: every output column."""

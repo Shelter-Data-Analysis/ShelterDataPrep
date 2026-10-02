@@ -31,6 +31,31 @@ Two restrictions are deliberate:
 A step whose count comes out zero is still worth keeping: it catches a
 misspelled label, so retired values are often worth keeping in steps.
 
+## Complete maps
+
+A map leaves values it does not list unchanged, so a value that first appears
+in a later extract passes through unmapped. `complete: true` turns the table
+into a claim that it covers the column: if any row the step reaches holds a
+value with no entry, the run stops and lists each such value with its row
+count.
+
+```yaml
+  - map:
+      animal_size:
+        SMALL:     SMALL               # kept, by mapping to itself
+        MED:       MED
+        LARGE:     LARGE
+        TOY:       SMALL
+        X-LRG:     LARGE
+        _UNKNOWN_: _UNKNOWN_
+    complete: true
+```
+
+A value to be kept needs an entry mapping it to itself, and a blank cell needs
+one for `_UNKNOWN_`. With `where:` or `where_not:`, only the rows the guard
+lets the step reach are checked. `complete:` is a step option, beside `map:`,
+so a value or a column named `complete` is unaffected by it.
+
 ## Deduplication is deliberately narrow
 
 `dedup:` takes a list of columns to compare, or nothing at all, which means
