@@ -24,6 +24,17 @@
 ####   drop the leading `v`.  Zenodo takes that field from the tag name rather
 ####   than from `version` above, so the record reads `v0.5.0` where a run log
 ####   reads `0.5.0`, and the pair a reader checks is the DOI and the version.
+#
+####   In the same edit, re-add what Zenodo does not carry from one version's
+####   record to the next.  Under Related works, two "Is supplemented by"
+####   entries, each of resource type Dataset: 10.5281/zenodo.22051367 (the
+####   prepared results) and 10.5281/zenodo.22051090 (the raw extracts).
+####   Under References, the paper:
+####     Mavrovouniotis ML. Use of Kaplan-Meier and Cox regressions in the
+####     distribution of length of stay in animal shelters for pre-specified
+####     calendar periods: Definition, computation, and examples of dog length
+####     of stay in Orange County California. PLOS ONE. 2026;21(1):e0342102.
+####     doi:10.1371/journal.pone.0342102
 
 cff-version: 1.2.0
 message: >-
