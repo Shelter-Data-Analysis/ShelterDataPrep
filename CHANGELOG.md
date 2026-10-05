@@ -12,6 +12,19 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
+## Unreleased
+
+**No numbers move**: nothing in `shelterprep/` changed.
+
+### Added
+
+- `tools/pseudonymize_ids.py` replaces each animal ID in a prepared file with
+  a random pseudonym, for confidential data sets. `map` builds or extends the
+  mapping, `private_animal_id.csv`, from the raw extract; `apply` writes
+  `<name>_pseudonymized.csv` and a log, and stops on an ID the mapping lacks.
+  It runs after the main run and leaves the prepared file as it is. See
+  [pseudonymizing animal IDs](docs/pseudonymizing.md).
+
 ## 0.5.0 (2026-10-05)
 
 **No numbers move** for any config with `keep_time: false`, which includes

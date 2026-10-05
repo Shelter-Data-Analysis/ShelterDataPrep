@@ -12,6 +12,12 @@ results/
 # it is no part of what a run needs.
 tools/make_deposit.py
 
+# What tools/pseudonymize_ids.py writes. The mapping is the key back to the
+# real IDs, and neither belongs in git; this is a safeguard for a run whose
+# dest_dir falls inside the repository.
+private_animal_id.csv
+*_pseudonymized*
+
 # Editable/build artefacts
 *.egg-info/
 build/
