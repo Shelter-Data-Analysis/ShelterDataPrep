@@ -13,7 +13,7 @@ A run is one YAML settings file. These are the top-level keys:
 source_dir:   "../../_shelter_raw"
 source_file:  "intakes and outcomes.csv"
 sheet:                       # Excel only; omit and the file must have one sheet
-date_format:  ISO8601        # or: mixed  (US-style m/d/Y extracts)
+date_format:  ISO8601        # required; or a pattern such as "%m/%d/%y"
 keep_time:    false
 
 window_start_date: 2018-07-01   # optional pair, both or neither
@@ -39,8 +39,9 @@ steps:
 An unknown top-level key is an error, not a warning. A misspelled setting can
 quietly skip an exclusion, and that failure survives into a published table.
 
-Five keys are required: `source_dir`, `source_file`, `dest_dir`, `dest_file`,
-and `output_columns`. A file missing any of them stops before a row is read.
+Six keys are required: `source_dir`, `source_file`, `date_format`, `dest_dir`,
+`dest_file`, and `output_columns`. A file missing any of them stops before a
+row is read. `date_format` has [a section of its own](#dates).
 Of the rest, `columns:` defaults to no renames, so each canonical name is
 looked for under its own spelling; `steps:` defaults to none; `keep_time:` to
 `false`; and `unique_report:` to `[animal_id]`. `sheet:`, the window pair, and
@@ -139,9 +140,12 @@ on which.
 
 `keep_time: false` (the default) normalizes to midnight, effectively dropping
 the time without changing the data type. `keep_time: true` preserves time
-information, for an analysis of time-of-day effects run on the frame from
-Python. It is not meant to tell stays apart, so neither `nights` nor a `dedup:`
-step looks at the time: `nights` is computed from normalized values, and a
+information, for analyses of time-of-day effects. For now that time is only
+in the frame, from Python; time windows, set the way the window pair sets a
+date period, are planned
+([#2](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/issues/2)).
+The time is not meant to tell stays apart, so neither `nights` nor a `dedup:`
+step looks at it: `nights` is computed from normalized values, and a
 dedup compares dates by calendar day. The switch leaves both unchanged. Dates
 become `YYYY-MM-DD` strings at the moment they are written, so the prepared
 file is the same either way.
@@ -158,8 +162,26 @@ from the first non-null value and silently coerces everything else to `NaT`:
 The second value is a perfectly ordinary date, and inference turns it into
 `NaT`: pandas locked onto the first value's format, which carried a time. In a
 real extract, it is a stay whose date has quietly gone blank, with nothing
-printed to say so. Stating `ISO8601` accepts both spellings instead; `mixed`
-also accepts US-style `m/d/Y`, at the cost of guessing on ambiguous days.
+printed to say so.
+
+So `date_format` is required, and has no default. It takes one of three kinds
+of value:
+
+- **`ISO8601`, recommended.** Year, month, day, in that order: `2018-03-02`,
+  optionally followed by a time of day, `2018-03-02 14:30:00`. Both spellings
+  can share a column, which is what the example above needed. If your shelter
+  database can export dates this way, ask for it.
+- **The file's own format, as a pattern**, for an export that writes dates
+  another way. The pattern spells out one date with a code for each part: `%m`
+  month, `%d` day, `%y` two-digit year, `%Y` four-digit year, and `%H:%M:%S`
+  for a time. So `3/29/24` is `"%m/%d/%y"`, and `29.03.2024` is `"%d.%m.%Y"`.
+  Quote it, because YAML does not accept an unquoted value that starts with
+  `%`. Every value is held to the pattern, so one written any other way is
+  counted as unparseable rather than guessed at.
+- **`mixed`**, the last resort, for a column whose values do not share one
+  format. pandas works out each value separately, which means guessing
+  whenever a day could be the month, as in `3/4/24`.
+
 Whatever still fails to parse is **counted**, on its own `parse_dates` row in
 the statistics table.
 
