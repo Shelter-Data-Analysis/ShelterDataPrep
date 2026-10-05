@@ -24,6 +24,13 @@ a `dedup:` step can drop more rows than before; see below.
   read as `ISO8601`; it now stops and says what to write. Every shipped config
   already states it. **No numbers move**: a config that runs gives the same
   output as before.
+- The run log's `final span` line ends "N with no outcome date" rather than
+  "N still in care". The number is unchanged: it always counted every row
+  with no outcome date, which includes a row whose outcome is real but whose
+  date is missing (`_NODATE_` in the shipped configs), and the tool does not
+  know a config's vocabulary well enough to tell those from stays still in
+  care. `docs/outputs.md` says the same of `nights_known`. The line keeps its
+  label, so a reader that matches it by label is unaffected.
 - NumPy is a declared dependency. The package imports it directly and the run
   log records its version, but it was left to arrive with pandas. Nothing
   installs differently, since pandas requires it.

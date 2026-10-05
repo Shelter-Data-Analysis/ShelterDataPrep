@@ -684,7 +684,7 @@ def test_the_run_log_records_the_span_of_the_kept_rows(tmp_path):
     prep = Prep(load(write_settings(tmp_path))).run(verbose=False)
     line = [l for l in prep.settings.run_path.read_text().splitlines()
             if l.startswith("final span")][0]
-    assert "2018-01-05" in line and "still in care" in line
+    assert "2018-01-05" in line and "with no outcome date" in line
 
 
 # --- the repository's own metadata -----------------------------------------

@@ -14,7 +14,7 @@ file is whatever a run asks for. The meaning of each column is fixed:
 |---|---|---|
 | `animal_id` | text | as in the source. Not unique — one row per stay |
 | `intake_date` | `YYYY-MM-DD` | blank where the date failed to parse; the shipped configs cut those rows |
-| `outcome_date` | `YYYY-MM-DD` | **blank means the stay had not ended**, still in care or never recorded |
+| `outcome_date` | `YYYY-MM-DD` | **blank means no outcome date**: still in care, or an outcome whose date is missing (see `_NODATE_` below) |
 | `intake_type` | text | the source vocabulary, as rewritten by the config's `map:` steps |
 | `outcome_type` | text | likewise; the shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` / `_NODATE_` |
 | `animal_size`, `animal_type`, … | text | any other source column the config keeps |
@@ -129,7 +129,7 @@ matters for a length-of-stay study:
 |---|---|
 | `rows` | stays in the cell |
 | `animal_id_distinct` | distinct animals, one per `unique_report` field; below `rows` where an animal has repeat stays |
-| `nights_known` | stays with a night count; `rows` minus this is the stays still in care |
+| `nights_known` | stays with a night count; `rows` minus this is the stays with no outcome date |
 | `nights_min`, `nights_max` | shortest and longest stay, as whole nights |
 | `nights_mean`, `nights_p25`, `nights_median`, `nights_p75`, `nights_p90` | the distribution over the known ones |
 
@@ -138,7 +138,15 @@ stay is skewed enough that the extremes alone mislead.
 
 `nights` counts nights, not days — an animal in and out the same day scores 0,
 and mLOS defines `LOS = nights + 1`. A cell with `rows` but no `nights_known`
-is entirely still in care, and its night columns are blank rather than zero.
+has no outcome date at all, and its night columns are blank rather than zero.
+
+A stay with no outcome date is not always still in care. A `_NODATE_` row has
+a real outcome whose date is missing, so neither `nights_known` nor the run
+log's count can tell the two apart. The cells can, because they cross outcome
+type: in the shipped configs, the stays still in care are the cells of the
+config's in-care code (`INC` in OC2 and the example, `InCare` in the rest) and
+the missing dates are the `_NODATE_` ones. The `margin` rows that total over
+outcome type add the two together.
 
 The run log carries the span the surviving rows cover.
 

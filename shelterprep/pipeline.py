@@ -302,19 +302,24 @@ class Prep:
         return self
 
     def _span(self):
-        """The dates the surviving rows actually cover, and what is unfinished.
+        """The dates the surviving rows actually cover, and how many have no end.
 
         The one descriptive fact the summary table cannot carry: it counts
         stays, and this is about when they happened.  Worth a line because the
         span of the kept rows is not the study window -- the steps move it.
+
+        The count is of rows with no outcome date, not of animals still in
+        care: a row whose outcome is real but whose date failed to parse has
+        none either, and only the config's own vocabulary (``_NODATE_`` in the
+        shipped ones) tells the two apart.
         """
         frame = self.frame
         if frame.empty:
             return "(no rows)"
-        open_stays = int(frame["outcome_date"].isna().sum())
-        return "intake {0} to {1}, last outcome {2}, {3} still in care".format(
+        undated = int(frame["outcome_date"].isna().sum())
+        return "intake {0} to {1}, last outcome {2}, {3} with no outcome date".format(
             frame["intake_date"].min().date(), frame["intake_date"].max().date(),
-            frame["outcome_date"].max().date(), open_stays)
+            frame["outcome_date"].max().date(), undated)
 
     def _run_log(self):
         """Everything needed to say where this output came from.
