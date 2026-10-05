@@ -139,9 +139,12 @@ on which.
 
 `keep_time: false` (the default) normalizes to midnight, effectively dropping
 the time without changing the data type. `keep_time: true` preserves time
-information. `nights` is computed from normalized values either way, so the
-switch leaves a night count unchanged. Dates become `YYYY-MM-DD` strings at the
-moment they are written.
+information, for an analysis of time-of-day effects run on the frame from
+Python. It is not meant to tell stays apart, so neither `nights` nor a `dedup:`
+step looks at the time: `nights` is computed from normalized values, and a
+dedup compares dates by calendar day. The switch leaves both unchanged. Dates
+become `YYYY-MM-DD` strings at the moment they are written, so the prepared
+file is the same either way.
 
 **You state the datetime format.** Left to infer, pandas locks onto one format
 from the first non-null value and silently coerces everything else to `NaT`:

@@ -14,7 +14,20 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ## Unreleased
 
-**No numbers move**: an existing config produces byte-identical output.
+**No numbers move** for any config with `keep_time: false`, which includes
+every shipped one: it produces byte-identical output. Under `keep_time: true`,
+a `dedup:` step can drop more rows than before; see below.
+
+### Changed
+
+- A `dedup:` step compares dates by calendar day, even under
+  `keep_time: true`. It compared full timestamps, so two records of one stay
+  stamped at different times of the same day were kept as two stays. **This
+  can move a number** for a config with `keep_time: true` and a `dedup:` that
+  compares a date column, which a bare `dedup:` does whenever a date is among
+  `output_columns`. `keep_time` is for time-of-day analyses, and no longer
+  changes which stays count as repeats. See [the settings
+  file](docs/settings.md#dates).
 
 ### Added
 

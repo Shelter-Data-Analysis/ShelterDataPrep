@@ -15,7 +15,8 @@ The sequence is ordered and each entry is a cut, a map, or a dedup.
   `where_not` negates the whole conjunction.
 - **`dedup:`** keeps the **last** of each group of rows matching across the
   listed columns — or across every output column if none are listed — and cuts
-  the earlier ones. Takes `where:` / `where_not:` like a map.
+  the earlier ones. Takes `where:` / `where_not:` like a map. Dates compare by
+  calendar day, even under `keep_time: true`.
 
 A scalar is accepted anywhere a set is meant (`intake_cond: DEAD` is
 `[DEAD]`). Values compare as text, so `night_sign: "-1"` matches.
