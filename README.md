@@ -77,20 +77,20 @@ fail without it:
 python3 -m pip install ".[excel]"
 ```
 
-Everything else is pandas and PyYAML, with `pytest` needed to run the tests.
-The run log records the version of each, along with the Python version,
+Everything else is pandas, NumPy, and PyYAML, with `pytest` needed to run the
+tests. The run log records the version of each, along with the Python version,
 because reproducing a result means stating the environment it ran in.
 
 ## Documentation
 
 | document | content |
 |---|---|
-| [Preparing your own shelter data](docs/getting-started.md) | how to prepare a config for a shelter not listed below |
-| [The settings file](docs/settings.md) | the settings file: all top-level keys, the path rules, and how dates are handled |
-| [Steps and derived columns](docs/steps.md) | the step grammar (`cut` / `map` / `dedup`) for filters and transformations, plus the columns the tool derives for you |
-| [The prepared file and the summary table](docs/outputs.md) | the prepared CSV and the summary table: what each column means |
-| [The statistics table](docs/statistics-table.md) | the statistics table format, meant for downstream consumers; already shared with mLOS, the length-of-stay analysis tool |
-| [Reproducibility and publishing](docs/reproducibility.md) | reproducibility and publishing: the run log, the digests, and what travels with a file into a paper |
+| [Preparing your own shelter data](docs/getting-started.md) | writing a config, step by step, for a shelter not listed below |
+| [The settings file](docs/settings.md) | every top-level key, the path rules, and how dates are handled |
+| [Steps and derived columns](docs/steps.md) | the `cut` / `map` / `dedup` grammar for filters and transformations, and the columns the tool builds for you |
+| [The prepared file and the summary table](docs/outputs.md) | what each column of the two files means |
+| [The statistics table](docs/statistics-table.md) | its format, for downstream consumers; already shared with mLOS, the length-of-stay analysis tool |
+| [Reproducibility and publishing](docs/reproducibility.md) | the run log, the digests, and what travels with a file into a paper |
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
 prepared — deposit the extract, the settings, the result, and a short usage

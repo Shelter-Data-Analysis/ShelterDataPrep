@@ -19,7 +19,8 @@ The sequence is ordered and each entry is a cut, a map, or a dedup.
   calendar day, even under `keep_time: true`.
 
 A scalar is accepted anywhere a set is meant (`intake_cond: DEAD` is
-`[DEAD]`). Values compare as text, so `night_sign: "-1"` matches.
+`[DEAD]`). Values compare as text, so `night_sign: -1` matches the `-1` in the
+frame whether or not the YAML quotes it.
 
 Two restrictions are deliberate:
 
@@ -91,8 +92,8 @@ rows have to agree on before either is dropped. The explicit list decouples the
 two: the `[animal_id, intake_date, outcome_date]` example above treats two
 multi-day stays as one whenever the animal and both dates agree, regardless of
 outcome type, animal size, or anything else. Either form costs little on the
-shipped extracts: the wider one drops one further row on each of OC1, OC2, and
-Long Beach, and none elsewhere. What the config does not handle falls to the
+shipped extracts: the explicit three-column list drops one row more than the
+bare form on each of OC1, OC2, and Long Beach, and the same number elsewhere. What the config does not handle falls to the
 consumer of the prepared file.
 
 **What the step leaves for the analysis.** Same-day repeats, overlapping stays,

@@ -1,6 +1,6 @@
 """Tests for the shelterprep pipeline.
 
-Most of these pin down a specific decision documented in the README, so a test
+Most of these pin down a specific decision documented in docs/, so a test
 name should read as the rule it protects.
 """
 
