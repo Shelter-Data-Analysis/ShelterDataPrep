@@ -208,8 +208,8 @@ OC2's reads:
 `LCOM`, `TRAN`, and `NONL` are OC2's own outcome codes. Outcome codes vary by
 config, so yours names whatever codes your config maps outcomes to, and runs
 after that map, so the codes exist to match. mLOS takes whichever codes a
-prepared file uses and maps them to its own in its settings. What
-happens to those rows then belongs to the analysis; mLOS discards them.
+prepared file uses and maps them to its own in its settings. What happens to
+those rows then belongs to the analysis; mLOS discards them.
 
 ---
 
