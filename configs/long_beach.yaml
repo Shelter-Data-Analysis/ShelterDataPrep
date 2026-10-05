@@ -52,9 +52,10 @@ steps:
   - cut: {"Animal Type": [CAT, BIRD, OTHER, RABBIT, LIVESTOCK]}
   - cut: {intake_is_dead: "Dead on Intake"}
 
-  # "Euthenasia Required" is misspelled in the data. stale/longbeach.py:130
-  # cut the correctly spelled "Euthanasia Required", which never matched, so
-  # those rows survived. Spelled as the data spells it here, so the cut works.
+  # "Euthenasia Required" is misspelled in the data. filterRawData in
+  # stale/longbeach.py cut the correctly spelled "Euthanasia Required", which
+  # never matched, so those rows survived. Spelled as the data spells it
+  # here, so the cut works.
   - cut: {intake_type: [QUARANTINE, SAFE KEEP, WILDLIFE, "Euthenasia Required",
                         "TRAP, NEUTER, RETURN"]}
 
