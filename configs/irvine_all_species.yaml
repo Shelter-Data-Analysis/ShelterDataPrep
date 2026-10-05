@@ -49,7 +49,7 @@ steps:
   # what it means.
   - cut: {outcome_type: RETURN}
 
-  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # --- outcome_type -> this config's outcome codes ------------------------
   # EUTH-ASO, ESCAPED, and RELOCATE were absent from the stale table and were
   # silently dropped. Their meaning is clear, so they are mapped.
   - map:

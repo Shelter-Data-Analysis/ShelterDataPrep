@@ -103,9 +103,9 @@ steps:
   # otherwise.
   - cut: {kennel_no: [FOUND, HOME, HOME EXP, LOST]}
 
-  # --- outcome_type -> the three canonical mLOS codes ---------------------
+  # --- outcome_type -> this config's outcome codes ------------------------
   # Adoption by a rescue partner is a transfer, not an adoption. Must run
-  # before the map to canonical codes below, while ADOPTION still exists.
+  # before the map to this config's codes below, while ADOPTION still exists.
   - map: {outcome_type: {ADOPTION: TRANSFER}}
     where: {outcome_subtype: RESCUE}
 

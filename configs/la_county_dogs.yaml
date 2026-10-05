@@ -74,7 +74,7 @@ steps:
         MISSING:      _UNKNOWN_
     where: {OUTCOME_TYPE: UNK9999999}
 
-  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # --- outcome_type -> this config's outcome codes ------------------------
   # A blank outcome group is 21% of the dog rows. getOutCodes in
   # stale/losangelescounty.py meant to route those to transfer, via a pd.NA
   # dictionary key that never fired against the NaN pandas actually produces

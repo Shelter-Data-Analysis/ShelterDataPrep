@@ -54,7 +54,7 @@ steps:
   # MUTLAID, OWNER SURR, and TRANS QT were coded X in stale/missionviejo.py.
   - cut: {outcome_type: [MUTLAID, "OWNER SURR", "TRANS QT"]}
 
-  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # --- outcome_type -> this config's outcome codes ------------------------
   - map:
       outcome_type:
         ADOPTION:  LiveC

@@ -62,7 +62,7 @@ steps:
   - cut: {outcome_type: ["COMMUNITY CAT", DUPLICATE, "RETURN TO WILD HABITAT",
                          "SHELTER, NEUTER, RETURN", "TRAP, NEUTER, RELEASE"]}
 
-  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # --- outcome_type -> this config's outcome codes ------------------------
   # RETURN TO RESCUE was coded as return-to-owner in stale/longbeach.py.
   # Returning an animal to the rescue organization that placed it is other-live
   # rather than community-live, so it goes to Transf. Only 8 rows either way.

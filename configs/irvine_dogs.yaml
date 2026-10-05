@@ -46,7 +46,7 @@ steps:
   # uncounted. Same outcome here, but counted.
   - cut: {outcome_type: [DISPOSAL, DEAD, EUTH OR]}
 
-  # --- outcome_type -> the canonical mLOS codes ---------------------------
+  # --- outcome_type -> this config's outcome codes ------------------------
   # RTO-FIELD was coded as return-to-owner in stale/irvine.py; mLOS defines
   # return-to-field as other-live, so it goes to Transf here.
   - map:
