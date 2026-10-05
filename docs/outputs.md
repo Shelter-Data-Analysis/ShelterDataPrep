@@ -144,8 +144,8 @@ A stay with no outcome date is not always still in care. A `_NODATE_` row has
 a real outcome whose date is missing, so neither `nights_known` nor the run
 log's count can tell the two apart. The cells can, because they cross outcome
 type: the stays still in care are the cells of whatever code the config gives
-them (`INC` in OC2), and the missing dates are the `_NODATE_` ones. The `margin` rows that total over
-outcome type add the two together.
+them (`INC` in OC2), and the missing dates are the `_NODATE_` ones. The
+`margin` rows that total over outcome type add the two together.
 
 The run log carries the span the surviving rows cover.
 
