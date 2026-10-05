@@ -81,13 +81,15 @@ steps:
   - cut: {intake_type: [DISPO REQ]}
 
   # Adoption by a rescue partner is a transfer, not an adoption. Runs before
-  # the map to canonical codes, while ADOPTION still exists.
+  # the map to this config's codes, while ADOPTION still exists.
   - map: {outcome_type: {ADOPTION: TRANSFER}}
     where: {outcome_subtype: [RESCUE]}
 
   # LCOM = community live, TRAN = other live, NONL = non-live, INC = still in
-  # care. A blank outcome_type is _UNKNOWN_ before any step runs, so it can be
-  # mapped like any other value.
+  # care. These codes are this config's own choice, not a vocabulary the tool
+  # or mLOS requires: name yours as you like, and map them to mLOS's in its
+  # settings. A blank outcome_type is _UNKNOWN_ before any step runs, so it
+  # can be mapped like any other value.
   - map:
       outcome_type:
         ADOPTION:  LCOM
