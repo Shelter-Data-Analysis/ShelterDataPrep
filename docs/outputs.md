@@ -16,7 +16,7 @@ file is whatever a run asks for. The meaning of each column is fixed:
 | `intake_date` | `YYYY-MM-DD` | blank where the date failed to parse; the shipped configs cut those rows |
 | `outcome_date` | `YYYY-MM-DD` | **blank means no outcome date**: still in care, or an outcome whose date is missing (see `_NODATE_` below) |
 | `intake_type` | text | the source vocabulary, as rewritten by the config's `map:` steps |
-| `outcome_type` | text | likewise; the shipped configs land on `LCOM` / `TRAN` / `NONL` / `INC` / `_NODATE_` |
+| `outcome_type` | text | likewise, in whatever codes the config maps to. These vary by config, and even the shipped ones differ: OC2's are `LCOM`, `TRAN`, `NONL`, and `INC` for still in care. The shipped configs also use `_NODATE_`, below |
 | `animal_size`, `animal_type`, … | text | any other source column the config keeps |
 | `nights` | number | the stay in whole nights. Blank where a date is missing |
 | `age` | number | years at intake, unrounded: 12.11 rather than 12 |
@@ -143,9 +143,8 @@ has no outcome date at all, and its night columns are blank rather than zero.
 A stay with no outcome date is not always still in care. A `_NODATE_` row has
 a real outcome whose date is missing, so neither `nights_known` nor the run
 log's count can tell the two apart. The cells can, because they cross outcome
-type: in the shipped configs, the stays still in care are the cells of the
-config's in-care code (`INC` in OC2 and the example, `InCare` in the rest) and
-the missing dates are the `_NODATE_` ones. The `margin` rows that total over
+type: the stays still in care are the cells of whatever code the config gives
+them (`INC` in OC2), and the missing dates are the `_NODATE_` ones. The `margin` rows that total over
 outcome type add the two together.
 
 The run log carries the span the surviving rows cover.

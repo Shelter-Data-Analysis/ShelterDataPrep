@@ -183,8 +183,8 @@ of [tests/fixtures/tiny.csv](../tests/fixtures/tiny.csv) has an outcome date of
 statistics table counts it as one unparseable outcome date. In
 `results/EX_data.csv` it comes out with a blank outcome date and an outcome
 type of `_NODATE_`, which is the inherited step at work. Delete that step and
-the row comes out as `LCOM` instead — an animal the file says was adopted but
-never left.
+the row comes out as `LCOM` instead, the example's code for a community live
+outcome — an animal the file says was adopted but never left.
 
 ## When it stops
 

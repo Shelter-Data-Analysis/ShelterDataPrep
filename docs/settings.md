@@ -196,15 +196,19 @@ only a guess and has no equivalent here, because a cut or a map cannot rewrite
 a date. Adding it would take a new feature rather than a settings change.
 
 What a settings file can do is mark the row, since a real outcome code with no
-date is visible as `night_sign: _UNKNOWN_`. The shipped configs carry the step,
-which relabels the outcome rather than letting it read as still in care:
+date is visible as `night_sign: _UNKNOWN_`. The shipped configs carry such a
+step, which relabels the outcome rather than letting it read as still in care.
+OC2's reads:
 
 ```yaml
   - map: {outcome_type: {LCOM: _NODATE_, TRAN: _NODATE_, NONL: _NODATE_}}
     where: {night_sign: _UNKNOWN_}
 ```
 
-It runs after the map to canonical codes, so the codes exist to match. What
+`LCOM`, `TRAN`, and `NONL` are OC2's own outcome codes. Outcome codes vary by
+config, so yours names whatever codes your config maps outcomes to, and runs
+after that map, so the codes exist to match. mLOS takes whichever codes a
+prepared file uses and maps them to its own in its settings. What
 happens to those rows then belongs to the analysis; mLOS discards them.
 
 ---
