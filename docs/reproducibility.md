@@ -7,7 +7,11 @@ travels with a prepared file into a paper.*
 
 A run is deterministic: the same settings over the same source file give the
 same output, and paths resolve against the settings file, so the working
-directory makes no difference. The run log is enough to reproduce a result.
+directory makes no difference. The run log records what a reproduction has to
+match: the version and the environment, where the settings file was, and
+digests of the extract and of the prepared file. It does not hold the settings
+or the extract themselves, so reproducing a result takes the log, the settings
+file, and the extract together.
 
 ```
 ShelterDataPrep run log

@@ -39,6 +39,15 @@ steps:
 An unknown top-level key is an error, not a warning. A misspelled setting can
 quietly skip an exclusion, and that failure survives into a published table.
 
+Five keys are required: `source_dir`, `source_file`, `dest_dir`, `dest_file`,
+and `output_columns`. A file missing any of them stops before a row is read.
+Of the rest, `columns:` defaults to no renames, so each canonical name is
+looked for under its own spelling; `steps:` defaults to none; `keep_time:` to
+`false`; and `unique_report:` to `[animal_id]`. `sheet:`, the window pair, and
+`age_groups:` have no default. Leaving `sheet:` out requires a workbook with
+one sheet, leaving out the window pair means no `window_presence`, and leaving
+out `age_groups:` means no `age` or `age_group`.
+
 `steps:` has a grammar of its own, in [steps and derived
 columns](steps.md).
 
@@ -113,8 +122,9 @@ further day, so a round-year age falls in the same band whether or not its year
 held a leap day. See [derived columns](steps.md#derived-columns).
 
 `unique_report` names the identifier columns the statistics table counts
-distinctly. Usually just `animal_id`, which gives every stage an animal count
-alongside its row count.
+distinctly. Usually just `animal_id`, which is also what a settings file
+without the key gets, and which gives every stage an animal count alongside its
+row count.
 
 ## Dates
 
