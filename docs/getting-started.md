@@ -186,13 +186,19 @@ never left.
 
 ## When it stops
 
-Error reporting is deliberate and names what is wrong. The common ones:
+Error reporting is deliberate and names what is wrong. These are some you are
+likely to meet, not every message the tool can give:
 
 | message | what to do |
 |---|---|
 | `unknown setting(s) ...` | a misspelled top-level key. Rejected rather than ignored, because a typo that quietly skips an exclusion survives into a published table |
+| `step N has unknown key(s) ...` | the same, inside a step. The message lists the keys a step allows |
+| `source file not found: ...` | check `source_dir` and `source_file`. A relative `source_dir` resolves against the settings file, not the directory you run from |
 | `... does not have the column(s) this run needs` | the error lists what the file *does* contain; add a `columns:` entry mapping the canonical name to the file's spelling |
 | `step N names the column X, which does not exist` | a step column that is neither in the file nor derived. If it is a derived one, the message says what building it needs |
+| `a step filters on window_presence, but window_start_date and window_end_date are not set` | set the window pair, or drop the step |
+| `... is used but age_groups is not set` | `age` or `age_group` is named in a step or in `output_columns`; set `age_groups`, or drop the name |
+| `step N maps X with 'complete: true', but has no entry for N value(s)` | the message lists each value with its row count. Add each to the map, mapping a value to itself to keep it |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
 | `` `Import openpyxl` failed `` (pandas 3) or `Missing optional dependency 'openpyxl'` (pandas 2) | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
 | `N of M supplied value(s) unparseable` — in the statistics table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
