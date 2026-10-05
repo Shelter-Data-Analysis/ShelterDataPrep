@@ -31,6 +31,30 @@ MIXED = "mixed"
 
 DATE_FORMATS = (ISO8601, MIXED)
 
+#: Any other accepted format is a strftime pattern, as pandas parses one:
+#: ``%m/%d/%y`` for ``3/29/24``.  Every value is held to it, so a value in any
+#: other shape is unparseable and counted, rather than guessed at.
+_PROBE = pd.Timestamp(2001, 2, 3, 4, 5, 6)
+
+
+def is_format(text):
+    """Whether *text* is a ``date_format`` `to_datetime` can honour.
+
+    One of `DATE_FORMATS`, or a strftime pattern that parses a date it has
+    itself written.  A pattern with no ``%`` directive is refused rather than
+    taken literally: ``dd/mm/yyyy`` reads as a format to a person and as a
+    string of letters to pandas, and would leave every date unparsed.
+    """
+    if text in DATE_FORMATS:
+        return True
+    if "%" not in text:
+        return False
+    try:
+        pd.to_datetime(_PROBE.strftime(text), format=text)
+    except (ValueError, TypeError):
+        return False
+    return True
+
 
 def to_datetime(values, date_format=ISO8601, keep_time=False):
     """Parse *values* to a naive ``datetime64``; unparseable entries become ``NaT``.
@@ -44,8 +68,9 @@ def to_datetime(values, date_format=ISO8601, keep_time=False):
         [Timestamp('2018-01-01 14:30:00'), NaT]
 
     A whole row would disappear from the study with no warning.  ``"ISO8601"``
-    accepts both of those spellings; the caller counts whatever still fails and
-    records it in the statistics table.
+    accepts both of those spellings, and a strftime pattern such as
+    ``"%m/%d/%y"`` states a file's own; the caller counts whatever still fails
+    and records it in the statistics table.
 
     With ``keep_time`` false (the default) the time component is dropped but
     the dtype is unchanged, so the result still compares cleanly against every

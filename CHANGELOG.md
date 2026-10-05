@@ -20,6 +20,10 @@ a `dedup:` step can drop more rows than before; see below.
 
 ### Changed
 
+- `date_format` is required, with no default. A config that left it out was
+  read as `ISO8601`; it now stops and says what to write. Every shipped config
+  already states it. **No numbers move**: a config that runs gives the same
+  output as before.
 - A `dedup:` step compares dates by calendar day, even under
   `keep_time: true`. It compared full timestamps, so two records of one stay
   stamped at different times of the same day were kept as two stays. **This
@@ -31,6 +35,10 @@ a `dedup:` step can drop more rows than before; see below.
 
 ### Added
 
+- `date_format` takes a strftime pattern, such as `"%m/%d/%y"` for `3/29/24`,
+  besides `ISO8601` and `mixed`. Every value is held to the pattern, so one in
+  any other shape is counted as unparseable rather than guessed at. See [the
+  settings file](docs/settings.md#dates).
 - `complete: true` on a map step stops the run when a row the step reaches
   holds a value the map has no entry for, and lists those values with their
   row counts. Without it, such a value passes through unmapped. See

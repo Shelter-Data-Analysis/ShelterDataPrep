@@ -300,8 +300,8 @@ class Settings:
     age_groups: Dict[str, float]
     unique_report: Tuple[str, ...]
     steps: Tuple[object, ...]
+    date_format: str
     sheet: Optional[str] = None
-    date_format: str = dates.ISO8601
     keep_time: bool = False
     window_start_date: Optional[object] = None
     window_end_date: Optional[object] = None
@@ -385,11 +385,18 @@ def load(path):
         if raw.get(required) is None:
             raise SettingsError("{0}: {1} is required".format(path, required))
 
-    date_format = str(raw.get("date_format") or dates.ISO8601)
-    if date_format not in dates.DATE_FORMATS:
+    # No default: a format the file does not use leaves its dates unparsed,
+    # and that is a choice to see being made rather than inherit.
+    if raw.get("date_format") is None:
         raise SettingsError(
-            "{0}: date_format must be one of {1}, got {2!r}".format(
-                path, ", ".join(dates.DATE_FORMATS), date_format))
+            "{0}: date_format is required. ISO8601 reads YYYY-MM-DD, with or "
+            "without hh:mm:ss after it; a file in another shape names its "
+            "own, quoted, such as \"%m/%d/%y\" for 3/29/24".format(path))
+    date_format = str(raw["date_format"])
+    if not dates.is_format(date_format):
+        raise SettingsError(
+            "{0}: date_format must be ISO8601, mixed, or a strftime pattern "
+            "such as \"%m/%d/%y\", got {1!r}".format(path, date_format))
 
     start, end = raw.get("window_start_date"), raw.get("window_end_date")
     if (start is None) != (end is None):

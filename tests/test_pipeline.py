@@ -31,6 +31,7 @@ def write_settings(tmp_path, **overrides):
     base = {
         "source_dir": str(FIXTURES),
         "source_file": "tiny.csv",
+        "date_format": "ISO8601",
         "dest_dir": str(tmp_path),
         "dest_file": "out.csv",
         "output_columns": ["animal_id", "intake_date", "outcome_date",
@@ -790,9 +791,26 @@ def test_relative_paths_resolve_against_the_settings_file(tmp_path):
 
 
 def test_an_unknown_date_format_is_an_error(tmp_path):
-    path = write_settings(tmp_path, date_format="dd/mm/yyyy")
-    with pytest.raises(SettingsError, match="date_format"):
+    # A person reads dd/mm/yyyy as a format; pandas would read it as letters.
+    for wrong in ("dd/mm/yyyy", "%Q"):
+        path = write_settings(tmp_path, date_format=wrong)
+        with pytest.raises(SettingsError, match="date_format"):
+            load(path)
+
+
+def test_date_format_has_no_default(tmp_path):
+    path = write_settings(tmp_path, date_format=None)
+    with pytest.raises(SettingsError, match="date_format is required"):
         load(path)
+
+
+def test_a_stated_date_format_holds_every_value_to_it():
+    # The file's own shape, stated: what fits it parses, and what does not is
+    # left unparsed for the parse_dates row to count, not guessed at.
+    values = pd.Series(["3/29/24", "4/10/15", "2024-03-29"])
+    parsed = dates.to_datetime(values, "%m/%d/%y")
+    assert list(parsed.dt.strftime("%Y-%m-%d").fillna("")) == [
+        "2024-03-29", "2015-04-10", ""]
 
 
 # --- source validation -----------------------------------------------------

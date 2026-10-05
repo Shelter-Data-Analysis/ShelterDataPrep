@@ -106,9 +106,11 @@ Set `output_columns` to what you want written, in the order you want it. Any
 name there that is neither canonical nor derived is assumed to be a column in
 your file under exactly that spelling.
 
-Then set `date_format`. `ISO8601` covers `YYYY-MM-DD` with or without a time;
-`mixed` also accepts US-style `m/d/Y`. The tool asks you to state it, for
-[reasons the settings reference explains](settings.md#dates).
+Then set `date_format`, which has no default. Use `ISO8601` if your file
+allows it: it reads `YYYY-MM-DD`, with or without a time `hh:mm:ss` after it.
+A file that writes dates another way names its own format as a pattern, such
+as `"%m/%d/%y"` for `3/29/24`. [The settings reference](settings.md#dates)
+explains the patterns, and why the tool makes you state the format.
 
 ## 5. Say what to exclude
 
@@ -191,6 +193,7 @@ likely to meet, not every message the tool can give:
 
 | message | what to do |
 |---|---|
+| `date_format is required` | add it: `ISO8601` for `YYYY-MM-DD` dates, or your file's own pattern, such as `"%m/%d/%y"` |
 | `unknown setting(s) ...` | a misspelled top-level key. Rejected rather than ignored, because a typo that quietly skips an exclusion survives into a published table |
 | `step N has unknown key(s) ...` | the same, inside a step. The message lists the keys a step allows |
 | `source file not found: ...` | check `source_dir` and `source_file`. A relative `source_dir` resolves against the settings file, not the directory you run from |
@@ -201,7 +204,7 @@ likely to meet, not every message the tool can give:
 | `step N maps X with 'complete: true', but has no entry for N value(s)` | the message lists each value with its row count. Add each to the map, mapping a value to itself to keep it |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
 | `` `Import openpyxl` failed `` (pandas 3) or `Missing optional dependency 'openpyxl'` (pandas 2) | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
-| `N of M supplied value(s) unparseable` — in the statistics table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
+| `N of M supplied value(s) unparseable` — in the statistics table, not an error | a `date_format` that does not match the file. State the file's own pattern, such as `"%m/%d/%y"`, or `mixed` if its dates do not share one format |
 
 ## What this does not tell you
 
