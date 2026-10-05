@@ -92,8 +92,8 @@ those are different claims, and only the first pair is checkable.
 
 That DOI is the concept DOI, which resolves to the newest release. It is the
 right one to cite because the version beside it says which release ran, and
-that version is checkable against the run log. The DOI of a single release
-exists too, and is what a deposit of results should name.
+that version is checkable against the run log. The same pair goes into a
+deposit of results: the concept DOI, with the version beside it.
 
 ---
 

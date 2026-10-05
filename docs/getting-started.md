@@ -177,10 +177,12 @@ Both are why the statistics table exists.
 
 The second one is live in the example config, if you want to see it: row `A013`
 of [tests/fixtures/tiny.csv](../tests/fixtures/tiny.csv) has an outcome date of
-`not a date` and an outcome type of `ADOPTION`. In `results/EX_data.csv` it
-comes out with a real outcome type and a blank outcome date — an animal the
-file now says was adopted but never left. The `parse_dates` line of the
-statistics table carries a row that says this.
+`not a date` and an outcome type of `ADOPTION`. The `parse_dates` line of the
+statistics table counts it as one unparseable outcome date. In
+`results/EX_data.csv` it comes out with a blank outcome date and an outcome
+type of `_NODATE_`, which is the inherited step at work. Delete that step and
+the row comes out as `LCOM` instead — an animal the file says was adopted but
+never left.
 
 ## When it stops
 
@@ -192,7 +194,7 @@ Error reporting is deliberate and names what is wrong. The common ones:
 | `... does not have the column(s) this run needs` | the error lists what the file *does* contain; add a `columns:` entry mapping the canonical name to the file's spelling |
 | `step N names the column X, which does not exist` | a step column that is neither in the file nor derived. If it is a derived one, the message says what building it needs |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
-| `No module named 'openpyxl'` | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
+| `` `Import openpyxl` failed `` (pandas 3) or `Missing optional dependency 'openpyxl'` (pandas 2) | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
 | `N of M supplied value(s) unparseable` — in the statistics table, not an error | wrong `date_format`. Try `mixed` for US-style `m/d/Y` extracts |
 
 ## What this does not tell you
