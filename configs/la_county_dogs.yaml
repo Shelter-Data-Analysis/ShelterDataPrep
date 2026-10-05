@@ -53,8 +53,9 @@ steps:
 
   - cut: {intake_type: DECEASED}
 
-  # stale/losangelescounty.py:97 blanked OUTCOME_TYPE_GROUP wherever the raw
-  # OUTCOME_TYPE was the placeholder UNK9999999 (1,344 rows file-wide).
+  # filterRawData in stale/losangelescounty.py blanked OUTCOME_TYPE_GROUP
+  # wherever the raw OUTCOME_TYPE was the placeholder UNK9999999 (1,344 rows
+  # file-wide).
   #
   # On this extract the step reports 0, and that is the right answer: all
   # 1,344 of those rows already have a blank OUTCOME_TYPE_GROUP, so the stale
@@ -74,12 +75,12 @@ steps:
     where: {OUTCOME_TYPE: UNK9999999}
 
   # --- outcome_type -> the canonical mLOS codes ---------------------------
-  # A blank outcome group is 21% of the dog rows. stale/losangelescounty.py:85
-  # meant to route those to transfer, via a pd.NA dictionary key that never
-  # fired against the NaN pandas actually produces -- so the intent never took
-  # effect and they fell through to be dropped. Treated as still-in-care here,
-  # which is the ordinary reading of "no outcome recorded". Change to Transf
-  # if the original intent was right.
+  # A blank outcome group is 21% of the dog rows. getOutCodes in
+  # stale/losangelescounty.py meant to route those to transfer, via a pd.NA
+  # dictionary key that never fired against the NaN pandas actually produces
+  # -- so the intent never took effect and they fell through to be dropped.
+  # Treated as still-in-care here, which is the ordinary reading of "no
+  # outcome recorded". Change to Transf if the original intent was right.
   - map:
       outcome_type:
         ADOPTION:     LiveC
@@ -105,8 +106,9 @@ steps:
         OTHER:       OTHER
         _UNKNOWN_:   OTHER
 
-  # stale/losangelescounty.py:92 required INTAKE_DATE <= OUTCOME_DATE. Same
-  # rule, but the rows it removes are counted instead of vanishing in a mask.
+  # filterRawData in stale/losangelescounty.py required
+  # INTAKE_DATE <= OUTCOME_DATE. Same rule, but the rows it removes are
+  # counted instead of vanishing in a mask.
   - cut: {night_sign: "-1"}
 
   - dedup:

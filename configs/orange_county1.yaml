@@ -80,8 +80,9 @@ steps:
 
   # DISPOSAL is body disposal, not an outcome of a stay. The stale module was
   # of two minds about it -- filterRawData cut it while getOutCodes mapped it
-  # to non-live -- and orangecounty.py:142-145 flagged that contradiction as a
-  # known source of divergence from the R tool. Resolved here, once: it is cut.
+  # to non-live -- and the comment above filterRawData in
+  # stale/orangecounty.py flagged that contradiction as a known source of
+  # divergence from the R tool. Resolved here, once: it is cut.
   - cut: {outcome_type: [DOA, DISPOSAL, DELETE DUP, HOME EXP, FOUND EXP, LOST EXP,
                          SURG SCHED, SURG WAIT]}
 
