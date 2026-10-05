@@ -12,11 +12,16 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.5.0 (2026-10-05)
 
 **No numbers move** for any config with `keep_time: false`, which includes
 every shipped one: it produces byte-identical output. Under `keep_time: true`,
-a `dedup:` step can drop more rows than before; see below.
+a `dedup:` step can drop more rows than before; see below. The prepared files
+deposited at
+[10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368) stay valid:
+under 0.5.0, each shipped config reproduces its deposited prepared file and
+summary byte for byte. The deposited run logs say "still in care" where a
+0.5.0 log says "with no outcome date", for the same count.
 
 ### Changed
 
