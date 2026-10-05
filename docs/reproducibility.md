@@ -28,7 +28,7 @@ window        2018-06-01 to 2025-10-02
 destination   /Users/you/projects/ShelterDataPrep/results/OC2_data.csv
 output sha256 e3804cd0...
 output rows   34718
-final span    intake 2018-01-22 to 2025-10-02, last outcome 2025-10-03, 205 still in care
+final span    intake 2018-01-22 to 2025-10-02, last outcome 2025-10-03, 205 with no outcome date
 
 python        3.9.6 on macOS-26.6.2-arm64-arm-64bit
 pandas        2.3.1
