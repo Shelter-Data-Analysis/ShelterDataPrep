@@ -166,9 +166,9 @@ reads as "still in care". The `parse_dates` row of the statistics table catches
 it. **Look at it before trusting a run.** A row in that state shows in the
 frame as `outcome_type` set to something real while `night_sign` is
 `_UNKNOWN_`; the stale pipeline repaired it by assuming the animal left the day
-it arrived (`stale/_PhysicsSubs.py:28-30`). That repair was only a guess and
-has no equivalent here, because a cut or a map cannot rewrite a date. Adding it
-would take a new feature rather than a settings change.
+it arrived (`outcomeConsistency` in `stale/_PhysicsSubs.py`). That repair was
+only a guess and has no equivalent here, because a cut or a map cannot rewrite
+a date. Adding it would take a new feature rather than a settings change.
 
 What a settings file can do is mark the row, since a real outcome code with no
 date is visible as `night_sign: _UNKNOWN_`. The shipped configs carry the step,
