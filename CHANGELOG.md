@@ -24,6 +24,9 @@ a `dedup:` step can drop more rows than before; see below.
   read as `ISO8601`; it now stops and says what to write. Every shipped config
   already states it. **No numbers move**: a config that runs gives the same
   output as before.
+- NumPy is a declared dependency. The package imports it directly and the run
+  log records its version, but it was left to arrive with pandas. Nothing
+  installs differently, since pandas requires it.
 - A `dedup:` step compares dates by calendar day, even under
   `keep_time: true`. It compared full timestamps, so two records of one stay
   stamped at different times of the same day were kept as two stays. **This

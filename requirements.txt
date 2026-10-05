@@ -2,6 +2,7 @@
 # is the quick path for running from a clone.  The versions a given result was
 # actually produced under are recorded in that run's log.
 pandas>=2.0
+numpy>=1.20
 PyYAML>=6.0
 openpyxl>=3.1   # only needed for Excel sources
 pytest>=7.0     # tests only

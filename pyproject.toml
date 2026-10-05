@@ -9,7 +9,7 @@ description = "Config-driven preparation of animal shelter data files, with a st
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
-authors = [{ name = "Michael Mavrovouniotis" }]
+authors = [{ name = "Michael Loizos Mavrovouniotis" }]
 keywords = ["animal shelter", "length of stay", "data preparation",
             "reproducible research"]
 classifiers = [
@@ -25,9 +25,12 @@ classifiers = [
 # it infers microsecond rather than nanosecond resolution, which `dates` no
 # longer has an opinion about, and CI compares prepared output under both.
 # The exact versions a given result was produced under are recorded in that
-# run's log, which is the record that matters for reproducing it.
+# run's log, which is the record that matters for reproducing it.  NumPy
+# arrives with pandas anyway, but the package imports it directly, so it is
+# named here rather than left to arrive by accident.
 dependencies = [
     "pandas>=2.0",
+    "numpy>=1.20",
     "PyYAML>=6.0",
 ]
 

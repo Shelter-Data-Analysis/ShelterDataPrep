@@ -37,7 +37,9 @@ PyYAML        6.0.3
 openpyxl      3.1.5
 ```
 
-The digests here are shortened to fit; the log carries them in full. The two
+The digests here are shortened to fit; the log carries them in full. The run
+predates 0.4.0's release date because the version is set when the work is
+done, ahead of the release tag. The two
 paths are absolute, since `source_dir` and `dest_dir` resolve against the
 settings file rather than the working directory.
 
