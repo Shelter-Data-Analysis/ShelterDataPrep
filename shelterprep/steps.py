@@ -54,11 +54,26 @@ def selection(frame, step):
         # correction of an earlier one than the reverse. It also matches how
         # mLOS breaks the same tie: "of two equal stays, the one earlier in
         # the file is dropped".
-        repeats = eligible.duplicated(subset=list(step.on), keep="last")
+        repeats = _compared(eligible, step.on).duplicated(keep="last")
         chosen.loc[eligible.index] = repeats.to_numpy()
         return chosen
 
     return frame[step.column].isin(step.table) & _restrict(frame, step)
+
+
+def _compared(frame, columns):
+    """The columns a dedup compares, with dates reduced to the calendar day.
+
+    ``keep_time`` keeps the clock time for analyses of time-of-day effects,
+    not to tell stays apart: two records of one stay that differ only in the
+    time stamped on a date are still one stay, so what a dedup drops does not
+    depend on the switch.
+    """
+    compared = frame[list(columns)].copy()
+    for column in compared.columns:
+        if pd.api.types.is_datetime64_any_dtype(compared[column]):
+            compared[column] = compared[column].dt.normalize()
+    return compared
 
 
 def unmapped(frame, step):

@@ -360,14 +360,14 @@ def test_complete_is_rejected_off_a_map_or_when_not_a_boolean(tmp_path, step):
 
 # --- deduplication ---------------------------------------------------------
 
-def _twice(tmp_path, intake, outcome, second_size="MED"):
+def _twice(tmp_path, intake, outcome, second_size="MED", second_intake=None):
     """A source file with one stay recorded twice."""
     frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
     rows = pd.DataFrame([
-        {"Animal ID": "D001", "Intake Date": intake, "Outcome Date": outcome,
+        {"Animal ID": "D001", "Intake Date": date, "Outcome Date": outcome,
          "intake_type": "STRAY", "outcome_type": "ADOPTION", "outcome_subtype": "",
          "animal_type": "DOG", "DOB": "2019-01-01", "animal_size": size}
-        for size in ("MED", second_size)])
+        for date, size in ((intake, "MED"), (second_intake or intake, second_size))])
     source = tmp_path / "dup.csv"
     pd.concat([frame, rows], ignore_index=True).to_csv(source, index=False)
     return dict(source_dir=str(tmp_path), source_file="dup.csv")
@@ -400,6 +400,20 @@ def test_dedup_compares_only_the_named_columns(tmp_path):
                 "where": {"night_sign": "1"}}],
         **_twice(tmp_path, "2020-03-01", "2020-03-08", second_size="LARGE"))
     assert list(prep.frame.animal_id).count("D001") == 1
+
+
+def test_dedup_compares_dates_by_day_even_with_keep_time(tmp_path):
+    # keep_time is for time-of-day analyses, not for telling stays apart: two
+    # records of one multi-night stay differing only in the clock time are
+    # still one stay. The survivor keeps its time.
+    prep = prepared(
+        tmp_path, keep_time=True,
+        steps=[{"dedup": None, "where": {"night_sign": "1"}}],
+        **_twice(tmp_path, "2020-03-01 09:30:00", "2020-03-08",
+                 second_intake="2020-03-01 14:00:00"))
+    kept = prep.frame[prep.frame.animal_id == "D001"]
+    assert len(kept) == 1
+    assert kept.intake_date.iloc[0].hour == 14
 
 
 def test_dedup_keeps_the_last_row_of_each_group(tmp_path):
