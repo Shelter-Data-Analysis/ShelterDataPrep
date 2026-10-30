@@ -14,7 +14,34 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ## Unreleased
 
-**No numbers move**: nothing in `shelterprep/` changed.
+**No numbers move** for any config with `keep_time: false`, which includes
+every shipped one. Each shipped config, converted as below, reproduces its
+prepared file, summary, and statistics table byte for byte against 0.5.0 run
+on the same extracts; its run log differs in the `window` line alone. Under
+`keep_time: true`, a `cut:` on `window_presence` can keep more rows than
+before; see Fixed.
+
+### Changed
+
+- The study window ends at an exclusive stop date: `window_stop_date` is the
+  first day after the window, the convention of the last `period_dates` entry
+  in mLOS. It replaces `window_end_date`, the last day inside the window; a
+  config that still uses `window_end_date` is refused with an error that names
+  the change, rather than read as a stop date and losing its last day. To
+  convert a config, rename the key and add one day to its date. A stop date on
+  or before the start date is an error. Every config in `configs/` is
+  converted; `orange_county1.yaml` stops at 2025-10-04 and
+  `orange_county2.yaml` at 2025-10-03, one day apart as they were before. See
+  [the study window](docs/settings.md#the-study-window).
+- The run log's `window` line reads `<start> to <stop> (stop date excluded)`.
+
+### Fixed
+
+- `window_presence` goes by day, not time of day, as the rest of the package
+  does. Under `keep_time: true`, 0.5.0 marked an intake on the last day of the
+  window `AFTER` when its time was after midnight, so the window lost part of
+  its last day. Every intake on the last day is now `IN`. Under
+  `keep_time: false`, every time is midnight and nothing changes.
 
 ### Added
 

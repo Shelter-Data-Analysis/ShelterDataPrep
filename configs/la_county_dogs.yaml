@@ -25,11 +25,12 @@ source_file:  "LA_raw.csv.gz"
 date_format:  mixed
 keep_time:    false
 
-# From sampleStart/sampleEnd in stale/losangelescounty.py. The file itself
-# runs 2010-10-21 to 2025-02-07, so this window is doing a great deal of work
-# -- check its count first when the totals look small.
+# From sampleStart in stale/losangelescounty.py, and the day after its
+# sampleEnd. The file itself runs 2010-10-21 to 2025-02-07, so this window is
+# doing a great deal of work -- check its count first when the totals look
+# small.
 window_start_date: 2019-04-01
-window_end_date:   2024-07-31
+window_stop_date:  2024-08-01
 
 dest_dir:   "../results"
 dest_file:  "LA_data.csv"

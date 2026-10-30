@@ -40,7 +40,7 @@ def write_settings(tmp_path, **overrides):
                     "outcome_date": "Outcome Date", "dob": "DOB"},
         "age_groups": dict(AGE_GROUPS),
         "window_start_date": "2019-01-01",
-        "window_end_date": "2021-12-31",
+        "window_stop_date": "2022-01-01",
         "steps": [],
     }
     base.update(overrides)
@@ -89,12 +89,13 @@ def test_age_sentinels_are_distinct():
 # --- study window ----------------------------------------------------------
 
 def _presence(intake, outcome):
+    # keep_time, so a test can give a time of day and have it reach the rule.
     frame = pd.DataFrame({
-        "intake_date": dates.to_datetime(pd.Series([intake])),
-        "outcome_date": dates.to_datetime(pd.Series([outcome])),
+        "intake_date": dates.to_datetime(pd.Series([intake]), keep_time=True),
+        "outcome_date": dates.to_datetime(pd.Series([outcome]), keep_time=True),
     })
     return _window_presence(frame, pd.Timestamp("2020-01-01"),
-                            pd.Timestamp("2020-12-31"))[0]
+                            pd.Timestamp("2021-01-01"))[0]
 
 
 def test_a_stay_straddling_either_window_edge_is_in():
@@ -102,11 +103,22 @@ def test_a_stay_straddling_either_window_edge_is_in():
     assert _presence("2020-12-20", "2021-02-01") == "IN"   # straddles the close
 
 
-def test_window_edges_are_inclusive():
+def test_window_start_is_inside_and_stop_is_outside():
     assert _presence("2020-12-31", "2021-01-04") == "IN"
     assert _presence("2019-06-01", "2020-01-01") == "IN"
     assert _presence("2021-01-01", "2021-01-04") == "AFTER"
     assert _presence("2019-06-01", "2019-12-31") == "BEFORE"
+
+
+def test_window_presence_goes_by_day_not_time_of_day():
+    # Under keep_time a date carries a time of day; the window is whole days,
+    # so a stay on the last day or the start day is IN at any hour, and one on
+    # the stop day or the day before the start is out at any hour.
+    assert _presence("2020-12-31 10:00:00", "2021-01-04") == "IN"
+    assert _presence("2020-12-31 23:59:00", "2021-01-04") == "IN"
+    assert _presence("2021-01-01 10:00:00", "2021-01-04") == "AFTER"
+    assert _presence("2019-12-01", "2020-01-01 08:00:00") == "IN"
+    assert _presence("2019-12-01", "2019-12-31 23:59:00") == "BEFORE"
 
 
 def test_a_stay_still_in_care_is_in_however_old_its_intake():
@@ -119,20 +131,33 @@ def test_an_arrival_after_the_window_is_after_even_with_no_outcome():
 
 
 def test_window_settings_must_be_given_together(tmp_path):
-    path = write_settings(tmp_path, window_end_date=None)
+    path = write_settings(tmp_path, window_stop_date=None)
     with pytest.raises(SettingsError, match="together"):
         load(path)
 
 
-def test_window_start_must_precede_window_end(tmp_path):
+@pytest.mark.parametrize("stop", ["2021-01-01", "2022-01-01"])
+def test_window_start_must_precede_window_stop(tmp_path, stop):
+    # Equal dates are refused too: the stop date is excluded, so the window
+    # would hold no day at all.
     path = write_settings(tmp_path, window_start_date="2022-01-01",
-                          window_end_date="2021-01-01")
-    with pytest.raises(SettingsError, match="after"):
+                          window_stop_date=stop)
+    with pytest.raises(SettingsError, match="window is empty"):
+        load(path)
+
+
+def test_the_retired_window_end_date_is_refused_by_name(tmp_path):
+    # Read as window_stop_date, an old config would silently lose its last
+    # day; the error names the replacement and the one-day shift instead.
+    path = write_settings(tmp_path, window_stop_date=None,
+                          window_end_date="2021-12-31")
+    with pytest.raises(SettingsError,
+                       match="replaced by window_stop_date.*add one day"):
         load(path)
 
 
 def test_filtering_on_window_presence_without_a_window_is_an_error(tmp_path):
-    path = write_settings(tmp_path, window_start_date=None, window_end_date=None,
+    path = write_settings(tmp_path, window_start_date=None, window_stop_date=None,
                           steps=[{"cut": {"window_presence": "BEFORE"}}])
     with pytest.raises(SettingsError, match="window_presence"):
         load(path)

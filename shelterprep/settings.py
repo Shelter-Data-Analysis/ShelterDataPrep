@@ -51,10 +51,19 @@ NEGATIVE = "_NEGATIVE_"
 
 _TOP_LEVEL_KEYS = frozenset({
     "source_dir", "source_file", "sheet", "date_format", "keep_time",
-    "window_start_date", "window_end_date",
+    "window_start_date", "window_stop_date",
     "dest_dir", "dest_file", "output_columns",
     "columns", "age_groups", "unique_report", "steps",
 })
+
+#: Keys a settings file may no longer use, with what replaces each.  Checked
+#: before the unknown-key error so an old config is told what changed.
+_RETIRED_KEYS = {
+    "window_end_date": (
+        "window_end_date was the last day inside the window; it is replaced "
+        "by window_stop_date, the first day after the window, as in mLOS's "
+        "period_dates. Rename the key and add one day to its date"),
+}
 
 _STEP_KEYS = frozenset({"cut", "map", "dedup", "where", "where_not", "complete"})
 
@@ -304,7 +313,7 @@ class Settings:
     sheet: Optional[str] = None
     keep_time: bool = False
     window_start_date: Optional[object] = None
-    window_end_date: Optional[object] = None
+    window_stop_date: Optional[object] = None
     path: Optional[Path] = None
 
     # -- derived views ------------------------------------------------------
@@ -374,6 +383,10 @@ def load(path):
     if not isinstance(raw, dict):
         raise SettingsError("{0}: top level must be a mapping".format(path))
 
+    retired = sorted(set(raw) & set(_RETIRED_KEYS))
+    if retired:
+        raise SettingsError("{0}: {1}".format(path, _RETIRED_KEYS[retired[0]]))
+
     unknown = sorted(set(raw) - _TOP_LEVEL_KEYS)
     if unknown:
         raise SettingsError(
@@ -398,17 +411,20 @@ def load(path):
             "{0}: date_format must be ISO8601, mixed, or a strftime pattern "
             "such as \"%m/%d/%y\", got {1!r}".format(path, date_format))
 
-    start, end = raw.get("window_start_date"), raw.get("window_end_date")
-    if (start is None) != (end is None):
+    # The stop date is exclusive, so a window of one day has stop = start + 1
+    # and stop = start is empty.
+    start, stop = raw.get("window_start_date"), raw.get("window_stop_date")
+    if (start is None) != (stop is None):
         raise SettingsError(
-            "{0}: window_start_date and window_end_date must be given "
+            "{0}: window_start_date and window_stop_date must be given "
             "together or not at all".format(path))
     if start is not None:
-        start, end = dates.to_timestamp(start), dates.to_timestamp(end)
-        if start > end:
+        start, stop = dates.to_timestamp(start), dates.to_timestamp(stop)
+        if start >= stop:
             raise SettingsError(
-                "{0}: window_start_date {1} is after window_end_date {2}".format(
-                    path, start.date(), end.date()))
+                "{0}: window_start_date {1} is not before window_stop_date "
+                "{2}, so the window is empty".format(
+                    path, start.date(), stop.date()))
 
     age_groups = _parse_age_groups(raw.get("age_groups"), path)
     steps = tuple(_parse_step(number, step)
@@ -433,7 +449,7 @@ def load(path):
         date_format=date_format,
         keep_time=bool(raw.get("keep_time", False)),
         window_start_date=start,
-        window_end_date=end,
+        window_stop_date=stop,
         path=path,
     )
 
@@ -477,7 +493,7 @@ def _check_window_usage(settings, path):
         return
     raise SettingsError(
         "{0}: a step filters on window_presence, but window_start_date and "
-        "window_end_date are not set, so the column is never built".format(path))
+        "window_stop_date are not set, so the column is never built".format(path))
 
 
 def _check_age_usage(settings, path):

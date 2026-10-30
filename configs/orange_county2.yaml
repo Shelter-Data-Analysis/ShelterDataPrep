@@ -37,19 +37,19 @@ keep_time:    false
 # the file.
 #
 # window_presence is an overlap rule, not an intake-date rule: BEFORE is
-# outcome_date < start, AFTER is intake_date > end. A stay admitted in March
+# outcome_date < start, AFTER is intake_date >= stop. A stay admitted in March
 # 2018 and released in August is kept -- correctly, because it is in the file
 # and it was resident during the window. 162 rows are of that kind. The start
 # date removes the period whose *denominator* is incomplete.
 #
-# The end date stops one day short of the extract's last intake (2025-10-03),
-# dropping 11 same-day admissions that carry no usable follow-up.
+# The stop date is the extract's last intake day (2025-10-03), so the window
+# drops that day's 11 admissions, which carry no usable follow-up.
 #
 # Further narrowing is left to the consumer of the file; mLOS applies its own
 # period_dates. Doing it here instead is a one-line edit, and the rows it costs
 # are counted in the statistics table rather than going missing invisibly.
 window_start_date: 2018-06-01
-window_end_date:   2025-10-02
+window_stop_date:  2025-10-03
 
 # --- destination ----------------------------------------------------------
 # Relative paths are resolved against this settings file, not the working

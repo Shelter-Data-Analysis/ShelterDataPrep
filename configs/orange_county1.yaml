@@ -41,7 +41,7 @@ keep_time:    false
 # and sampleEnd 2024-10-19, which on this extract costs 9,264 rows; mLOS's own
 # period_dates are narrower still, 2019-01-01 to 2022-10-01.
 window_start_date: 2018-01-01
-window_end_date:   2025-10-03
+window_stop_date:  2025-10-04
 
 # --- destination ----------------------------------------------------------
 # Relative paths are resolved against this settings file, not the working

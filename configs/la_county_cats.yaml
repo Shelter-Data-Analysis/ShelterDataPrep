@@ -15,10 +15,10 @@ source_file:  "LA_raw.csv.gz"
 date_format:  mixed
 keep_time:    false
 
-# From sampleStart/sampleEnd in stale/ladogcat.py, which starts earlier than
-# the dogs module did.
+# From sampleStart in stale/ladogcat.py, and the day after its sampleEnd; it
+# starts earlier than the dogs module did.
 window_start_date: 2018-11-30
-window_end_date:   2024-07-31
+window_stop_date:  2024-08-01
 
 dest_dir:   "../results"
 dest_file:  "LAdc_data.csv"

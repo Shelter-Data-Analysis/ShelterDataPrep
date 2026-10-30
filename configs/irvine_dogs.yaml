@@ -14,11 +14,11 @@ source_file:  "IR_raw.csv.gz"
 date_format:  ISO8601
 keep_time:    false
 
-# From sampleStart/sampleEnd in stale/irvine.py. The extract itself runs to
-# 2024-10-15. Widen both to take in the whole file; the window step counts
-# whatever it costs.
+# From sampleStart in stale/irvine.py, and the day after its sampleEnd. The
+# extract itself runs to 2024-10-15. Widen both to take in the whole file; the
+# window step counts whatever it costs.
 window_start_date: 2014-07-01
-window_end_date:   2024-10-14
+window_stop_date:  2024-10-15
 
 dest_dir:   "../results"
 dest_file:  "IR_data.csv"

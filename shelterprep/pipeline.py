@@ -191,7 +191,7 @@ class Prep:
 
         if settings.has_window:
             frame["window_presence"] = _window_presence(
-                frame, settings.window_start_date, settings.window_end_date)
+                frame, settings.window_start_date, settings.window_stop_date)
             built.append("window_presence")
 
         if "dob" in frame.columns and settings.age_groups:
@@ -343,8 +343,9 @@ class Prep:
             "date_format   {0}".format(settings.date_format),
             "keep_time     {0}".format(settings.keep_time),
             "window        {0}".format(
-                "{0} to {1}".format(settings.window_start_date.date(),
-                                    settings.window_end_date.date())
+                "{0} to {1} (stop date excluded)".format(
+                    settings.window_start_date.date(),
+                    settings.window_stop_date.date())
                 if settings.has_window else "(none)"),
             "destination   {0}".format(settings.dest_path),
             "output sha256 {0}".format(_sha256(settings.dest_path)),
@@ -380,17 +381,20 @@ def _sign_of(nights):
     return sign
 
 
-def _window_presence(frame, start, end):
-    """BEFORE, IN or AFTER, relative to the study window.
+def _window_presence(frame, start, stop):
+    """BEFORE, IN or AFTER, relative to the study window [start, stop).
 
     IN is the default and the two exclusions are the special cases, which is
     what makes the still-in-care animal come out right without a branch of its
     own: its outcome_date is NaT, ``NaT < start`` is False, so it is never
     BEFORE.  That is correct -- it has not left.
+
+    The window is a span of whole days.  Both dates are normalized first, so
+    under ``keep_time`` the time of day never moves a stay across an edge.
     """
     presence = pd.Series("IN", index=frame.index, dtype=object)
-    presence[frame["outcome_date"] < start] = "BEFORE"
-    presence[frame["intake_date"] > end] = "AFTER"
+    presence[frame["outcome_date"].dt.normalize() < start] = "BEFORE"
+    presence[frame["intake_date"].dt.normalize() >= stop] = "AFTER"
     presence[frame["intake_date"].isna()] = UNKNOWN
     return presence
 

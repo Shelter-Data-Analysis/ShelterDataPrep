@@ -29,11 +29,11 @@ date_format:  ISO8601        # accepts both YYYY-MM-DD and YYYY-MM-DD HH:MM:SS
 keep_time:    false
 
 # --- study window ---------------------------------------------------------
-# Both dates or neither. A stay is BEFORE when it ended before the window
-# opened, AFTER when it began after the window closed; the cut below removes
-# them.
+# Both dates or neither. The stop date is the first day after the window. A
+# stay is BEFORE when it ended before the start date, AFTER when it began on or
+# after the stop date; the cut below removes them.
 window_start_date: 2019-01-01
-window_end_date:   2021-12-31
+window_stop_date:  2022-01-01
 
 # --- destination ----------------------------------------------------------
 # results/ is gitignored.

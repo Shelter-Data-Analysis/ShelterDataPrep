@@ -17,7 +17,7 @@ date_format:  ISO8601        # required; or a pattern such as "%m/%d/%y"
 keep_time:    false
 
 window_start_date: 2018-07-01   # optional pair, both or neither
-window_end_date:   2024-10-19
+window_stop_date:  2024-10-20   # first day after the window
 
 dest_dir:   "../results"
 dest_file:  "OC2_data.csv"
@@ -106,14 +106,26 @@ reaching for different ones. The output keeps the canonical names.
 
 ## The study window
 
-`window_start_date` and `window_end_date` are an optional pair — both or
+`window_start_date` and `window_stop_date` are an optional pair — both or
 neither. They do not filter anything by themselves. They build the
 `window_presence` column, and an ordinary `cut:` step removes what you want
 removed. The count lands in the statistics table like every other exclusion.
 
+The window runs from the start date through the day before the stop date: the
+start date is inside it and the stop date is the first day outside it, the
+convention of the last `period_dates` entry in mLOS. A window of one day has
+its stop date one day after its start date, and a stop date on or before the
+start date is an error. The window is whole days: under `keep_time: true`, the
+time of day does not move a stay across either edge.
+
 The rule is overlap, not intake date: a stay is `BEFORE` when it ended before
-the window opened and `AFTER` when it began after the window closed. See
+the start date and `AFTER` when it began on or after the stop date. See
 [derived columns](steps.md#derived-columns).
+
+`window_end_date`, the last day inside the window, is refused with an error
+that names `window_stop_date`. To convert a config, rename the key and add one
+day to its date. The [changelog](../CHANGELOG.md) says when the converted
+config can prepare a different file.
 
 ## age_groups and unique_report
 

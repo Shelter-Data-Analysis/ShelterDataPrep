@@ -17,11 +17,12 @@ source_file:  "LB_raw.csv.gz"
 date_format:  ISO8601
 keep_time:    false
 
-# From sampleStart/sampleEnd in stale/longbeach.py. Note the file on disk now
-# runs past that end date, so this window does real work -- check the count on
-# the window_presence step and widen if you want the newer rows.
+# From sampleStart in stale/longbeach.py, and the day after its sampleEnd. Note
+# the file on disk now runs past that date, so this window does real work --
+# check the count on the window_presence step and widen if you want the newer
+# rows.
 window_start_date: 2018-03-01
-window_end_date:   2024-12-31
+window_stop_date:  2025-01-01
 
 dest_dir:   "../results"
 dest_file:  "LB_data.csv"

@@ -132,8 +132,8 @@ held one. Without the extra day those two land in different groups. Above the
 last cutoff is `_OVER_`; a `dob` after the intake date is `_NEGATIVE_` (a data
 error, kept distinct from a missing `dob`, which is `_UNKNOWN_`).
 
-`window_presence` is `AFTER` if the animal arrived after the window closed and
-`BEFORE` if it left before the window opened. An animal still in care has no
+`window_presence` is `AFTER` if the animal arrived on or after the stop date
+and `BEFORE` if it left before the start date. An animal still in care has no
 outcome date: it cannot pass the `BEFORE` test, and it is either `AFTER` or
 `IN` depending solely on its intake date. A row with no parseable *intake* date
 is `_UNKNOWN_`: it cannot be placed against the window at all, and every
