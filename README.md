@@ -87,6 +87,7 @@ because reproducing a result means stating the environment it ran in.
 |---|---|
 | [Preparing your own shelter data](docs/getting-started.md) | writing a config, step by step, for a shelter not listed below |
 | [The settings file](docs/settings.md) | every top-level key, the path rules, and how dates are handled |
+| [Known problems in source files](docs/source-problems.md) | what real extracts have done that the reader does not yet handle, with a workaround for each |
 | [Steps and derived columns](docs/steps.md) | the `cut` / `map` / `dedup` grammar for filters and transformations, and the columns the tool builds for you |
 | [The prepared file and the summary table](docs/outputs.md) | what each column of the two files means |
 | [The statistics table](docs/statistics-table.md) | its format, for downstream consumers; already shared with mLOS, the length-of-stay analysis tool |

@@ -51,6 +51,12 @@ before; see Fixed.
   `<name>_pseudonymized.csv` and a log, and stops on an ID the mapping lacks.
   It runs after the main run and leaves the prepared file as it is. See
   [pseudonymizing animal IDs](docs/pseudonymizing.md).
+- [Known problems in source files](docs/source-problems.md) lists what real
+  extracts have done that the reader does not yet handle, with the effect, a
+  workaround, and the fix each needs: headings merged across columns, a font
+  family above 14, and a blank spacer row, all three found in the Irvine
+  workbook of 2025-10-08; and column names below row 1 and `.xls` workbooks,
+  not yet found in an extract. A documentation change; no numbers move.
 
 ## 0.5.0 (2026-10-05)
 

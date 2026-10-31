@@ -91,6 +91,10 @@ columns are built into the frame. When obtaining data, ask for as many columns
 as are available, so that a later run can serve a new need without re-acquiring
 the raw data.
 
+[Known problems in source files](source-problems.md) lists what real extracts
+have done that the reader does not yet handle, such as headings merged across
+columns, with a workaround for each.
+
 ## Columns
 
 Five canonical fields must resolve to a column in the file: `animal_id`,
