@@ -85,11 +85,27 @@ found.
 carry a byte-order mark, which otherwise becomes part of the first column name
 and makes every lookup on it fail.
 
-Only the columns a run actually needs are read, which costs little: a wide
-extract, which is the common case, is still read from disk, but only the needed
-columns are built into the frame. When obtaining data, ask for as many columns
-as are available, so that a later run can serve a new need without re-acquiring
-the raw data.
+**Empty rows are passed over.** The column names come from the first row with
+a value in any column, so a title or spacer row above them needs no setting;
+the statistics table's `read` row then says which row the names are in. Below
+the names, a row with no value in any column, or only spaces, is no stay and
+is dropped, on a `drop_empty` row of its own at step 0. Both rules look at
+every column of the file, not only those the run reads: a row holding nothing
+but a note in a column the run ignores is still read, and becomes a stay with
+no dates, which the study window then removes. A file in which every row is
+empty stops the run.
+
+Only the columns a run actually needs are built into the frame, which costs
+little: a wide extract, which is the common case, is still read from disk, but
+only the needed columns are kept. Telling an empty row needs every column, so
+a CSV is read a second time, a chunk at a time, for that alone; a workbook is
+parsed whole in any case. When obtaining data, ask for as many columns as are
+available, so that a later run can serve a new need without re-acquiring the
+raw data.
+
+`shelterprep.read_source(path, sheet=None)` returns a source's every column as
+text, with the rows and names a run would read, for a program that shows the
+file before a settings file exists for it.
 
 [Known problems in source files](source-problems.md) lists what real extracts
 have done that the reader does not yet handle, such as headings merged across

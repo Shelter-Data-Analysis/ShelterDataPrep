@@ -27,6 +27,12 @@ it without removing it.
 Every step computes its mask, records the statistics, and only then applies the
 change, so the numbers describe the frame the step actually saw.
 
+Step 0 can have a `drop_empty` row after `read`, when the source has rows with
+no value in any column: `rows_affected` counts them, and `rows_out` is the rows
+left. It appears only when there are such rows. When the column names are not
+in the source's first row, the `read` row's `detail` says which row they are
+in, such as `43 column(s), sheet Sheet1, column names in row 2`.
+
 ## The by-value breakdown
 
 Underneath the stage table, in the same file, sits a second one at a finer

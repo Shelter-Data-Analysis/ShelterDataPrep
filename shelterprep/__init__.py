@@ -15,9 +15,9 @@ or from the command line::
 
 from __future__ import annotations
 
-from .pipeline import Prep, SourceError
+from .pipeline import Prep, SourceError, read_source
 from .settings import Settings, SettingsError, load
 from .version import __version__
 
 __all__ = ["Prep", "Settings", "SettingsError", "SourceError", "load",
-           "__version__"]
+           "read_source", "__version__"]

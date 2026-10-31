@@ -19,7 +19,9 @@ every shipped one. Each shipped config, converted as below, reproduces its
 prepared file, summary, and statistics table byte for byte against 0.5.0 run
 on the same extracts; its run log differs in the `window` line alone. Under
 `keep_time: true`, a `cut:` on `window_presence` can keep more rows than
-before; see Fixed.
+before; see Fixed. A source with empty rows reads differently; see Changed.
+Each shipped config's prepared file, summary, and statistics table are the
+same with and without that change, since no shipped extract has an empty row.
 
 ### Changed
 
@@ -34,6 +36,18 @@ before; see Fixed.
   `orange_county2.yaml` at 2025-10-03, one day apart as they were before. See
   [the study window](docs/settings.md#the-study-window).
 - The run log's `window` line reads `<start> to <stop> (stop date excluded)`.
+- **Could move a number** for a source with empty rows. The column names come
+  from the first row with a value in any column, not always the first row, so
+  a workbook or CSV with a title or spacer row above them reads as is; the
+  `read` row's detail says which row they are in. A row below the names with
+  no value in any column is dropped and counted on a new step-0 `drop_empty`
+  row of the statistics table, which appears only when there are such rows.
+  Before, such a row was read as a stay with no values and removed by the
+  study window, counted there as of unknown window presence; a blank line in
+  a CSV was skipped uncounted. A CSV is now read a second time, a chunk at a
+  time, to find its empty rows. For the Irvine workbook of 2025-10-08, whose
+  names are in row 2, the run no longer stops on missing columns. See [the
+  source file](docs/settings.md#the-source-file).
 
 ### Fixed
 
@@ -51,12 +65,15 @@ before; see Fixed.
   `<name>_pseudonymized.csv` and a log, and stops on an ID the mapping lacks.
   It runs after the main run and leaves the prepared file as it is. See
   [pseudonymizing animal IDs](docs/pseudonymizing.md).
+- `shelterprep.read_source(path, sheet=None)` returns a source's every column
+  as text, with the rows and column names a run would read, for a program
+  that shows the file before a settings file exists for it, such as mLOS Web.
 - [Known problems in source files](docs/source-problems.md) lists what real
   extracts have done that the reader does not yet handle, with the effect, a
-  workaround, and the fix each needs: headings merged across columns, a font
-  family above 14, and a blank spacer row, all three found in the Irvine
-  workbook of 2025-10-08; and column names below row 1 and `.xls` workbooks,
-  not yet found in an extract. A documentation change; no numbers move.
+  workaround, and the fix each needs: headings merged across columns and a
+  font family above 14, both found in the Irvine workbook of 2025-10-08, and
+  `.xls` workbooks, not yet found in an extract. A documentation change; no
+  numbers move.
 
 ## 0.5.0 (2026-10-05)
 

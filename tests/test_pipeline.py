@@ -923,6 +923,94 @@ def test_a_gzipped_source_reads_and_hashes_as_its_uncompressed_self(tmp_path):
     assert hashlib.sha256(plain).hexdigest() in prep.settings.run_path.read_text()
 
 
+def _with_empty_rows(frame, above, between):
+    """The fixture as a grid of text: empty rows above the names, and an empty
+    row after each of the data rows numbered in *between*, -1 being the names."""
+    width = len(frame.columns)
+    grid = [[""] * width for _ in range(above)] + [list(frame.columns)]
+    if -1 in between:
+        grid.append([""] * width)
+    for number, row in enumerate(frame.fillna("").values.tolist()):
+        grid.append(row)
+        if number in between:
+            grid.append([""] * width)
+    return grid
+
+
+def test_empty_rows_in_a_workbook_are_passed_over_and_counted(tmp_path):
+    # The Irvine workbook of 2025-10-08: a spacer row above the column names
+    # and another between them and the data.
+    frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
+    book = tmp_path / "spaced.xlsx"
+    pd.DataFrame(_with_empty_rows(frame, above=2, between={-1, 4})).replace(
+        "", None).to_excel(book, header=False, index=False)
+
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="spaced.xlsx"))).read()
+    assert len(prep.frame) == 15
+    assert list(prep.frame.animal_id[:2]) == ["A001", "A002"]
+    table = prep.statistics.frame().set_index("action")
+    assert table.loc["read", "rows_in"] == 17
+    assert "column names in row 3" in table.loc["read", "detail"]
+    assert table.loc["drop_empty", "rows_affected"] == 2
+    assert table.loc["drop_empty", "rows_out"] == 15
+
+
+def test_empty_rows_in_a_csv_are_passed_over_and_counted(tmp_path):
+    # A line of commas above the names, a blank line and a line of commas
+    # among the data, and a line of spaces: none of them is a stay.
+    frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
+    lines = [",".join(row) for row in _with_empty_rows(frame, above=1, between={3})]
+    lines.insert(8, "")
+    lines.insert(12, "  ,  ," + "," * (len(frame.columns) - 3))
+    (tmp_path / "spaced.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="spaced.csv"))).read()
+    assert len(prep.frame) == 15
+    table = prep.statistics.frame().set_index("action")
+    assert "column names in row 2" in table.loc["read", "detail"]
+    assert table.loc["drop_empty", "rows_affected"] == 3
+
+
+def test_a_row_with_a_value_only_in_an_unread_column_is_not_empty(tmp_path):
+    frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
+    note = pd.DataFrame([{**{c: "" for c in frame.columns}, "outcome_subtype": "see notes"}])
+    pd.concat([frame, note]).to_csv(tmp_path / "noted.csv", index=False)
+
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="noted.csv"))).read()
+    assert len(prep.frame) == 16
+    assert "drop_empty" not in set(prep.statistics.frame().action)
+
+
+def test_a_file_without_empty_rows_gets_no_drop_empty_row(tmp_path):
+    prep = Prep(load(write_settings(tmp_path))).read()
+    table = prep.statistics.frame()
+    assert "drop_empty" not in set(table.action)
+    assert table.set_index("action").loc["read", "detail"] == "7 column(s)"
+
+
+def test_a_file_of_empty_rows_has_no_column_names(tmp_path):
+    (tmp_path / "blank.csv").write_text(",,,\n\n,,,\n", encoding="utf-8")
+    path = write_settings(tmp_path, source_dir=str(tmp_path), source_file="blank.csv")
+    with pytest.raises(SourceError, match="has no column names"):
+        Prep(load(path)).read()
+
+
+def test_read_source_shows_the_rows_and_names_a_run_reads(tmp_path):
+    from shelterprep import read_source
+    frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
+    book = tmp_path / "spaced.xlsx"
+    pd.DataFrame(_with_empty_rows(frame, above=1, between={2})).replace(
+        "", None).to_excel(book, header=False, index=False)
+
+    shown, sheet, header_row, dropped = read_source(book)
+    assert (sheet, header_row, dropped) == ("Sheet1", 1, 1)
+    assert list(shown.columns) == list(frame.columns)
+    assert shown.fillna("").values.tolist() == frame.fillna("").values.tolist()
+
+
 def test_a_utf8_bom_does_not_corrupt_the_first_column_name(tmp_path):
     source = tmp_path / "bom.csv"
     source.write_bytes(b"\xef\xbb\xbf" + (FIXTURES / "tiny.csv").read_bytes())
