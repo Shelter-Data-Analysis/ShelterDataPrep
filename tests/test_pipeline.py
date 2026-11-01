@@ -1005,10 +1005,76 @@ def test_read_source_shows_the_rows_and_names_a_run_reads(tmp_path):
     pd.DataFrame(_with_empty_rows(frame, above=1, between={2})).replace(
         "", None).to_excel(book, header=False, index=False)
 
-    shown, sheet, header_row, dropped = read_source(book)
-    assert (sheet, header_row, dropped) == ("Sheet1", 1, 1)
-    assert list(shown.columns) == list(frame.columns)
-    assert shown.fillna("").values.tolist() == frame.fillna("").values.tolist()
+    shown = read_source(book)
+    assert (shown.sheet, shown.header_row, shown.empty_rows) == ("Sheet1", 1, 1)
+    assert list(shown.frame.columns) == list(frame.columns)
+    assert shown.frame.fillna("").values.tolist() == frame.fillna("").values.tolist()
+
+
+def _rewrite_part(book, name, change):
+    import zipfile
+    with zipfile.ZipFile(book) as source:
+        parts = [(item, source.read(item.filename)) for item in source.infolist()]
+    with zipfile.ZipFile(book, "w", zipfile.ZIP_DEFLATED) as target:
+        for item, data in parts:
+            target.writestr(item, change(data) if item.filename == name else data)
+
+
+def test_a_font_family_above_14_is_left_out_of_a_copy_and_logged(tmp_path):
+    # The Irvine workbook of 2025-10-08: Excel wrote <family val="16"/>, and
+    # openpyxl refuses the whole workbook over it.
+    book = tmp_path / "fonts.xlsx"
+    pd.read_csv(FIXTURES / "tiny.csv", dtype=str).to_excel(book, index=False)
+    _rewrite_part(book, "xl/styles.xml",
+                  lambda data: re.sub(rb'<family val="\d+"\s*/>', b'<family val="16"/>', data))
+    with pytest.raises(ValueError, match="stylesheet"):
+        pd.ExcelFile(book)
+
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="fonts.xlsx"))).run(verbose=False)
+    assert len(prep.frame) > 0
+    log = prep.settings.run_path.read_text()
+    assert re.search(r"repaired +\d+ font family setting", log)
+    assert hashlib.sha256(book.read_bytes()).hexdigest() in log
+
+
+def _merged_book(path, values_in_heading_column=False):
+    """The fixture with Outcome Date as a heading merged over two columns, its
+    values in the second, as the Irvine workbook of 2025-10-08 has them."""
+    import openpyxl
+    frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
+    at = list(frame.columns).index("Outcome Date")
+    sheet = openpyxl.Workbook().active
+    for j, name in enumerate(frame.columns):
+        heading = j + 1 + (j > at)
+        sheet.cell(row=1, column=heading, value=name)
+        for i, value in enumerate(frame[name]):
+            sheet.cell(row=i + 2, column=heading + (j == at),
+                       value=None if pd.isna(value) else value)
+            if j == at and values_in_heading_column:
+                sheet.cell(row=i + 2, column=heading, value="x")
+    sheet.merge_cells(start_row=1, start_column=at + 1, end_row=1, end_column=at + 2)
+    sheet.parent.save(path)
+    return at
+
+
+def test_a_merged_heading_names_the_column_of_values_under_it(tmp_path):
+    at = _merged_book(tmp_path / "merged.xlsx")
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="merged.xlsx"))).run(verbose=False)
+    (tmp_path / "plain").mkdir()
+    plain = Prep(load(write_settings(tmp_path / "plain"))).run(verbose=False)
+    assert prep.frame.outcome_date.equals(plain.frame.outcome_date)
+    assert ("heading       Outcome Date names the column under its merged heading "
+            "(Unnamed: {0})".format(at + 1)) in prep.settings.run_path.read_text()
+
+
+def test_a_merged_heading_over_its_own_values_is_left_alone(tmp_path):
+    from shelterprep import read_source
+    _merged_book(tmp_path / "merged.xlsx", values_in_heading_column=True)
+    shown = read_source(tmp_path / "merged.xlsx")
+    assert shown.headings_moved == ()
+    assert set(shown.frame["Outcome Date"]) == {"x"}
 
 
 def test_a_utf8_bom_does_not_corrupt_the_first_column_name(tmp_path):

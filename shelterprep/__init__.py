@@ -15,9 +15,9 @@ or from the command line::
 
 from __future__ import annotations
 
-from .pipeline import Prep, SourceError, read_source
+from .pipeline import Prep, Source, SourceError, open_workbook, read_source
 from .settings import Settings, SettingsError, load
 from .version import __version__
 
 __all__ = ["Prep", "Settings", "SettingsError", "SourceError", "load",
-           "read_source", "__version__"]
+           "Source", "open_workbook", "read_source", "__version__"]

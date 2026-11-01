@@ -37,7 +37,12 @@ PyYAML        6.0.3
 openpyxl      3.1.5
 ```
 
-The digests here are shortened to fit; the log carries them in full. The run
+The digests here are shortened to fit; the log carries them in full. A run
+on a workbook the reader repaired adds a line after `sheet` for each repair:
+`repaired`, for font settings left out of the copy it read, and `heading`, for
+a column that takes the name of the merged heading above it. See [the source
+file](settings.md#the-source-file).
+ The run
 predates 0.5.0's release date because the version is set when the work is
 done, ahead of the release tag. The two
 paths are absolute, since `source_dir` and `dest_dir` resolve against the

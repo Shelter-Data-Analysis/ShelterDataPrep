@@ -103,13 +103,29 @@ parsed whole in any case. When obtaining data, ask for as many columns as are
 available, so that a later run can serve a new need without re-acquiring the
 raw data.
 
-`shelterprep.read_source(path, sheet=None)` returns a source's every column as
-text, with the rows and names a run would read, for a program that shows the
-file before a settings file exists for it.
+**Two repairs apply to a workbook**, and the run log records each.
+
+- **A font family above 14.** Excel writes such fonts, and openpyxl refuses
+  the whole workbook over them, as a style table it cannot read. A font's
+  family changes only how text is drawn, so when openpyxl refuses the style
+  table, the reader drops those entries from a copy held in memory and reads
+  the copy. No cell value changes, and the run log's `source sha256` stays the
+  digest of the file itself.
+- **A heading merged across columns.** Excel keeps a merged cell's text in its
+  leftmost column, and a workbook may hold the values in another column of the
+  span, which pandas then names by position, such as `Unnamed: 38`. Where the
+  heading's own column is empty and exactly one unnamed column of its span
+  holds values, that column takes the heading's name, so `columns:` names it
+  as the heading reads.
+
+`shelterprep.read_source(path, sheet=None)` returns a `Source`: a file's every
+column as text, with the rows and names a run would read, and what the reader
+repaired. `shelterprep.open_workbook(path)` opens a workbook as pandas reads it,
+with the same font repair. Both are for a program that shows the file before a
+settings file exists for it.
 
 [Known problems in source files](source-problems.md) lists what real extracts
-have done that the reader does not yet handle, such as headings merged across
-columns, with a workaround for each.
+have done that the reader does not yet handle, with a workaround for each.
 
 ## Columns
 

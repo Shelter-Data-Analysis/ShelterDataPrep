@@ -11,10 +11,16 @@ from __future__ import annotations
 import csv
 import gzip
 import hashlib
+import io
 import platform
-from dataclasses import replace
+import posixpath
+import re
+import zipfile
+from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
+
+from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd
@@ -41,6 +47,7 @@ class Prep:
         self.frame = None
         self.statistics = Statistics(settings.unique_report)
         self.sheet = None
+        self.source = None
 
     def run(self, verbose=True):
         self.read()
@@ -63,12 +70,32 @@ class Prep:
         path = settings.source_path
         if not path.exists():
             raise SourceError("source file not found: {0}".format(path))
+        if path.suffix.lower() not in EXCEL_SUFFIXES and settings.sheet is not None:
+            raise SourceError(
+                "sheet {0!r} was given but {1} is not an Excel "
+                "file".format(settings.sheet, path.name))
 
-        header, self.sheet, header_row = self._probe(path)
-        wanted = settings.wanted_columns(available=set(header))
-        by_file_name = self._resolve(wanted, header)
+        if path.suffix.lower() in EXCEL_SUFFIXES:
+            # A workbook is parsed whole whatever is asked for, so every column
+            # is read, and the empty rows and merged headings found in it.
+            whole, empty, self.source = _load_workbook(path, settings.sheet)
+            header = list(whole.columns)
+            by_file_name = self._resolve(settings.wanted_columns(available=set(header)), header)
+            frame = whole[list(by_file_name)]
+        else:
+            # A CSV is read for the named columns only, and a second pass over
+            # all of them, a chunk at a time, finds the empty rows without
+            # holding the whole file.
+            header_row = _header_row(path)
+            header = list(_read_csv(path, header_row, nrows=0).columns)
+            self.source = Source(None, None, header_row, 0, 0, ())
+            by_file_name = self._resolve(settings.wanted_columns(available=set(header)), header)
+            frame = _read_csv(path, header_row, usecols=list(by_file_name))
+            chunks = _read_csv(path, header_row, chunksize=100000)
+            empty = np.concatenate([_empty_rows(chunk) for chunk in chunks] or [np.zeros(0, bool)])
+        self.sheet = self.source.sheet
+        header_row = self.source.header_row
 
-        frame, empty = self._read_columns(path, list(by_file_name), header_row)
         frame = frame.rename(columns=by_file_name)
         frame.index = pd.RangeIndex(len(frame))
         empty = pd.Series(np.asarray(empty, dtype=bool), index=frame.index)
@@ -97,17 +124,6 @@ class Prep:
         self.frame = frame
         self._parse_dates(date_columns)
         return self
-
-    def _probe(self, path):
-        """Read the header only, and settle which sheet and row it is in."""
-        settings = self.settings
-        if path.suffix.lower() not in EXCEL_SUFFIXES and settings.sheet is not None:
-            raise SourceError(
-                "sheet {0!r} was given but {1} is not an Excel "
-                "file".format(settings.sheet, path.name))
-        sheet = _sheet(path, settings.sheet)
-        header_row = _header_row(path, sheet)
-        return _header(path, sheet, header_row), sheet, header_row
 
     def _resolve(self, wanted, header):
         """Map file column names to canonical names, failing loudly on gaps.
@@ -140,22 +156,6 @@ class Prep:
             lines.append("the file has: " + ", ".join(header))
             raise SourceError("\n".join(lines))
         return by_file_name
-
-    def _read_columns(self, path, file_names, header_row):
-        """The named columns, and which rows have no value in any column.
-
-        A workbook is parsed whole whatever is asked for, so every column is
-        read and the empty rows found in it. A CSV is read for the named
-        columns only, and a second pass over all of them, a chunk at a time,
-        finds the empty rows without holding the whole file.
-        """
-        if path.suffix.lower() in EXCEL_SUFFIXES:
-            whole = _read_whole(path, self.sheet, header_row)
-            return whole[file_names], _empty_rows(whole)
-        frame = _read_csv(path, header_row, usecols=file_names)
-        chunks = _read_csv(path, header_row, chunksize=100000)
-        empty = np.concatenate([_empty_rows(chunk) for chunk in chunks] or [np.zeros(0, bool)])
-        return frame, empty
 
     def _parse_dates(self, date_columns):
         settings = self.settings
@@ -340,6 +340,7 @@ class Prep:
             "source sha256 {0}  (of the uncompressed contents)".format(
                 _sha256(settings.source_path)),
             "sheet         {0}".format(self.sheet or "(csv)"),
+        ] + _source_notes(self.source) + [
             "date_format   {0}".format(settings.date_format),
             "keep_time     {0}".format(settings.keep_time),
             "window        {0}".format(
@@ -464,78 +465,186 @@ def _environment():
 # value in any column is dropped as no stay. Both rules look at every column
 # of the file, not only those a run reads, so a row that holds a note in a
 # column nobody reads is still read as a row.
+#
+# Two repairs apply to a workbook alone. Excel writes font families above 14,
+# which openpyxl refuses as a broken style table; a font's family changes only
+# how text is drawn, so those entries are dropped from a copy read in its
+# place. And a heading merged across columns keeps its text in the leftmost
+# one, which may be empty while the values sit in another column of the span;
+# where exactly one unnamed column of the span holds values, it takes the
+# heading's name. The run log records both.
+
+@dataclass(frozen=True)
+class Source:
+    """A source file as a run reads it.
+
+    *frame* is every column as text, with the empty rows dropped (None for a
+    CSV inside a run, which reads only the columns it needs); *sheet* is the
+    sheet read, None for a CSV; *header_row* is the 0-based row of the column
+    names; *empty_rows* counts the rows dropped below them; *fonts_dropped*
+    counts the font-family entries left out of the copy read; *headings_moved*
+    pairs each heading moved with the name pandas gave its column of values.
+    """
+    frame: object
+    sheet: object
+    header_row: int
+    empty_rows: int
+    fonts_dropped: int
+    headings_moved: tuple
+
 
 def read_source(path, sheet=None):
-    """Every column of a source file as text, with its empty rows dropped.
+    """A source file's every column as text, as a run reads it.
 
-    Returns the frame, the sheet read (None for a CSV), the 0-based row the
-    column names are in, and the number of empty rows dropped below them. A
-    run reads the same rows and names; this is for a program that shows the
-    file to someone before they write a settings file for it, such as mLOS Web.
+    For a program that shows the file to someone before a settings file exists
+    for it, such as mLOS Web. Returns a `Source`.
     """
     path = Path(path)
-    sheet = _sheet(path, sheet)
-    header_row = _header_row(path, sheet)
     if path.suffix.lower() in EXCEL_SUFFIXES:
-        frame = _read_whole(path, sheet, header_row)
-    else:
-        frame = _read_csv(path, header_row)
+        whole, empty, source = _load_workbook(path, sheet)
+        return replace(source, frame=whole.loc[~empty].reset_index(drop=True))
+    header_row = _header_row(path)
+    frame = _read_csv(path, header_row)
     empty = _empty_rows(frame)
-    return (frame.loc[~empty].reset_index(drop=True), sheet, header_row,
-            int(empty.sum()))
+    return Source(frame.loc[~empty].reset_index(drop=True), None, header_row,
+                  int(empty.sum()), 0, ())
 
 
-def _sheet(path, sheet):
-    """The sheet to read: the one named, or a workbook's only sheet."""
-    if path.suffix.lower() not in EXCEL_SUFFIXES:
-        return None
-    book = pd.ExcelFile(path)
+def open_workbook(path):
+    """A workbook as pandas reads it, and the font entries dropped to read it.
+
+    Returns a `pandas.ExcelFile` and a count, 0 when openpyxl reads the
+    workbook as saved.
+    """
+    book, dropped = _workbook(Path(path))
+    return pd.ExcelFile(book()), dropped
+
+
+_FONT_FAMILY = re.compile(rb'<family val="(1[5-9]|[2-9][0-9]|[0-9]{3,})"\s*/>')
+
+
+def _workbook(path):
+    """A function giving something pandas can read the workbook from, and the
+    font-family entries dropped from the copy it reads, 0 for the file itself."""
+    try:
+        pd.ExcelFile(path)
+        return (lambda: path), 0
+    except ValueError as error:
+        if "stylesheet" not in str(error):
+            raise
+        parts, dropped = [], 0
+        with zipfile.ZipFile(path) as source:
+            for item in source.infolist():
+                data = source.read(item.filename)
+                if item.filename == "xl/styles.xml":
+                    data, dropped = _FONT_FAMILY.subn(b"", data)
+                parts.append((item, data))
+        if not dropped:
+            raise
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as copy:
+            for item, data in parts:
+                copy.writestr(item, data)
+        data = buffer.getvalue()
+        return (lambda: io.BytesIO(data)), dropped
+
+
+def _load_workbook(path, sheet):
+    """The sheet's every column with its empty rows, the mask of those rows,
+    and a `Source` without its frame."""
+    book, dropped = _workbook(path)
+    names = pd.ExcelFile(book()).sheet_names
     if sheet is None:
-        if len(book.sheet_names) != 1:
+        if len(names) != 1:
             raise SourceError(
                 "{0} has {1} sheets ({2}), so 'sheet:' is required".format(
-                    path.name, len(book.sheet_names),
-                    ", ".join(book.sheet_names)))
-        return book.sheet_names[0]
-    if sheet not in book.sheet_names:
+                    path.name, len(names), ", ".join(names)))
+        sheet = names[0]
+    elif sheet not in names:
         raise SourceError(
             "{0} has no sheet {1!r}; it has: {2}".format(
-                path.name, sheet, ", ".join(book.sheet_names)))
-    return sheet
+                path.name, sheet, ", ".join(names)))
+
+    count = 50
+    while True:
+        top = pd.read_excel(book(), sheet_name=sheet, header=None, nrows=count, dtype=str)
+        filled = np.flatnonzero(~_empty_rows(top))
+        if len(filled) or len(top) < count:
+            break
+        count *= 4
+    if not len(filled):
+        raise SourceError("{0}, sheet {1} has no column names: every row is "
+                          "empty".format(path.name, sheet))
+    header_row = int(filled[0])
+
+    frame = pd.read_excel(book(), sheet_name=sheet, header=header_row, dtype=str)
+    names = list(frame.columns)
+    filled = [bool(frame[column].notna().any() and frame[column].astype(str).str.strip().ne("").any())
+              for column in frame.columns] if len(frame.columns) else []
+    moved = []
+    for first, last in _merged_headings(book, sheet, header_row + 1):
+        if first >= len(names) or _unnamed(names[first]) or filled[first]:
+            continue
+        under = [j for j in range(first + 1, min(last, len(names) - 1) + 1) if filled[j]]
+        if len(under) != 1 or not _unnamed(names[under[0]]):
+            continue
+        moved.append((str(names[first]), str(names[under[0]])))
+        names[under[0]], names[first] = names[first], "Unnamed: {0}".format(first)
+    frame.columns = names
+    empty = _empty_rows(frame)
+    return frame, empty, Source(None, sheet, header_row, int(empty.sum()), dropped, tuple(moved))
 
 
-def _header_row(path, sheet):
-    """The 0-based row the column names are in: the first that is not empty."""
-    if path.suffix.lower() in EXCEL_SUFFIXES:
-        count = 50
-        while True:
-            top = pd.read_excel(path, sheet_name=sheet, header=None,
-                                nrows=count, dtype=str)
-            filled = np.flatnonzero(~_empty_rows(top))
-            if len(filled):
-                return int(filled[0])
-            if len(top) < count:
-                break
-            count *= 4
-    else:
-        opener = gzip.open if path.suffix.lower() == ".gz" else open
-        with opener(path, "rt", encoding="utf-8-sig", newline="") as handle:
-            for number, fields in enumerate(csv.reader(handle)):
-                if any(field.strip() for field in fields):
-                    return number
-    raise SourceError("{0}{1} has no column names: every row is empty".format(
-        path.name, "" if sheet is None else ", sheet " + sheet))
+def _unnamed(name):
+    """Whether pandas gave a column no name of the file's own."""
+    return not str(name).strip() or re.fullmatch(r"Unnamed: \d+", str(name)) is not None
 
 
-def _header(path, sheet, header_row):
-    if path.suffix.lower() in EXCEL_SUFFIXES:
-        return list(pd.read_excel(path, sheet_name=sheet, header=header_row,
-                                  nrows=0).columns)
-    return list(_read_csv(path, header_row, nrows=0).columns)
+def _merged_headings(book, sheet, row):
+    """The 0-based first and last columns of each range merged across columns
+    that starts in *row*, the 1-based row of the column names."""
+    main = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    rel = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+    with zipfile.ZipFile(book()) as source:
+        rid = next(item.get(rel + "id") for item in
+                   ElementTree.fromstring(source.read("xl/workbook.xml")).iter(main + "sheet")
+                   if item.get("name") == sheet)
+        target = next(item.get("Target") for item in
+                      ElementTree.fromstring(source.read("xl/_rels/workbook.xml.rels"))
+                      if item.get("Id") == rid)
+        part = target.lstrip("/") if target.startswith("/") else \
+            posixpath.normpath(posixpath.join("xl", target))
+        xml = source.read(part).decode("utf-8", "replace")
+    index = lambda letters: sum((ord(c) - 64) * 26 ** k
+                                for k, c in enumerate(reversed(letters))) - 1
+    return [(index(a), index(b)) for a, r, b in
+            re.findall(r'<mergeCell ref="([A-Z]+)([0-9]+):([A-Z]+)[0-9]+"', xml)
+            if int(r) == row and a != b]
 
 
-def _read_whole(path, sheet, header_row):
-    return pd.read_excel(path, sheet_name=sheet, header=header_row, dtype=str)
+def _source_notes(source):
+    """The run log's lines on what the reader repaired, if anything."""
+    if source is None:
+        return []
+    lines = []
+    if source.fonts_dropped:
+        lines.append("repaired      {0} font family setting(s) above 14 left out of a "
+                     "copy read in place of the source, whose digest is above".format(
+                         source.fonts_dropped))
+    for heading, column in source.headings_moved:
+        lines.append("heading       {0} names the column under its merged heading "
+                     "({1})".format(heading, column))
+    return lines
+
+
+def _header_row(path):
+    """The 0-based row a CSV's column names are in: the first that is not empty."""
+    opener = gzip.open if path.suffix.lower() == ".gz" else open
+    with opener(path, "rt", encoding="utf-8-sig", newline="") as handle:
+        for number, fields in enumerate(csv.reader(handle)):
+            if any(field.strip() for field in fields):
+                return number
+    raise SourceError("{0} has no column names: every row is empty".format(path.name))
 
 
 def _read_csv(path, header_row, **options):

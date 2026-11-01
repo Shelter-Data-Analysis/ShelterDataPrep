@@ -19,9 +19,10 @@ every shipped one. Each shipped config, converted as below, reproduces its
 prepared file, summary, and statistics table byte for byte against 0.5.0 run
 on the same extracts; its run log differs in the `window` line alone. Under
 `keep_time: true`, a `cut:` on `window_presence` can keep more rows than
-before; see Fixed. A source with empty rows reads differently; see Changed.
-Each shipped config's prepared file, summary, and statistics table are the
-same with and without that change, since no shipped extract has an empty row.
+before; see Fixed. A source with empty rows, and a workbook with a merged
+heading over an empty column, read differently; see Changed. Each shipped
+config's prepared file, summary, and statistics table are the same with and
+without those changes, since no shipped extract has either.
 
 ### Changed
 
@@ -48,9 +49,24 @@ same with and without that change, since no shipped extract has an empty row.
   time, to find its empty rows. For the Irvine workbook of 2025-10-08, whose
   names are in row 2, the run no longer stops on missing columns. See [the
   source file](docs/settings.md#the-source-file).
+- **Could move a number** for a workbook with a heading merged across columns.
+  Where the heading's own column is empty and exactly one unnamed column of
+  its span holds values, that column takes the heading's name, and the run log
+  says so on a `heading` line. Before, a run read the empty column under the
+  heading's name without an error: in the Irvine workbook of 2025-10-08,
+  `outcome_date` read as blank for every stay, so every outcome became
+  `_NODATE_`, unless `columns:` mapped it to `Unnamed: 38`. A config that does
+  so must now name `outcome_date`, since no column is called `Unnamed: 38` any
+  more.
 
 ### Fixed
 
+- A workbook whose style table gives a font a family above 14, which Excel
+  writes and openpyxl refuses, is read from a copy in memory without those
+  font settings, which change no cell value, and the run log says so on a
+  `repaired` line; its `source sha256` stays the digest of the file. Before,
+  the run stopped with openpyxl's "could not read stylesheet", as on the
+  Irvine workbook of 2025-10-08. No numbers move for a file that read before.
 - `window_presence` goes by day, not time of day, as the rest of the package
   does. Under `keep_time: true`, 0.5.0 marked an intake on the last day of the
   window `AFTER` when its time was after midnight, so the window lost part of
@@ -65,15 +81,15 @@ same with and without that change, since no shipped extract has an empty row.
   `<name>_pseudonymized.csv` and a log, and stops on an ID the mapping lacks.
   It runs after the main run and leaves the prepared file as it is. See
   [pseudonymizing animal IDs](docs/pseudonymizing.md).
-- `shelterprep.read_source(path, sheet=None)` returns a source's every column
-  as text, with the rows and column names a run would read, for a program
-  that shows the file before a settings file exists for it, such as mLOS Web.
+- `shelterprep.read_source(path, sheet=None)` returns a `Source`: a file's
+  every column as text, with the rows and column names a run would read, and
+  what the reader repaired. `shelterprep.open_workbook(path)` opens a workbook
+  as pandas reads it, with the font repair. Both are for a program that shows
+  the file before a settings file exists for it, such as mLOS Web.
 - [Known problems in source files](docs/source-problems.md) lists what real
   extracts have done that the reader does not yet handle, with the effect, a
-  workaround, and the fix each needs: headings merged across columns and a
-  font family above 14, both found in the Irvine workbook of 2025-10-08, and
-  `.xls` workbooks, not yet found in an extract. A documentation change; no
-  numbers move.
+  workaround, and the fix each needs; today, `.xls` workbooks, not yet found
+  in an extract. A documentation change; no numbers move.
 
 ## 0.5.0 (2026-10-05)
 
