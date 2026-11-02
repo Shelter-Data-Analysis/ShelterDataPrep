@@ -103,6 +103,16 @@ steps:
   # otherwise.
   - cut: {kennel_no: [FOUND, HOME, HOME EXP, LOST]}
 
+  # kennel_no COT is the Community Outreach Team, which handles animals being
+  # transferred to fosters or organizations, and is not cut: a COT stay is
+  # ordinarily a day or so before the transfer is recorded. One is known to
+  # run long. A1689700 (impound K21-021384), a puppy returned from a staff
+  # foster, shows 404 days to a phone adoption, the only COT stay of any
+  # species over 100 days. Its placement was most likely never recorded, so
+  # the stay counts time in someone else's care. It is kept deliberately,
+  # since removing it would alter published mLOS results; in mLOS it is the
+  # whole long tail of the PUPPY group.
+
   # --- outcome_type -> this config's outcome codes ------------------------
   # Adoption by a rescue partner is a transfer, not an adoption. Must run
   # before the map to this config's codes below, while ADOPTION still exists.
