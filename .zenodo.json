@@ -1,7 +1,7 @@
 {
   "upload_type": "software",
-  "title": "ShelterDataPrep (Version 0.5.0)",
-  "version": "0.5.0",
+  "title": "ShelterDataPrep (Version 0.5.1)",
+  "version": "0.5.1",
   "creators": [
     {
       "name": "Mavrovouniotis, Michael Loizos",
@@ -18,7 +18,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "https://github.com/Shelter-Data-Analysis/ShelterDataPrep/tree/v0.5.0",
+      "identifier": "https://github.com/Shelter-Data-Analysis/ShelterDataPrep/tree/v0.5.1",
       "relation": "isSupplementTo",
       "resource_type": "software"
     },

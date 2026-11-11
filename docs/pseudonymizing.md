@@ -83,8 +83,8 @@ a value that is also a real ID.
 ```
 ShelterDataPrep pseudonymization log
 
-shelterprep   0.5.0  (tools/pseudonymize_ids.py)
-run at        2026-10-05T14:02:11
+shelterprep   0.5.1  (tools/pseudonymize_ids.py)
+run at        2026-11-10T14:02:11
 settings      /Users/you/studies/WAGS/wags_dogs.yaml
 input         /Users/you/studies/WAGS/results/WAGS_data.csv
 input sha256  9b1c07e2...  (the output sha256 of its run log)

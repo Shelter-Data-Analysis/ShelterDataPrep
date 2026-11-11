@@ -12,12 +12,16 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.5.1 (2026-11-11)
 
 **No numbers move** for any config with `keep_time: false`, which includes
 every shipped one. Each shipped config, converted as below, reproduces its
 prepared file, summary, and statistics table byte for byte against 0.5.0 run
-on the same extracts; its run log differs in the `window` line alone. Under
+on the same extracts; its run log differs in the `window` line alone. The
+prepared files deposited at
+[10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368) stay valid:
+under 0.5.1, each shipped config reproduces its deposited prepared file,
+summary, and statistics table byte for byte. Under
 `keep_time: true`, a `cut:` on `window_presence` can keep more rows than
 before; see Fixed. A source with empty rows, and a workbook with a merged
 heading over an empty column, read differently; see Changed. Each shipped

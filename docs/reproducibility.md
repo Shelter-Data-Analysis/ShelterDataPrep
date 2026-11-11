@@ -16,15 +16,15 @@ file, and the extract together.
 ```
 ShelterDataPrep run log
 
-shelterprep   0.5.0
-run at        2026-08-21T15:05:09
+shelterprep   0.5.1
+run at        2026-11-10T18:25:25
 settings      configs/orange_county2.yaml
 source        /Users/you/projects/_shelter_raw/OC_raw.csv.gz
 source sha256 fbc5fa49...  (of the uncompressed contents)
 sheet         (csv)
 date_format   ISO8601
 keep_time     False
-window        2018-06-01 to 2025-10-02
+window        2018-06-01 to 2025-10-03 (stop date excluded)
 destination   /Users/you/projects/ShelterDataPrep/results/OC2_data.csv
 output sha256 e3804cd0...
 output rows   34718
@@ -43,7 +43,7 @@ on a workbook the reader repaired adds a line after `sheet` for each repair:
 a column that takes the name of the merged heading above it. See [the source
 file](settings.md#the-source-file).
  The run
-predates 0.5.0's release date because the version is set when the work is
+predates 0.5.1's release date because the version is set when the work is
 done, ahead of the release tag. The two
 paths are absolute, since `source_dir` and `dest_dir` resolve against the
 settings file rather than the working directory.
