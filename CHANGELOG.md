@@ -12,6 +12,14 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
+## Unreleased
+
+**No numbers move.**
+
+- The citation message, in `CITATION.cff` and as the notes of the Zenodo
+  record, asks for the software to be cited with the version run, rather
+  than "as below", which on the Zenodo page points at nothing.
+
 ## 0.5.1 (2026-11-11)
 
 **No numbers move** for any config with `keep_time: false`, which includes

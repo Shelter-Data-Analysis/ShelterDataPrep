@@ -51,11 +51,11 @@
 
 cff-version: 1.2.0
 message: >-
-  If you use this software, please cite it as below.  If you use the Orange
-  County and Los Angeles County data that the shipped configs cover, also cite
-  the deposit it comes from: 10.5281/zenodo.22051091 for the raw extracts, or
-  10.5281/zenodo.22051368 if you took the prepared files rather than preparing
-  them yourself.
+  If you use this software, please cite it with the version you ran.  If you
+  use the Orange County and Los Angeles County data that the shipped configs
+  cover, also cite the deposit it comes from: 10.5281/zenodo.22051091 for the
+  raw extracts, or 10.5281/zenodo.22051368 if you took the prepared files
+  rather than preparing them yourself.
 title: "ShelterDataPrep"
 abstract: >-
   Config-driven preparation of animal shelter intake and outcome extracts for
