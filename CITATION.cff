@@ -38,6 +38,14 @@
 ####   each version's record from that file, so an edit made on the record is
 ####   lost at the next release.
 #
+####   The two "Is supplemented by" related works in .zenodo.json name the
+####   deposits' CONCEPT DOIs, 10.5281/zenodo.22051367 (the prepared files)
+####   and 10.5281/zenodo.22051090 (the raw extracts).  A related work says
+####   which deposits belong with the software, not which bytes a run read, so
+####   it follows each deposit to its newest version and stays the same across
+####   releases.  The `references` below are the opposite case and name
+####   version DOIs, for the reason given there.
+#
 ####   .zenodo.json names no license, so Zenodo takes the record's from the
 ####   repository's LICENSE file.
 
