@@ -3,14 +3,14 @@
 # .zenodo.json instead when minting a DOI from a release, and ignores this file
 # while that one exists; the test suite holds the fields the two share equal.
 #
-####   On each tagged release, bump `version` and `date-released` to match.
-####   The version here should equal the one a run log reports, or the citation
-####   names software that did not produce the result.  The test suite holds
-####   it equal to shelterprep/version.py, and holds the version, the title, and
-####   the tree link's tag in .zenodo.json to that file too.  `version` is bumped
-####   when the work is done rather than when the tag lands, so `date-released`
-####   runs ahead of the tag until CHANGELOG.md's Unreleased section is given
-####   its number; check it at tag time.
+####   On each tagged release, bump `version` and `date-released` to match,
+####   and in .zenodo.json bump `version`, the version in `title`, and the tag
+####   in the GitHub tree link.  The version here should equal the one a run
+####   log reports, or the citation names software that did not produce the
+####   result.  The test suite holds all four equal to shelterprep/version.py.
+####   `version` is bumped when the work is done rather than when the tag
+####   lands, so `date-released` runs ahead of the tag until CHANGELOG.md's
+####   Unreleased section is given its number; check it at tag time.
 #
 ####   For `doi:`, use Zenodo's CONCEPT DOI -- the version-independent one that
 ####   always resolves to the newest release -- not the DOI of a single release.
@@ -32,6 +32,11 @@
 ####   check in the Zenodo interface at the time.  Zenodo fails the archive on a
 ####   .zenodo.json it cannot read; the test suite checks that the file parses
 ####   and uses only the field and relation names Zenodo accepts.
+#
+####   A related work or reference is added, changed, or removed in
+####   .zenodo.json before tagging, not on the Zenodo record: Zenodo rebuilds
+####   each version's record from that file, so an edit made on the record is
+####   lost at the next release.
 #
 ####   .zenodo.json names no license, so Zenodo takes the record's from the
 ####   repository's LICENSE file.
