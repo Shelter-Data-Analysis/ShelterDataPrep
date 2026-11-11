@@ -725,6 +725,79 @@ def test_the_citation_names_the_version_that_is_actually_here():
     assert citation["license"] == "MIT"
 
 
+# .zenodo.json is the software record's metadata.  While it exists Zenodo
+# ignores CITATION.cff, so the fields both carry are held equal here, and the
+# per-release values are held to the package version.  Zenodo drops a field
+# name it does not know without saying so, and fails the archive on a file it
+# cannot read, which costs a version number to repair; hence the name checks.
+
+ZENODO_FIELDS = {
+    "upload_type", "publication_type", "title", "version", "creators",
+    "contributors", "description", "notes", "keywords", "subjects", "license",
+    "related_identifiers", "references", "language", "dates", "locations",
+    "grants", "communities", "publication_date", "access_right",
+    "imprint_publisher"}
+
+# The relation names Zenodo accepts (DataCite's, in camel case).
+ZENODO_RELATIONS = {
+    "isCitedBy", "cites", "isSupplementTo", "isSupplementedBy",
+    "isContinuedBy", "continues", "isDescribedBy", "describes", "hasMetadata",
+    "isMetadataFor", "isNewVersionOf", "isPreviousVersionOf", "isPartOf",
+    "hasPart", "isReferencedBy", "references", "isDocumentedBy", "documents",
+    "isCompiledBy", "compiles", "isVariantFormOf", "isOriginalFormOf",
+    "isIdenticalTo", "isReviewedBy", "reviews", "isDerivedFrom", "isSourceOf",
+    "requires", "isRequiredBy", "isObsoletedBy", "obsoletes"}
+
+
+def _release_metadata():
+    import json
+    root = Path(__file__).resolve().parent.parent
+    path = root / ".zenodo.json"
+    assert path.exists(), ".zenodo.json is missing"
+    try:
+        zenodo = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        pytest.fail(".zenodo.json does not parse: {0}".format(error))
+    assert isinstance(zenodo, dict), ".zenodo.json is not a JSON object"
+    citation = yaml.safe_load((root / "CITATION.cff").read_text())
+    return zenodo, citation
+
+
+def test_the_zenodo_metadata_uses_only_names_zenodo_reads():
+    zenodo, _ = _release_metadata()
+    assert set(zenodo) <= ZENODO_FIELDS, (
+        "fields Zenodo does not read: {0}".format(set(zenodo) - ZENODO_FIELDS))
+    relations = [r.get("relation") for r in zenodo["related_identifiers"]]
+    assert relations and set(relations) <= ZENODO_RELATIONS, (
+        "relations Zenodo does not accept: {0}".format(
+            set(relations) - ZENODO_RELATIONS))
+
+
+def test_the_zenodo_metadata_names_the_version_that_is_actually_here():
+    import shelterprep
+    zenodo, citation = _release_metadata()
+    version = shelterprep.__version__
+    assert zenodo["version"] == version
+    assert zenodo["title"] == "{0} (Version {1})".format(
+        citation["title"], version)
+    tree = "{0}/tree/v{1}".format(citation["repository-code"], version)
+    assert any(r.get("identifier") == tree
+               and r.get("relation") == "isSupplementTo"
+               for r in zenodo["related_identifiers"]), (
+        ".zenodo.json does not link the tree of tag v{0}".format(version))
+
+
+def test_the_zenodo_metadata_matches_the_citation():
+    zenodo, citation = _release_metadata()
+    assert zenodo["description"] == citation["abstract"]
+    assert zenodo["notes"] == citation["message"]
+    assert zenodo["keywords"] == citation["keywords"]
+    assert zenodo["creators"] == [
+        {"name": "{0}, {1}".format(a["family-names"], a["given-names"]),
+         "orcid": a["orcid"].replace("https://orcid.org/", "")}
+        for a in citation["authors"]]
+
+
 def test_the_readme_states_the_number_of_tests_there_are(collected_suite):
     # A count written into prose goes stale the day a test is added, and
     # nothing else here reads it: two tests arrived in August 2026 and the

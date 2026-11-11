@@ -75,6 +75,11 @@ without those changes, since no shipped extract has either.
 
 ### Added
 
+- `.zenodo.json` gives the Zenodo software record its version without a
+  leading `v`, its title, its related works, and its references, which were
+  entered by hand on each release (`CITATION.cff`, release checklist). The
+  test suite holds its version to `shelterprep/version.py` and its shared
+  fields to `CITATION.cff`. No numbers move.
 - `tools/pseudonymize_ids.py` replaces each animal ID in a prepared file with
   a random pseudonym, for confidential data sets. `map` builds or extends the
   mapping, `private_animal_id.csv`, from the raw extract; `apply` writes

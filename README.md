@@ -188,7 +188,7 @@ pandas 2.
 python3 -m pytest tests/ -q
 ```
 
-123 tests, 95% line coverage of `shelterprep/`. Most of them pin down a
+126 tests, 95% line coverage of `shelterprep/`. Most of them pin down a
 decision documented in `docs/`, so a test name reads as the rule it protects.
 For example, the age cutoff falling in the lower group, a map being
 simultaneous rather than sequential, a still-in-care animal staying `IN`
@@ -216,7 +216,8 @@ MIT — see [LICENSE](LICENSE). Use it, change it, redistribute it, keep the
 notice, no warranty.
 
 `CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
-repository" button and Zenodo reads it when minting a DOI. Cite
+repository" button. Zenodo reads `.zenodo.json` when minting a DOI, and the test
+suite holds the two equal. Cite
 [10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338) together
 with the version number the run log reports, not "the GitHub repository":
 those are different claims, and only the first pair is checkable. [More on

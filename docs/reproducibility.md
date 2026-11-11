@@ -96,7 +96,8 @@ Four things reviewers care about:
 ## Citation
 
 `CITATION.cff` carries the citation metadata, so GitHub shows a "Cite this
-repository" button and Zenodo reads it when minting a DOI. Cite
+repository" button. Zenodo reads `.zenodo.json` when minting a DOI, and the test
+suite holds the two equal. Cite
 [10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338) together
 with the version number the run log reports, not "the GitHub repository":
 those are different claims, and only the first pair is checkable.
