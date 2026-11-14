@@ -14,7 +14,20 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ## Unreleased
 
-**No numbers move.**
+**No numbers move.** A config without `date_format_override`, which includes
+every shipped one, is read as before, and its run log has no new line.
+
+### Added
+
+- `date_format_override` gives a date column a format of its own, for a file
+  whose date columns are not written alike, such as intake and outcome dates
+  that carry a time beside a date of birth that does not. It maps
+  `intake_date`, `outcome_date`, or `dob` to any value `date_format` takes; a
+  column it leaves out is read with `date_format`, which stays required. The
+  `parse_dates` row of the statistics table names the format each column was
+  read with, and the run log lists each override under `date_format`.
+
+### Changed
 
 - The citation message, in `CITATION.cff` and as the notes of the Zenodo
   record, asks for the software to be cited with the version run, rather

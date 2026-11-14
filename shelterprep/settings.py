@@ -50,7 +50,8 @@ OVER = "_OVER_"
 NEGATIVE = "_NEGATIVE_"
 
 _TOP_LEVEL_KEYS = frozenset({
-    "source_dir", "source_file", "sheet", "date_format", "keep_time",
+    "source_dir", "source_file", "sheet", "date_format", "date_format_override",
+    "keep_time",
     "window_start_date", "window_stop_date",
     "dest_dir", "dest_file", "output_columns",
     "columns", "age_groups", "unique_report", "steps",
@@ -315,6 +316,7 @@ class Settings:
     window_start_date: Optional[object] = None
     window_stop_date: Optional[object] = None
     path: Optional[Path] = None
+    date_format_override: Dict[str, str] = field(default_factory=dict)
 
     # -- derived views ------------------------------------------------------
 
@@ -341,6 +343,14 @@ class Settings:
     @property
     def has_window(self):
         return self.window_start_date is not None
+
+    def date_format_for(self, column):
+        """The format a date column is parsed with.
+
+        The column's entry in ``date_format_override`` where it has one, and
+        ``date_format`` otherwise.
+        """
+        return self.date_format_override.get(column, self.date_format)
 
     def file_name_for(self, canonical):
         """The column name in the source file for a canonical field."""
@@ -410,6 +420,8 @@ def load(path):
         raise SettingsError(
             "{0}: date_format must be ISO8601, mixed, or a strftime pattern "
             "such as \"%m/%d/%y\", got {1!r}".format(path, date_format))
+    date_format_override = _parse_date_format_override(
+        raw.get("date_format_override"), path)
 
     # The stop date is exclusive, so a window of one day has stop = start + 1
     # and stop = start is empty.
@@ -447,6 +459,7 @@ def load(path):
         steps=steps,
         sheet=None if raw.get("sheet") is None else str(raw["sheet"]),
         date_format=date_format,
+        date_format_override=date_format_override,
         keep_time=bool(raw.get("keep_time", False)),
         window_start_date=start,
         window_stop_date=stop,
@@ -456,6 +469,35 @@ def load(path):
     _check_window_usage(settings, path)
     _check_age_usage(settings, path)
     return settings
+
+
+def _parse_date_format_override(raw, path):
+    """Validate ``date_format_override``: a format for each date column named.
+
+    Keyed by canonical name, so an entry means the same thing whatever the
+    file calls the column.  A column left out is parsed with ``date_format``.
+    """
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise SettingsError(
+            "{0}: date_format_override must be a mapping of date column to "
+            "format, such as {{dob: \"%m/%d/%Y\"}}".format(path))
+    override = {}
+    for column, value in raw.items():
+        column = str(column)
+        if column not in DATE_COLUMNS:
+            raise SettingsError(
+                "{0}: date_format_override names {1!r}, which is not a date "
+                "column. The date columns are: {2}".format(
+                    path, column, ", ".join(DATE_COLUMNS)))
+        if value is None or not dates.is_format(str(value)):
+            raise SettingsError(
+                "{0}: date_format_override for {1} must be ISO8601, mixed, "
+                "or a strftime pattern such as \"%m/%d/%y\", got {2!r}".format(
+                    path, column, value))
+        override[column] = str(value)
+    return override
 
 
 def _resolve_dir(value, settings_path):

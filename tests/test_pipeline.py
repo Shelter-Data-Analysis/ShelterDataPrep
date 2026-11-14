@@ -911,6 +911,85 @@ def test_a_stated_date_format_holds_every_value_to_it():
         "2024-03-29", "2015-04-10", ""]
 
 
+def timed_source(tmp_path):
+    # Intake and outcome carry a time of day and dob does not, so no one
+    # pattern fits all three date columns.
+    (tmp_path / "timed.csv").write_text(
+        "animal_id,intake_date,outcome_date,intake_type,outcome_type,dob\n"
+        "A1,1/31/2024 0:00,2/3/2024 14:05,STRAY,ADOPTION,6/10/2019\n"
+        "A2,2/1/2024 9:30,,STRAY,,2/1/2010\n", encoding="utf-8")
+    return {"source_dir": str(tmp_path), "source_file": "timed.csv",
+            "columns": {}, "window_start_date": None, "window_stop_date": None,
+            "output_columns": ["animal_id", "intake_date", "outcome_date", "dob"]}
+
+
+def unparseable(prep):
+    table = prep.statistics.report()
+    rows = table[table["action"] == "parse_dates"]
+    return dict(zip(rows["column"], rows["rows_affected"]))
+
+
+def test_a_date_format_override_gives_one_column_its_own_format(tmp_path):
+    prep = prepared(tmp_path, date_format="%m/%d/%Y %H:%M",
+                    date_format_override={"dob": "%m/%d/%Y"},
+                    **timed_source(tmp_path))
+    frame = prep.frame
+    assert list(dates.to_iso(frame["intake_date"])) == ["2024-01-31", "2024-02-01"]
+    assert list(dates.to_iso(frame["outcome_date"])) == ["2024-02-03", ""]
+    assert list(dates.to_iso(frame["dob"])) == ["2019-06-10", "2010-02-01"]
+    assert unparseable(prep) == {"intake_date": 0, "outcome_date": 0, "dob": 0}
+
+
+def test_a_column_without_a_date_format_override_uses_date_format(tmp_path):
+    # No entry for dob, so it is held to date_format, which its values do not
+    # fit: both are counted as unparseable, not guessed at.
+    prep = prepared(tmp_path, date_format="%m/%d/%Y %H:%M",
+                    date_format_override={"intake_date": "%m/%d/%Y %H:%M"},
+                    **timed_source(tmp_path))
+    assert prep.frame["dob"].isna().all()
+    assert unparseable(prep) == {"intake_date": 0, "outcome_date": 0, "dob": 2}
+
+
+def test_the_parse_dates_row_and_the_run_log_name_the_format_used(tmp_path):
+    prep = prepared(tmp_path, date_format="%m/%d/%Y %H:%M",
+                    date_format_override={"dob": "%m/%d/%Y"},
+                    **timed_source(tmp_path))
+    table = prep.statistics.report()
+    detail = table[table["action"] == "parse_dates"].set_index("column")["detail"]
+    assert detail["dob"].endswith("unparseable as %m/%d/%Y")
+    assert detail["intake_date"].endswith("unparseable as %m/%d/%Y %H:%M")
+    prep.write()
+    log = prep.settings.run_path.read_text().splitlines()
+    at = log.index("date_format   %m/%d/%Y %H:%M")
+    assert log[at + 1] == "  dob         %m/%d/%Y  (date_format_override)"
+    assert log[at + 2].startswith("keep_time")
+
+
+def test_the_run_log_has_no_override_line_without_a_date_format_override(tmp_path):
+    prep = prepared(tmp_path)
+    prep.write()
+    assert "date_format_override" not in prep.settings.run_path.read_text()
+
+
+def test_a_date_format_override_names_date_columns_only(tmp_path):
+    # Keyed by canonical name: the file's own spelling, or a column that is
+    # not a date, is refused, since it would otherwise be silently ignored.
+    for wrong in ("DOB", "animal_size"):
+        path = write_settings(tmp_path, date_format_override={wrong: "mixed"})
+        with pytest.raises(SettingsError, match="not a date column"):
+            load(path)
+
+
+def test_an_unknown_format_in_a_date_format_override_is_an_error(tmp_path):
+    for wrong in ("dd/mm/yyyy", "%Q", None):
+        path = write_settings(tmp_path, date_format_override={"dob": wrong})
+        with pytest.raises(SettingsError, match="date_format_override for dob"):
+            load(path)
+    path = write_settings(tmp_path, date_format_override="%m/%d/%Y")
+    with pytest.raises(SettingsError, match="must be a mapping"):
+        load(path)
+
+
 # --- source validation -----------------------------------------------------
 
 def test_a_missing_required_column_names_what_the_file_has(tmp_path):

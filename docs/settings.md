@@ -14,6 +14,8 @@ source_dir:   "../../_shelter_raw"
 source_file:  "intakes and outcomes.csv"
 sheet:                       # Excel only; omit and the file must have one sheet
 date_format:  ISO8601        # required; or a pattern such as "%m/%d/%y"
+date_format_override:        # optional; a date column with a format of its own
+  dob: "%m/%d/%Y"
 keep_time:    false
 
 window_start_date: 2018-07-01   # optional pair, both or neither
@@ -43,7 +45,8 @@ Six keys are required: `source_dir`, `source_file`, `date_format`, `dest_dir`,
 `dest_file`, and `output_columns`. A file missing any of them stops before a
 row is read. `date_format` has [a section of its own](#dates).
 Of the rest, `columns:` defaults to no renames, so each canonical name is
-looked for under its own spelling; `steps:` defaults to none; `keep_time:` to
+looked for under its own spelling; `steps:` defaults to none; `date_format_override:` to none, so every date
+column is read with `date_format`; `keep_time:` to
 `false`; and `unique_report:` to `[animal_id]`. `sheet:`, the window pair, and
 `age_groups:` have no default. Leaving `sheet:` out requires a workbook with
 one sheet, leaving out the window pair means no `window_presence`, and leaving
@@ -230,8 +233,27 @@ of value:
   format. pandas works out each value separately, which means guessing
   whenever a day could be the month, as in `3/4/24`.
 
+**A date column can have a format of its own.** `date_format` applies to all
+three date columns: `intake_date`, `outcome_date`, and `dob`. When they are
+not written alike, `date_format_override` names the format of each column that
+differs, and a column it leaves out is read with `date_format`. An extract that
+stamps a time on intake and outcome, `1/31/2024 0:00`, and none on the date of
+birth, `6/10/2019`, reads:
+
+```yaml
+date_format:  "%m/%d/%Y %H:%M"
+date_format_override:
+  dob: "%m/%d/%Y"
+```
+
+Each entry is keyed by the canonical name, whatever the file calls the column,
+and takes any value `date_format` takes. Any other key is an error. The
+override also confines `mixed` to the one column that needs it, while the
+others are held to a pattern. It does not help a column whose own values
+differ, some with a time and some without: that column needs `mixed`.
+
 Whatever still fails to parse is **counted**, on its own `parse_dates` row in
-the statistics table.
+the statistics table, which names the format that column was read with.
 
 **A date that fails to parse becomes `NaT`**, which downstream is
 indistinguishable from a **date absent altogether** — for `outcome_date` that

@@ -41,7 +41,8 @@ The digests here are shortened to fit; the log carries them in full. A run
 on a workbook the reader repaired adds a line after `sheet` for each repair:
 `repaired`, for font settings left out of the copy it read, and `heading`, for
 a column that takes the name of the merged heading above it. See [the source
-file](settings.md#the-source-file).
+file](settings.md#the-source-file). A run with a `date_format_override` adds a
+line after `date_format` for each column it names, giving that column's format.
  The run
 predates 0.5.1's release date because the version is set when the work is
 done, ahead of the release tag. The two

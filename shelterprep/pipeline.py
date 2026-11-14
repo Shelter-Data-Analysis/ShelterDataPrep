@@ -162,14 +162,15 @@ class Prep:
         for column in date_columns:
             raw = self.frame[column]
             supplied = raw.notna() & (raw.astype(str).str.strip() != "")
-            parsed = dates.to_datetime(raw, settings.date_format, settings.keep_time)
+            date_format = settings.date_format_for(column)
+            parsed = dates.to_datetime(raw, date_format, settings.keep_time)
             unparsed = supplied & parsed.isna()
             self.frame[column] = parsed
             self.statistics.record(
                 step=0, action="parse_dates", before=self.frame, after=self.frame,
                 affected=unparsed, column=column,
                 detail="{0} of {1} supplied value(s) unparseable as {2}".format(
-                    int(unparsed.sum()), int(supplied.sum()), settings.date_format))
+                    int(unparsed.sum()), int(supplied.sum()), date_format))
 
     # -- stage 2: derive ----------------------------------------------------
 
@@ -342,6 +343,10 @@ class Prep:
             "sheet         {0}".format(self.sheet or "(csv)"),
         ] + _source_notes(self.source) + [
             "date_format   {0}".format(settings.date_format),
+        ] + [
+            "  {0:<12}{1}  (date_format_override)".format(column, date_format)
+            for column, date_format in settings.date_format_override.items()
+        ] + [
             "keep_time     {0}".format(settings.keep_time),
             "window        {0}".format(
                 "{0} to {1} (stop date excluded)".format(

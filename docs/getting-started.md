@@ -110,7 +110,10 @@ Then set `date_format`, which has no default. Use `ISO8601` if your file
 allows it: it reads `YYYY-MM-DD`, with or without a time `hh:mm:ss` after it.
 A file that writes dates another way names its own format as a pattern, such
 as `"%m/%d/%y"` for `3/29/24`. [The settings reference](settings.md#dates)
-explains the patterns, and why the tool makes you state the format.
+explains the patterns, and why the tool makes you state the format. If one
+date column is written differently from the others, such as a date of birth
+with no time in a file whose intake and outcome dates carry one, give that
+column its own format under `date_format_override`.
 
 ## 5. Say what to exclude
 
@@ -205,7 +208,7 @@ likely to meet, not every message the tool can give:
 | `step N maps X with 'complete: true', but has no entry for N value(s)` | the message lists each value with its row count. Add each to the map, mapping a value to itself to keep it |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
 | `` `Import openpyxl` failed `` (pandas 3) or `Missing optional dependency 'openpyxl'` (pandas 2) | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
-| `N of M supplied value(s) unparseable` — in the statistics table, not an error | a `date_format` that does not match the file. State the file's own pattern, such as `"%m/%d/%y"`, or `mixed` if its dates do not share one format |
+| `N of M supplied value(s) unparseable` — in the statistics table, not an error | a `date_format` that does not match the file. State the file's own pattern, such as `"%m/%d/%y"`, or `mixed` if its dates do not share one format. If the count is on one date column and not the others, that column is written differently: give it its own format under `date_format_override` |
 
 ## What this does not tell you
 
