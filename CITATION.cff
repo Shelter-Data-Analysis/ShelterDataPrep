@@ -68,8 +68,8 @@ authors:
   - family-names: "Mavrovouniotis"
     given-names: "Michael Loizos"
     orcid: "https://orcid.org/0009-0009-9896-2761"
-version: "0.5.1"
-date-released: "2026-11-11"
+version: "0.5.2"
+date-released: "2026-11-14"
 license: MIT
 doi: "10.5281/zenodo.22051338"
 repository-code: "https://github.com/Shelter-Data-Analysis/ShelterDataPrep"

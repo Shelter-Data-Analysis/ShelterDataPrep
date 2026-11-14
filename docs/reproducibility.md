@@ -16,8 +16,8 @@ file, and the extract together.
 ```
 ShelterDataPrep run log
 
-shelterprep   0.5.1
-run at        2026-11-10T18:25:25
+shelterprep   0.5.2
+run at        2026-11-13T19:29:45
 settings      configs/orange_county2.yaml
 source        /Users/you/projects/_shelter_raw/OC_raw.csv.gz
 source sha256 fbc5fa49...  (of the uncompressed contents)
@@ -30,7 +30,7 @@ output sha256 e3804cd0...
 output rows   34718
 final span    intake 2018-01-22 to 2025-10-02, last outcome 2025-10-03, 205 with no outcome date
 
-python        3.9.6 on macOS-26.6.2-arm64-arm-64bit
+python        3.9.6 on macOS-27.2.1-arm64-arm-64bit
 pandas        2.3.1
 numpy         2.0.2
 PyYAML        6.0.3
@@ -44,7 +44,7 @@ a column that takes the name of the merged heading above it. See [the source
 file](settings.md#the-source-file). A run with a `date_format_override` adds a
 line after `date_format` for each column it names, giving that column's format.
  The run
-predates 0.5.1's release date because the version is set when the work is
+predates 0.5.2's release date because the version is set when the work is
 done, ahead of the release tag. The two
 paths are absolute, since `source_dir` and `dest_dir` resolve against the
 settings file rather than the working directory.

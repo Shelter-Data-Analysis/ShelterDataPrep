@@ -12,10 +12,13 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.5.2 (2026-11-14)
 
 **No numbers move.** A config without `date_format_override`, which includes
-every shipped one, is read as before, and its run log has no new line.
+every shipped one, is read as before, and its run log has no new line. Each
+shipped config reproduces its prepared file, summary, and statistics table
+byte for byte against 0.5.1 run on the same extracts; its run log differs in
+the version and the time of the run alone.
 
 ### Added
 
