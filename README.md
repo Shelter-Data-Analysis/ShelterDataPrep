@@ -93,6 +93,7 @@ because reproducing a result means stating the environment it ran in.
 | [The statistics table](docs/statistics-table.md) | its format, for downstream consumers; already shared with mLOS, the length-of-stay analysis tool |
 | [Reproducibility and publishing](docs/reproducibility.md) | the run log, the digests, and what travels with a file into a paper |
 | [Pseudonymizing animal IDs](docs/pseudonymizing.md) | a separate tool that replaces the IDs in a confidential data set's prepared file with random pseudonyms |
+| [Stacking extracts](docs/stacking.md) | a separate tool that joins several extracts of one shelter, such as one file per year, into one source file |
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers what to do with data you have
 prepared — deposit the extract, the settings, the result, and a short usage
@@ -188,7 +189,7 @@ pandas 2.
 python3 -m pytest tests/ -q
 ```
 
-132 tests, 95% line coverage of `shelterprep/`. Most of them pin down a
+142 tests, 95% line coverage of `shelterprep/`. Most of them pin down a
 decision documented in `docs/`, so a test name reads as the rule it protects.
 For example, the age cutoff falling in the lower group, a map being
 simultaneous rather than sequential, a still-in-care animal staying `IN`

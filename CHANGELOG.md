@@ -12,6 +12,18 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
+## Unreleased
+
+**No numbers move.** The new tool is separate from the main run, and no
+shipped config or step changes.
+
+### Added
+
+- `tools/stack_extracts.py` joins several extracts of one shelter, such as
+  one file per year, into a single .xlsx or .csv file, with a log that flags
+  files without a header row, columns that differ between files, and records
+  repeated across files whose copies disagree. See `docs/stacking.md`.
+
 ## 0.5.2 (2026-11-14)
 
 **No numbers move.** A config without `date_format_override`, which includes
