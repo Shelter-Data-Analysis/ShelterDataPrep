@@ -1340,6 +1340,18 @@ def test_a_high_cardinality_column_is_not_treated_as_a_category(tmp_path,
     assert set(table.field) == {summary.NONE}
 
 
+def test_the_run_log_names_a_column_the_summary_skips(tmp_path, monkeypatch):
+    monkeypatch.setattr(summary, "MAX_LEVELS", 2)
+    prep = Prep(load(write_settings(tmp_path))).run(verbose=False)
+    log = prep.settings.run_path.read_text(encoding="utf-8")
+    assert "summary skips animal_size  (more than 2 distinct values)" in log
+
+
+def test_the_run_log_has_no_skip_line_when_the_summary_skips_nothing(tmp_path):
+    prep = Prep(load(write_settings(tmp_path))).run(verbose=False)
+    assert "summary skips" not in prep.settings.run_path.read_text(encoding="utf-8")
+
+
 def test_a_run_that_keeps_nothing_still_writes_every_file(tmp_path):
     prep = Prep(load(write_settings(tmp_path, steps=[
         {"cut": {"animal_type": ["DOG", "CAT"]}}]))).run(verbose=False)

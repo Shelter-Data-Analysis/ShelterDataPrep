@@ -43,6 +43,8 @@ on a workbook the reader repaired adds a line after `sheet` for each repair:
 a column that takes the name of the merged heading above it. See [the source
 file](settings.md#the-source-file). A run with a `date_format_override` adds a
 line after `date_format` for each column it names, giving that column's format.
+A run whose summary leaves out a column for having more than 50 distinct
+values adds a `summary skips` line after `final span`, naming each one.
  The run
 predates 0.5.2's release date because the version is set when the work is
 done, ahead of the release tag. The two

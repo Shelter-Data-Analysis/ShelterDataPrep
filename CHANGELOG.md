@@ -42,6 +42,9 @@ file or a source that a run could not have used, or accept one it refused.
   CSV. Reading one failed even with `xlrd` installed, because the
   merged-heading repair reads the `.xlsx` format. The entry leaves
   [known problems in source files](docs/source-problems.md).
+- The run log names each column the summary leaves out for having more than
+  50 distinct values, in a `summary skips` line after `final span`. Nothing
+  reported them before.
 
 ### Fixed
 

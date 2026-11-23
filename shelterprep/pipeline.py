@@ -344,6 +344,7 @@ class Prep:
         prepared file has not been edited since.
         """
         settings = self.settings
+        skipped = summary.skipped(self.frame, settings)
         lines = [
             "ShelterDataPrep run log",
             "",
@@ -370,6 +371,10 @@ class Prep:
             "output sha256 {0}".format(_sha256(settings.dest_path)),
             "output rows   {0}".format(len(self.frame)),
             "final span    {0}".format(self._span()),
+        ] + ([
+            "summary skips {0}  (more than {1} distinct values)".format(
+                ", ".join(skipped), summary.MAX_LEVELS)
+        ] if skipped else []) + [
             "",
         ] + _environment() + [
             "",

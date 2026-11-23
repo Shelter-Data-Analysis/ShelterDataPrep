@@ -42,7 +42,7 @@ AXES = ("intake_type", "outcome_type")
 
 #: A column with more distinct values than this is an identifier or free text,
 #: not a category, and crossing it against the axes would produce a table
-#: longer than the data.  It is skipped, and `skipped` says so.
+#: longer than the data.  It is skipped, and the run log names it.
 MAX_LEVELS = 50
 
 #: The shortest and longest stay in a cell.  Whole nights, so they stay

@@ -107,8 +107,9 @@ and in a spreadsheet it is already a pivot table's source range.
 dimension crossed against the two type axes — plus the degenerate one that
 crosses the axes against each other, marked `field = _NONE_`. Dates, numbers,
 and the `unique_report` identifiers are not categories and are skipped, as is
-any column with more than 50 distinct values. A run whose output columns are
-just IDs, dates, and the two types gets the `_NONE_` table alone.
+any column with more than 50 distinct values, which the run log names. A run
+whose output columns are just IDs, dates, and the two types gets the `_NONE_`
+table alone.
 
 **Partial sums** are in the same table, marked `_ALL_` in the dimension they
 collapse. `margin` counts how many of the two axes are collapsed, so:
