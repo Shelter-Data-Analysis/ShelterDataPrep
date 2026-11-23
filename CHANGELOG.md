@@ -24,6 +24,13 @@ shipped config or step changes.
   files without a header row, columns that differ between files, and records
   repeated across files whose copies disagree. See `docs/stacking.md`.
 
+### Changed
+
+- A `.xls` source stops the run with a message to save it as `.xlsx` or as
+  CSV. Reading one failed even with `xlrd` installed, because the
+  merged-heading repair reads the `.xlsx` format. The entry leaves
+  [known problems in source files](docs/source-problems.md).
+
 ## 0.5.2 (2026-11-14)
 
 **No numbers move.** A config without `date_format_override`, which includes

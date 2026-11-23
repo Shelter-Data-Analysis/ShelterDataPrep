@@ -32,7 +32,11 @@ from .settings import (DATE_COLUMNS, DERIVED_COLUMNS, NEGATIVE, OVER,
                        REQUIRED_COLUMNS, UNKNOWN, Dedup, SettingsError)
 from .statistics import Statistics
 
-EXCEL_SUFFIXES = (".xlsx", ".xlsm", ".xltx", ".xls")
+EXCEL_SUFFIXES = (".xlsx", ".xlsm", ".xltx")
+
+#: Excel 97-2003.  Not read: pandas needs xlrd for it, and the merged-heading
+#: repair reads the .xlsx format.
+OLD_EXCEL_SUFFIX = ".xls"
 
 
 class SourceError(ValueError):
@@ -70,6 +74,7 @@ class Prep:
         path = settings.source_path
         if not path.exists():
             raise SourceError("source file not found: {0}".format(path))
+        _refuse_old_excel(path)
         if path.suffix.lower() not in EXCEL_SUFFIXES and settings.sheet is not None:
             raise SourceError(
                 "sheet {0!r} was given but {1} is not an Excel "
@@ -505,6 +510,7 @@ def read_source(path, sheet=None):
     for it, such as mLOS Web. Returns a `Source`.
     """
     path = Path(path)
+    _refuse_old_excel(path)
     if path.suffix.lower() in EXCEL_SUFFIXES:
         whole, empty, source = _load_workbook(path, sheet)
         return replace(source, frame=whole.loc[~empty].reset_index(drop=True))
@@ -640,6 +646,13 @@ def _source_notes(source):
         lines.append("heading       {0} names the column under its merged heading "
                      "({1})".format(heading, column))
     return lines
+
+
+def _refuse_old_excel(path):
+    if path.suffix.lower() == OLD_EXCEL_SUFFIX:
+        raise SourceError(
+            "{0} is an Excel 97-2003 workbook, which is not read; save it as "
+            ".xlsx or as CSV".format(path.name))
 
 
 def _header_row(path):

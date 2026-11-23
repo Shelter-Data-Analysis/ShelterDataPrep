@@ -207,6 +207,7 @@ likely to meet, not every message the tool can give:
 | `... is used but age_groups is not set` | `age` or `age_group` is named in a step or in `output_columns`; set `age_groups`, or drop the name |
 | `step N maps X with 'complete: true', but has no entry for N value(s)` | the message lists each value with its row count. Add each to the map, mapping a value to itself to keep it |
 | `has N sheets, so 'sheet:' is required` | name the sheet |
+| `is an Excel 97-2003 workbook, which is not read` | a `.xls` source. Save it as `.xlsx` or as CSV |
 | `` `Import openpyxl` failed `` (pandas 3) or `Missing optional dependency 'openpyxl'` (pandas 2) | an Excel source with a plain install. `python3 -m pip install ".[excel]"` |
 | `N of M supplied value(s) unparseable` — in the statistics table, not an error | a `date_format` that does not match the file. State the file's own pattern, such as `"%m/%d/%y"`, or `mixed` if its dates do not share one format. If the count is on one date column and not the others, that column is written differently: give it its own format under `date_format_override` |
 

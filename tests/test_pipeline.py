@@ -1320,6 +1320,16 @@ def test_a_step_naming_a_derived_column_that_was_not_built_says_why(tmp_path):
         Prep(load(path)).read().derive()
 
 
+def test_an_excel_97_2003_workbook_is_refused_with_a_way_round(tmp_path):
+    from shelterprep import read_source
+    (tmp_path / "old.xls").write_bytes(b"\xd0\xcf\x11\xe0 not read")
+    path = write_settings(tmp_path, source_dir=str(tmp_path), source_file="old.xls")
+    with pytest.raises(SourceError, match="save it as .xlsx or as CSV"):
+        Prep(load(path)).read()
+    with pytest.raises(SourceError, match="save it as .xlsx or as CSV"):
+        read_source(tmp_path / "old.xls")
+
+
 def test_the_command_line_reports_an_error_without_a_traceback(tmp_path, capsys):
     from shelterprep.__main__ import main
     assert main([str(write_settings(tmp_path, source_file="nope.csv"))]) == 1
