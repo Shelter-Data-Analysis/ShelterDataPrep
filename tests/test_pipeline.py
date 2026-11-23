@@ -163,6 +163,16 @@ def test_filtering_on_window_presence_without_a_window_is_an_error(tmp_path):
         load(path)
 
 
+@pytest.mark.parametrize("where", ["output_columns", "unique_report"])
+def test_window_presence_anywhere_without_a_window_is_an_error(tmp_path, where):
+    names = {"output_columns": ["animal_id", "window_presence"],
+             "unique_report": ["animal_id", "window_presence"]}
+    path = write_settings(tmp_path, window_start_date=None, window_stop_date=None,
+                          **{where: names[where]})
+    with pytest.raises(SettingsError, match="window_presence is used"):
+        load(path)
+
+
 # --- dates -----------------------------------------------------------------
 
 def assert_naive_datetime64(values):
@@ -1317,6 +1327,21 @@ def test_a_step_naming_a_derived_column_that_was_not_built_says_why(tmp_path):
                  "outcome_date": "Outcome Date"},
         steps=[{"cut": {"age_group": "ADULT"}}])
     with pytest.raises(SettingsError, match="derived column"):
+        Prep(load(path)).read().derive()
+
+
+def test_unique_report_naming_a_column_never_built_stops_before_the_steps(tmp_path):
+    # age_groups is set, so only the missing dob can show the gap, and it must
+    # show before anything is written rather than in the summary afterward.
+    source = tmp_path / "nodob.csv"
+    pd.read_csv(FIXTURES / "tiny.csv", dtype=str).drop(columns=["DOB"]).to_csv(
+        source, index=False)
+    path = write_settings(
+        tmp_path, source_dir=str(tmp_path), source_file="nodob.csv",
+        columns={"animal_id": "Animal ID", "intake_date": "Intake Date",
+                 "outcome_date": "Outcome Date"},
+        unique_report=["animal_id", "age_group"])
+    with pytest.raises(SettingsError, match="unique_report names 'age_group'"):
         Prep(load(path)).read().derive()
 
 

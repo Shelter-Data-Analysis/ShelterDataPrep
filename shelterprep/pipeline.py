@@ -212,7 +212,7 @@ class Prep:
         return self
 
     def _check_columns_exist(self):
-        """Every column a step or the output names must exist by now.
+        """Every column a step, the output, or unique_report names must exist.
 
         Checked here rather than at write time so a typo costs nothing: the
         run stops before the step sequence, not after it.
@@ -223,6 +223,12 @@ class Prep:
             raise SettingsError(
                 "output_columns names {0}, which the frame does not have. "
                 "It has: {1}".format(", ".join(missing), ", ".join(sorted(available))))
+
+        for column in self.settings.unique_report:
+            if column not in available:
+                raise SettingsError(
+                    "unique_report names {0!r}, which the frame does not "
+                    "have. It has: {1}".format(column, ", ".join(sorted(available))))
 
         for step in self.settings.steps:
             for column in step.columns:

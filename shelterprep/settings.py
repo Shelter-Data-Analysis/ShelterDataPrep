@@ -529,16 +529,22 @@ def _parse_age_groups(raw, path):
     return dict(sorted(groups.items(), key=lambda item: item[1]))
 
 
+def _named_columns(settings):
+    """Every column a step, output_columns, or unique_report names."""
+    return (settings.step_columns() | set(settings.output_columns)
+            | set(settings.unique_report))
+
+
 def _check_window_usage(settings, path):
-    if settings.has_window or "window_presence" not in settings.step_columns():
+    if settings.has_window or "window_presence" not in _named_columns(settings):
         return
     raise SettingsError(
-        "{0}: a step filters on window_presence, but window_start_date and "
+        "{0}: window_presence is used, but window_start_date and "
         "window_stop_date are not set, so the column is never built".format(path))
 
 
 def _check_age_usage(settings, path):
-    names = settings.step_columns() | set(settings.output_columns)
+    names = _named_columns(settings)
     used = names & {"age", "age_group"}
     if not used or settings.age_groups:
         return

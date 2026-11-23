@@ -31,6 +31,15 @@ shipped config or step changes.
   merged-heading repair reads the `.xlsx` format. The entry leaves
   [known problems in source files](docs/source-problems.md).
 
+### Fixed
+
+- `unique_report` naming a column the run never builds stops the run before
+  the steps. It crashed in the summary, after the prepared file and the
+  statistics table were written and before the run log.
+- `window_presence` in `output_columns` or `unique_report` without the window
+  pair, and `age` or `age_group` in `unique_report` without `age_groups`, are
+  refused when the settings are loaded, as a step naming them already was.
+
 ## 0.5.2 (2026-11-14)
 
 **No numbers move.** A config without `date_format_override`, which includes
