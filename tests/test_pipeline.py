@@ -477,6 +477,25 @@ def test_dedup_takes_a_list_of_columns_or_nothing(tmp_path):
         load(path)
 
 
+@pytest.mark.parametrize("step", [
+    {"cut": {"nights": 0}},
+    {"map": {"age": {"1.0": "1"}}},
+    {"map": {"outcome_type": {"ADOPTION": "TRANSFER"}},
+     "where": {"intake_date": "2020-01-10"}},
+    {"dedup": ["animal_id"], "where_not": {"dob": "2010-02-01"}},
+])
+def test_a_step_cannot_name_values_of_a_number_or_date_column(tmp_path, step):
+    # A step compares text, so these would match no row and drop nothing.
+    path = write_settings(tmp_path, steps=[step])
+    with pytest.raises(SettingsError, match="would match no row"):
+        load(path)
+
+
+def test_a_dedup_may_still_compare_a_date_column(tmp_path):
+    prep = prepared(tmp_path, steps=[{"dedup": ["animal_id", "intake_date"]}])
+    assert prep.statistics.frame().iloc[-1]["action"] == "dedup"
+
+
 def test_a_single_name_is_a_list_of_one(tmp_path):
     settings = load(write_settings(tmp_path, output_columns="animal_id",
                                    unique_report="animal_id",

@@ -28,6 +28,10 @@ shipped config or step changes.
 
 ### Changed
 
+- A cut, a map, or a `where:` / `where_not:` that names values of `nights`,
+  `age`, `intake_date`, `outcome_date`, or `dob` is an error. Steps compare
+  text and these columns hold numbers or dates, so such a step matched no
+  row and its statistics row reported 0. A `dedup:` may still compare them.
 - A `.xls` source stops the run with a message to save it as `.xlsx` or as
   CSV. Reading one failed even with `xlrd` installed, because the
   merged-heading repair reads the `.xlsx` format. The entry leaves

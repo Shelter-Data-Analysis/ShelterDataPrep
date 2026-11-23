@@ -116,6 +116,13 @@ one earlier in the file is dropped").
 Built after the dates are parsed and before any step runs, so they filter and
 map like columns that came out of the file.
 
+A cut, a map, or a `where:` / `where_not:` cannot name values of `nights` or
+`age`, which hold numbers, or of `intake_date`, `outcome_date`, or `dob`,
+which hold dates. Steps compare text, so such a step would match no row; the
+settings file is refused, and the error names the text column to filter on
+instead: `night_sign`, `age_group`, or `window_presence`. A `dedup:` may still
+compare these columns, since it names columns rather than values.
+
 | column | meaning |
 |---|---|
 | `nights` | `outcome_date - intake_date`, in whole nights |

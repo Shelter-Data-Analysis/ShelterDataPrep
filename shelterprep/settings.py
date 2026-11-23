@@ -66,6 +66,18 @@ _RETIRED_KEYS = {
         "period_dates. Rename the key and add one day to its date"),
 }
 
+#: Columns whose values a step cannot name, with the text column to filter on
+#: instead.  A step compares text, and these hold numbers or dates, so a cut,
+#: map, or guard on one would match no row at all.  A dedup may still compare
+#: them, since it names the column and not its values.
+_UNMATCHABLE = {
+    "nights": "night_sign",
+    "age": "age_group",
+    "intake_date": "window_presence",
+    "outcome_date": "window_presence",
+    "dob": "age_group",
+}
+
 _STEP_KEYS = frozenset({"cut", "map", "dedup", "where", "where_not", "complete"})
 
 _ACTIONS = ("cut", "map", "dedup")
@@ -229,6 +241,27 @@ class Dedup:
         if self.where_not:
             text += " where not " + _describe(self.where_not)
         return text
+
+
+def _matched_columns(step):
+    """The columns whose values *step* names: all of them but a dedup's `on`."""
+    if isinstance(step, Cut):
+        return tuple(step.conditions)
+    named = tuple(step.where) + tuple(step.where_not)
+    return ((step.column,) + named) if isinstance(step, Map) else named
+
+
+def _check_matchable(step):
+    for column in _matched_columns(step):
+        if column in _UNMATCHABLE:
+            raise SettingsError(
+                "step {0} names values of {1!r}, which holds {2}, but a step "
+                "compares text, so it would match no row. Filter on {3} "
+                "instead".format(
+                    step.index, column,
+                    "numbers" if column in DERIVED_COLUMNS else "dates",
+                    _UNMATCHABLE[column]))
+    return step
 
 
 def _parse_step(index, raw):
@@ -448,7 +481,7 @@ def load(path):
                     path, start.date(), stop.date()))
 
     age_groups = _parse_age_groups(raw.get("age_groups"), path)
-    steps = tuple(_parse_step(number, step)
+    steps = tuple(_check_matchable(_parse_step(number, step))
                   for number, step in enumerate(raw.get("steps") or [], start=1))
 
     unique_report = (_names(raw["unique_report"], "unique_report")
