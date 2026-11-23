@@ -51,6 +51,8 @@ file or a source that a run could not have used, or accept one it refused.
 - `window_presence` in `output_columns` or `unique_report` without the window
   pair, and `age` or `age_group` in `unique_report` without `age_groups`, are
   refused when the settings are loaded, as a step naming them already was.
+- `keep_time` takes `true` or `false` alone. A quoted `"false"` turned the
+  switch on.
 
 ## 0.5.2 (2026-11-14)
 

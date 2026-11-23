@@ -490,6 +490,11 @@ def load(path):
     if len(set(output_columns)) != len(output_columns):
         raise SettingsError("{0}: output_columns has duplicates".format(path))
 
+    keep_time = raw.get("keep_time", False)
+    if not isinstance(keep_time, bool):
+        raise SettingsError(
+            "{0}: keep_time takes true or false, got {1!r}".format(path, keep_time))
+
     settings = Settings(
         source_dir=_resolve_dir(raw["source_dir"], path),
         source_file=str(raw["source_file"]),
@@ -503,7 +508,7 @@ def load(path):
         sheet=None if raw.get("sheet") is None else str(raw["sheet"]),
         date_format=date_format,
         date_format_override=date_format_override,
-        keep_time=bool(raw.get("keep_time", False)),
+        keep_time=keep_time,
         window_start_date=start,
         window_stop_date=stop,
         path=path,

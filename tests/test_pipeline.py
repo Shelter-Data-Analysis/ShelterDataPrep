@@ -409,6 +409,13 @@ def test_complete_is_rejected_off_a_map_or_when_not_a_boolean(tmp_path, step):
         load(write_settings(tmp_path, steps=[step]))
 
 
+@pytest.mark.parametrize("value", ["false", "no", 0])
+def test_keep_time_takes_true_or_false_only(tmp_path, value):
+    # bool("false") is True, so anything but a YAML boolean is refused.
+    with pytest.raises(SettingsError, match="keep_time takes true or false"):
+        load(write_settings(tmp_path, keep_time=value))
+
+
 # --- deduplication ---------------------------------------------------------
 
 def _twice(tmp_path, intake, outcome, second_size="MED", second_intake=None):
