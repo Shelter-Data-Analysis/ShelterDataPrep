@@ -477,6 +477,21 @@ def test_dedup_takes_a_list_of_columns_or_nothing(tmp_path):
         load(path)
 
 
+def test_a_single_name_is_a_list_of_one(tmp_path):
+    settings = load(write_settings(tmp_path, output_columns="animal_id",
+                                   unique_report="animal_id",
+                                   steps=[{"dedup": "animal_id"}]))
+    assert settings.output_columns == ("animal_id",)
+    assert settings.unique_report == ("animal_id",)
+    assert settings.steps[0].on == ("animal_id",)
+
+
+def test_a_list_of_names_refuses_a_mapping(tmp_path):
+    path = write_settings(tmp_path, unique_report={"animal_id": 1})
+    with pytest.raises(SettingsError, match="column name or a list"):
+        load(path)
+
+
 # --- the statistics ledger -------------------------------------------------
 
 def test_cut_row_counts_reconcile(tmp_path):

@@ -52,6 +52,9 @@ column is read with `date_format`; `keep_time:` to
 one sheet, leaving out the window pair means no `window_presence`, and leaving
 out `age_groups:` means no `age` or `age_group`.
 
+`output_columns:`, `unique_report:`, and a `dedup:` step take a list of column
+names, or a single name as a list of one.
+
 `steps:` has a grammar of its own, in [steps and derived
 columns](steps.md).
 

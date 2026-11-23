@@ -90,6 +90,16 @@ def as_value_set(value):
     return frozenset([str(value)])
 
 
+def _names(value, where):
+    """A list of column names, where a single name is a list of one."""
+    if isinstance(value, str):
+        return (value,)
+    if isinstance(value, (list, tuple)):
+        return tuple(str(item) for item in value)
+    raise SettingsError(
+        "{0} takes a column name or a list of them, got {1!r}".format(where, value))
+
+
 def _conditions(raw, where):
     """Parse a ``{column: values}`` mapping into ``{column: frozenset}``."""
     if raw is None:
@@ -259,13 +269,13 @@ def _parse_step(index, raw):
 
     if action == "dedup":
         on = raw["dedup"]
-        if on is not None and not isinstance(on, (list, tuple)):
+        if on is not None and not isinstance(on, (str, list, tuple)):
             raise SettingsError(
                 "step {0}: dedup takes a list of columns, or nothing at all "
                 "for every output column".format(index))
         return Dedup(
             index=index,
-            on=tuple(str(column) for column in (on or ())),
+            on=() if on is None else _names(on, "step {0}: dedup".format(index)),
             where=_conditions(raw.get("where"), "step {0} where".format(index)),
             where_not=_conditions(raw.get("where_not"),
                                   "step {0} where_not".format(index)),
@@ -441,8 +451,9 @@ def load(path):
     steps = tuple(_parse_step(number, step)
                   for number, step in enumerate(raw.get("steps") or [], start=1))
 
-    unique_report = tuple(raw.get("unique_report") or ("animal_id",))
-    output_columns = tuple(raw["output_columns"])
+    unique_report = (_names(raw["unique_report"], "unique_report")
+                     if raw.get("unique_report") else ("animal_id",))
+    output_columns = _names(raw["output_columns"], "output_columns")
     if len(set(output_columns)) != len(output_columns):
         raise SettingsError("{0}: output_columns has duplicates".format(path))
 

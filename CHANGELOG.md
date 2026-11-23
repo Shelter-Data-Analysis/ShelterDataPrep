@@ -23,6 +23,8 @@ shipped config or step changes.
   one file per year, into a single .xlsx or .csv file, with a log that flags
   files without a header row, columns that differ between files, and records
   repeated across files whose copies disagree. See `docs/stacking.md`.
+- `output_columns`, `unique_report`, and `dedup:` take a single column name
+  as a list of one. A single name was read as a list of its letters.
 
 ### Changed
 
