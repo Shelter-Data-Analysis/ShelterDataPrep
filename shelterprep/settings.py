@@ -566,7 +566,14 @@ def _parse_age_groups(raw, path):
     if not isinstance(raw, dict):
         raise SettingsError("{0}: age_groups must be a mapping of "
                             "name to cutoff".format(path))
-    groups = {str(name): float(cutoff) for name, cutoff in raw.items()}
+    groups = {}
+    for name, cutoff in raw.items():
+        try:
+            groups[str(name)] = float(cutoff)
+        except (TypeError, ValueError):
+            raise SettingsError(
+                "{0}: age_groups cutoff for {1} must be a number of years, "
+                "got {2!r}".format(path, name, cutoff)) from None
     cutoffs = list(groups.values())
     if len(set(cutoffs)) != len(cutoffs):
         raise SettingsError(

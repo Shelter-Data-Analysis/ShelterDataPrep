@@ -938,6 +938,12 @@ def test_age_group_cutoffs_must_be_distinct(tmp_path):
         load(path)
 
 
+def test_an_age_group_cutoff_must_be_a_number(tmp_path):
+    path = write_settings(tmp_path, age_groups={"JUVENILE": "one"})
+    with pytest.raises(SettingsError, match="must be a number of years"):
+        load(path)
+
+
 def test_relative_paths_resolve_against_the_settings_file(tmp_path):
     # Not against the working directory: a run must mean the same thing from
     # anywhere, including from cron or from another project's directory.

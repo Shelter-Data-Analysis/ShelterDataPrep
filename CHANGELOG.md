@@ -53,6 +53,8 @@ file or a source that a run could not have used, or accept one it refused.
   refused when the settings are loaded, as a step naming them already was.
 - `keep_time` takes `true` or `false` alone. A quoted `"false"` turned the
   switch on.
+- An `age_groups` cutoff that is not a number is a settings error, rather
+  than a Python traceback.
 
 ## 0.5.2 (2026-11-14)
 
