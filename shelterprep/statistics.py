@@ -9,8 +9,7 @@ rather than inferred.
 For each field named in ``unique_report`` (animal_id by default) the ledger
 also carries ``_in``, ``_affected`` and ``_out`` counts of distinct values.
 ``_in`` minus ``_out`` is the number of animals that left the study entirely at
-that stage, which is the figure a reviewer asks for and the one the old
-pipeline never computed.
+that stage, which is the figure a reviewer asks for.
 
 Underneath the ledger sits a second table at a finer grain: one row per value
 named in the settings, counted within the rows that step actually cut or

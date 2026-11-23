@@ -22,8 +22,8 @@ classifiers = [
 # Floors, not pins.  pandas 2 is required outright: this package exists partly
 # because pandas 2 rejects the datetime handling the stale pipeline relied
 # on, and the date rules here assume its behavior.  pandas 3 is supported too:
-# it infers microsecond rather than nanosecond resolution, which `dates` no
-# longer has an opinion about, and CI compares prepared output under both.
+# it infers microsecond rather than nanosecond resolution, which nothing in
+# `dates` depends on, and CI compares prepared output under both.
 # The exact versions a given result was produced under are recorded in that
 # run's log, which is the record that matters for reproducing it.  NumPy
 # arrives with pandas anyway, but the package imports it directly, so it is

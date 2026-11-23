@@ -288,14 +288,6 @@ class Prep:
     def write(self):
         """Write the output CSV, the statistics table and the run log."""
         settings = self.settings
-        missing = [c for c in settings.output_columns
-                   if c not in self.frame.columns]
-        if missing:
-            raise SettingsError(
-                "output_columns names {0}, which the frame does not have. "
-                "It has: {1}".format(", ".join(missing),
-                                     ", ".join(self.frame.columns)))
-
         output = self.frame[list(settings.output_columns)].copy()
         for column in output.columns:
             if column in DATE_COLUMNS:
