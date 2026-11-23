@@ -78,6 +78,11 @@ _UNMATCHABLE = {
     "dob": "age_group",
 }
 
+#: Suffixes pandas writes compressed.  A prepared file is plain CSV, so that its
+#: digest is the same whichever tool reads it back and the files beside it are
+#: named from a plain stem.
+_COMPRESSED_SUFFIXES = (".gz", ".bz2", ".zip", ".xz", ".zst", ".tar")
+
 _STEP_KEYS = frozenset({"cut", "map", "dedup", "where", "where_not", "complete"})
 
 _ACTIONS = ("cut", "map", "dedup")
@@ -449,6 +454,11 @@ def load(path):
                      "output_columns"):
         if raw.get(required) is None:
             raise SettingsError("{0}: {1} is required".format(path, required))
+
+    if Path(str(raw["dest_file"])).suffix.lower() in _COMPRESSED_SUFFIXES:
+        raise SettingsError(
+            "{0}: dest_file {1} would be written compressed; name a plain "
+            "CSV file, such as OC2_data.csv".format(path, raw["dest_file"]))
 
     # No default: a format the file does not use leaves its dates unparsed,
     # and that is a choice to see being made rather than inherit.

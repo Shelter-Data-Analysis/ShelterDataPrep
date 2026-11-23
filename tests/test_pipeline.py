@@ -944,6 +944,14 @@ def test_an_age_group_cutoff_must_be_a_number(tmp_path):
         load(path)
 
 
+@pytest.mark.parametrize("name", ["out.csv.gz", "out.zip"])
+def test_the_prepared_file_is_not_compressed(tmp_path, name):
+    # A compressed prepared file would carry a digest of its compressed bytes
+    # in the pseudonymization log, and sibling names such as out.csv_stats.csv.
+    with pytest.raises(SettingsError, match="would be written compressed"):
+        load(write_settings(tmp_path, dest_file=name))
+
+
 def test_relative_paths_resolve_against_the_settings_file(tmp_path):
     # Not against the working directory: a run must mean the same thing from
     # anywhere, including from cron or from another project's directory.

@@ -55,6 +55,9 @@ out `age_groups:` means no `age` or `age_group`.
 `output_columns:`, `unique_report:`, and a `dedup:` step take a list of column
 names, or a single name as a list of one.
 
+`dest_file` names a plain CSV file. A name that pandas would write compressed,
+such as one ending in `.gz`, is refused.
+
 `steps:` has a grammar of its own, in [steps and derived
 columns](steps.md).
 

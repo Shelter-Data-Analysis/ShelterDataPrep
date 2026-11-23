@@ -45,6 +45,10 @@ file or a source that a run could not have used, or accept one it refused.
 - The run log names each column the summary leaves out for having more than
   50 distinct values, in a `summary skips` line after `final span`. Nothing
   reported them before.
+- A `dest_file` that pandas would write compressed, such as one ending in
+  `.gz`, is a settings error. The pseudonymization log took the digest of
+  the compressed bytes where the run log took that of the contents, and the
+  files beside it were named from a stem such as `out.csv`.
 
 ### Fixed
 
