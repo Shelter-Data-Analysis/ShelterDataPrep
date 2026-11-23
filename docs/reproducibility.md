@@ -16,8 +16,8 @@ file, and the extract together.
 ```
 ShelterDataPrep run log
 
-shelterprep   0.5.2
-run at        2026-11-13T19:29:45
+shelterprep   0.6.0
+run at        2026-11-23T14:23:13
 settings      configs/orange_county2.yaml
 source        /Users/you/projects/_shelter_raw/OC_raw.csv.gz
 source sha256 fbc5fa49...  (of the uncompressed contents)
@@ -37,9 +37,8 @@ PyYAML        6.0.3
 openpyxl      3.1.5
 ```
 
-The digests here are shortened to fit; the log carries them in full. The run
-predates 0.5.2's release date because the version is set when the work is
-done, ahead of the release tag. The two paths are absolute, since a relative
+The digests here are shortened to fit; the log carries them in full. The two
+paths are absolute, since a relative
 `source_dir` or `dest_dir` resolves against the settings file rather than the
 working directory.
 

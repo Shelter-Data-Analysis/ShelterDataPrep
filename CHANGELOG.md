@@ -12,12 +12,12 @@ This file starts at 0.2.0, the first version stamped in
 `shelterprep/version.py`. There was no 0.1.x, and neither 0.2.0 nor 0.2.1 was
 tagged, so 0.3.0 is the first release with an artifact behind it.
 
-## Unreleased
+## 0.6.0 (2026-11-23)
 
-**No numbers move** for any shipped config. On 2026-11-22, each reproduced its
-prepared file, summary, and statistics table byte for byte against commit
-2a98fa7, the last before these changes, run on the same extracts: each uses
-`keep_time: false`, and no shipped extract has a row with no `animal_id`, or a
+**No numbers move** for any shipped config. On 2026-11-23, each reproduced its
+prepared file, summary, and statistics table byte for byte against 0.5.2 run
+on the same extracts, and its run log differed in the version and the time of
+the run alone: each uses `keep_time: false`, and no shipped extract has a row with no `animal_id`, or a
 blank in its other `unique_report` fields. For other configs, three
 changes can move numbers. Under `keep_time: true`, `age` and `age_group` can
 move by one day of age for a row whose date of birth carries a later time of
