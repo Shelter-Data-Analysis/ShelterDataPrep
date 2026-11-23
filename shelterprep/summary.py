@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .settings import DATE_COLUMNS
+from .settings import DATE_COLUMNS, UNKNOWN
 
 #: A dimension collapsed by a partial sum.  An ordinary value in the house
 #: style of UNKNOWN, so that sorting, filtering and pivoting need no special
@@ -172,7 +172,7 @@ def _aggregate(work, keys, levels, unique_report):
         "nights_max": ("nights", "max"),
     }
     for name in unique_report:
-        specification[name + "_distinct"] = (name, "nunique")
+        specification[name + "_distinct"] = (name, _distinct)
 
     if keys:
         grouped = work.groupby(keys, dropna=False).agg(**specification)
@@ -192,6 +192,11 @@ def _aggregate(work, keys, levels, unique_report):
     for column in EXTREMES:
         grouped[column] = grouped[column].astype("Int64")
     return grouped.reset_index(drop=not keys)
+
+
+def _distinct(values):
+    """Distinct identifiers, a blank one (``_UNKNOWN_``) not among them."""
+    return values[values != UNKNOWN].nunique()
 
 
 def _quantile(fraction):

@@ -14,12 +14,18 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ## Unreleased
 
-**No numbers move** for any config with `keep_time: false`, which includes
-every shipped one: its dates are already at midnight, so computing `age` from
-normalized dates gives the same value. Under `keep_time: true`, `age` and
-`age_group` can move, by one day of age, for a row whose date of birth carries
-a later time of day than its intake date. The other changes refuse a settings
-file or a source that a run could not have used, or accept one it refused.
+**No numbers move** for any shipped config. On 2026-11-22, each reproduced its
+prepared file, summary, and statistics table byte for byte against commit
+2a98fa7, the last before these changes, run on the same extracts: each uses
+`keep_time: false`, and no shipped extract has a row with no `animal_id`, or a
+blank in its other `unique_report` fields. For other configs, three
+changes can move numbers. Under `keep_time: true`, `age` and `age_group` can
+move by one day of age for a row whose date of birth carries a later time of
+day than its intake date. A row with no `animal_id` is dropped before the
+steps, which moves every count after it. A blank in a `unique_report` field
+other than `animal_id` is no longer counted as a distinct value. The other
+changes refuse a settings file or a source that a run could not have used,
+accept one it refused, or add to what the run log reports.
 
 ### Added
 
@@ -49,6 +55,13 @@ file or a source that a run could not have used, or accept one it refused.
   `.gz`, is a settings error. The pseudonymization log took the digest of
   the compressed bytes where the run log took that of the contents, and the
   files beside it were named from a stem such as `out.csv`.
+- A row with no `animal_id` is dropped before any step and counted in a
+  `drop_no_id` row of the statistics table, after `drop_empty`. Such a row
+  cannot be told apart from another animal's stay. The row appears only
+  when there are such rows.
+- The distinct counts of a `unique_report` field, in the statistics table
+  and the summary, leave out a blank (`_UNKNOWN_`). It counted as one more
+  distinct value.
 
 ### Fixed
 

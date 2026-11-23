@@ -19,7 +19,7 @@ gap is visible. On the OC2 run:
 ```
 
 For each field in `unique_report` there is an `_in` / `_affected` / `_out`
-triple. `animal_id_in` minus `animal_id_out` is the number of animals that left
+triple, counting distinct values; a blank (`_UNKNOWN_`) is not counted. `animal_id_in` minus `animal_id_out` is the number of animals that left
 the study *entirely* at that stage, which is fewer than `animal_id_affected`:
 an animal with several stays can lose one and keep another, so a step touches
 it without removing it.
@@ -29,7 +29,8 @@ change, so the numbers describe the frame the step actually saw.
 
 Step 0 can have a `drop_empty` row after `read`, when the source has rows with
 no value in any column: `rows_affected` counts them, and `rows_out` is the rows
-left. It appears only when there are such rows. When the column names are not
+left. It appears only when there are such rows. A `drop_no_id` row follows in
+the same way when rows have no `animal_id`. When the column names are not
 in the source's first row, the `read` row's `detail` says which row they are
 in, such as `43 column(s), sheet Sheet1, column names in row 2`.
 

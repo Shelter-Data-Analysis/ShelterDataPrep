@@ -129,7 +129,7 @@ matters for a length-of-stay study:
 | column | meaning |
 |---|---|
 | `rows` | stays in the cell |
-| `animal_id_distinct` | distinct animals, one per `unique_report` field; below `rows` where an animal has repeat stays |
+| `animal_id_distinct` | distinct animals, one per `unique_report` field; below `rows` where an animal has repeat stays. A blank (`_UNKNOWN_`) is not counted |
 | `nights_known` | stays with a night count; `rows` minus this is the stays with no outcome date |
 | `nights_min`, `nights_max` | shortest and longest stay, as whole nights |
 | `nights_mean`, `nights_p25`, `nights_median`, `nights_p75`, `nights_p90` | the distribution over the known ones |

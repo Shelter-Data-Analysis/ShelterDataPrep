@@ -1207,6 +1207,35 @@ def test_empty_rows_in_a_csv_are_passed_over_and_counted(tmp_path):
     assert prep.source.empty_rows == 3
 
 
+def test_a_row_with_no_animal_id_is_counted_and_dropped(tmp_path):
+    lines = (FIXTURES / "tiny.csv").read_text(encoding="utf-8").splitlines()
+    lines[1] = "  " + lines[1][len("A001"):]          # A001's stay, ID blanked
+    (tmp_path / "noid.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
+                                    source_file="noid.csv"))).read()
+    assert UNKNOWN not in set(prep.frame.animal_id)
+    row = prep.statistics.frame().set_index("action").loc["drop_no_id"]
+    assert (row.rows_in, row.rows_affected, row.rows_out) == (15, 1, 14)
+    assert (row.animal_id_in, row.animal_id_affected, row.animal_id_out) == (13, 0, 13)
+
+
+def test_a_file_with_every_animal_id_gets_no_drop_no_id_row(tmp_path):
+    actions = set(prepared(tmp_path).statistics.frame().action)
+    assert "drop_no_id" not in actions
+
+
+def test_a_blank_is_not_counted_as_a_distinct_identifier(tmp_path):
+    # outcome_subtype is RESCUE in one row of the fixture and blank in the
+    # rest, so counting the blank would give 2.
+    prep = Prep(load(write_settings(
+        tmp_path, unique_report=["animal_id", "outcome_subtype"]))).run(verbose=False)
+    assert prep.statistics.frame().iloc[0]["outcome_subtype_in"] == 1
+    table = summary.summarize(prep.frame, prep.settings)
+    total = table[(table.field == summary.NONE) & (table.margin == 2)]
+    kept = prep.frame.outcome_subtype
+    assert int(total.outcome_subtype_distinct.iloc[0]) == kept[kept != UNKNOWN].nunique()
+
+
 def test_a_row_with_a_value_only_in_an_unread_column_is_not_empty(tmp_path):
     frame = pd.read_csv(FIXTURES / "tiny.csv", dtype=str)
     note = pd.DataFrame([{**{c: "" for c in frame.columns}, "outcome_subtype": "see notes"}])
@@ -1214,8 +1243,11 @@ def test_a_row_with_a_value_only_in_an_unread_column_is_not_empty(tmp_path):
 
     prep = Prep(load(write_settings(tmp_path, source_dir=str(tmp_path),
                                     source_file="noted.csv"))).read()
-    assert len(prep.frame) == 16
-    assert "drop_empty" not in set(prep.statistics.frame().action)
+    table = prep.statistics.frame().set_index("action")
+    assert table.loc["read", "rows_out"] == 16
+    assert "drop_empty" not in table.index
+    # It is still no stay: it has no animal_id.
+    assert table.loc["drop_no_id", "rows_affected"] == 1
 
 
 def test_a_file_without_empty_rows_gets_no_drop_empty_row(tmp_path):

@@ -126,6 +126,18 @@ class Prep:
                 detail="rows with no value in any column of the file")
             frame = kept.reset_index(drop=True)
 
+        # A stay with no animal ID cannot be told apart from another animal's,
+        # so it cannot be counted as an animal or linked to the animal's other
+        # stays.  Dropped here, before any step, and counted like an empty row.
+        no_id = frame["animal_id"].eq(UNKNOWN)
+        if no_id.any():
+            kept = frame.loc[~no_id]
+            self.statistics.record(
+                step=0, action="drop_no_id", before=frame, after=kept,
+                affected=no_id, column="animal_id",
+                detail="rows with no animal_id")
+            frame = kept.reset_index(drop=True)
+
         self.frame = frame
         self._parse_dates(date_columns)
         return self

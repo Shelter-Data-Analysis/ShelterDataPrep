@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from .settings import UNKNOWN
+
 
 class Statistics:
     """Accumulates the ledger rows; `report` and `render` give them back."""
@@ -154,14 +156,14 @@ class Statistics:
 
 
 def _distinct(frame, column):
-    """Distinct values, or 0 when the column is not present.
+    """Distinct values other than ``_UNKNOWN_``, or 0 when the column is absent.
 
-    ``_UNKNOWN_`` is an ordinary value here, so rows with a blank identifier
-    count as one more distinct value.
+    A blank identifier is no identifier, so it is not counted as one.
 
     Absent rather than empty matters here: a unique_report field is allowed to
     be a column that some stages have not built yet.
     """
     if column not in frame.columns:
         return 0
-    return int(frame[column].nunique(dropna=True))
+    values = frame[column]
+    return int(values[values != UNKNOWN].nunique(dropna=True))

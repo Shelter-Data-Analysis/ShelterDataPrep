@@ -149,7 +149,10 @@ shipped config cuts it there.
 **Filtering is not hidden in code; it happens in the steps you write.**
 Over-age animals, impossible date orders, and out-of-window stays are removed
 by ordinary `cut:` steps in the settings file, so each lands in the statistics
-table like every other exclusion.
+table like every other exclusion. Two kinds of row are dropped before any step,
+each counted in a row of the statistics table of its own: a row with no value
+in any column, and a row with no `animal_id`, which cannot be told apart from
+another animal's stay.
 
 `nights` is nights, not length of stay. mLOS defines `LOS = nights + 1` and
 derives it from the two dates itself.
@@ -159,7 +162,8 @@ derives it from the two dates itself.
 Every non-date value is text. Blank, whitespace-only, and missing all become
 `_UNKNOWN_` — the same sentinel mLOS uses. Because it is an ordinary value, a
 cut or a map can name it, and downstream code can treat it like any other
-value.
+value. A blank `animal_id` is the exception: the row is dropped before any
+step, as above.
 
 ---
 
