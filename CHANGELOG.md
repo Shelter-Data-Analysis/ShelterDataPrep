@@ -14,8 +14,12 @@ tagged, so 0.3.0 is the first release with an artifact behind it.
 
 ## Unreleased
 
-**No numbers move.** The new tool is separate from the main run, and no
-shipped config or step changes.
+**No numbers move** for any config with `keep_time: false`, which includes
+every shipped one: its dates are already at midnight, so computing `age` from
+normalized dates gives the same value. Under `keep_time: true`, `age` and
+`age_group` can move, by one day of age, for a row whose date of birth carries
+a later time of day than its intake date. The other changes refuse a settings
+file or a source that a run could not have used, or accept one it refused.
 
 ### Added
 
@@ -32,6 +36,8 @@ shipped config or step changes.
   `age`, `intake_date`, `outcome_date`, or `dob` is an error. Steps compare
   text and these columns hold numbers or dates, so such a step matched no
   row and its statistics row reported 0. A `dedup:` may still compare them.
+- `age` is computed from the calendar days of `intake_date` and `dob`, as
+  `nights` is, so `keep_time` no longer changes it.
 - A `.xls` source stops the run with a message to save it as `.xlsx` or as
   CSV. Reading one failed even with `xlrd` installed, because the
   merged-heading repair reads the `.xlsx` format. The entry leaves

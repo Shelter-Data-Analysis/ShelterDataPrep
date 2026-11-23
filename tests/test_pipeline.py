@@ -267,6 +267,21 @@ def test_keep_time_does_not_shift_a_night_count(tmp_path):
     assert prepared(tmp_path).frame["intake_date"].dt.hour.eq(0).all()
 
 
+def test_keep_time_does_not_shift_an_age(tmp_path):
+    # Intake at 08:00, born at 10:00 a year earlier: a difference of datetimes
+    # is a day short of the difference of their calendar days.
+    (tmp_path / "born.csv").write_text(
+        "animal_id,intake_date,outcome_date,intake_type,outcome_type,dob\n"
+        "A1,2020-01-01 08:00,2020-01-02,STRAY,ADOPTION,2019-01-01 10:00\n",
+        encoding="utf-8")
+    options = {"source_dir": str(tmp_path), "source_file": "born.csv",
+               "columns": {}, "window_start_date": None, "window_stop_date": None,
+               "output_columns": ["animal_id", "age", "age_group"]}
+    without = prepared(tmp_path, **options).frame["age"]
+    with_time = prepared(tmp_path, keep_time=True, **options).frame["age"]
+    assert list(with_time) == list(without) == [365 / 365.25]
+
+
 def test_unparseable_dates_are_counted_not_silently_dropped(tmp_path):
     ledger = prepared(tmp_path).statistics.frame()
     row = ledger[(ledger.action == "parse_dates") & (ledger.column == "outcome_date")]

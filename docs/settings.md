@@ -198,9 +198,10 @@ information, for analyses of time-of-day effects. For now that time is only
 in the frame, from Python; time windows, set the way the window pair sets a
 date period, are planned
 ([#2](https://github.com/Shelter-Data-Analysis/ShelterDataPrep/issues/2)).
-The time is not meant to tell stays apart, so neither `nights` nor a `dedup:`
-step looks at it: `nights` is computed from normalized values, and a
-dedup compares dates by calendar day. The switch leaves both unchanged. Dates
+The time is not meant to tell stays apart, so neither `nights`, `age`, nor a
+`dedup:` step looks at it: `nights` and `age` are computed from normalized
+values, and a dedup compares dates by calendar day. The switch leaves all
+three unchanged. Dates
 become `YYYY-MM-DD` strings at the moment they are written, so the prepared
 file is the same either way.
 

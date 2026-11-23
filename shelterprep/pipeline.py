@@ -201,7 +201,9 @@ class Prep:
             built.append("window_presence")
 
         if "dob" in frame.columns and settings.age_groups:
-            frame["age"] = (frame["intake_date"] - frame["dob"]).dt.days / 365.25
+            # By calendar day, as `nights` is, so keep_time cannot move it.
+            frame["age"] = (frame["intake_date"].dt.normalize()
+                            - frame["dob"].dt.normalize()).dt.days / 365.25
             frame["age_group"] = _age_group(frame["age"], settings.age_groups)
             built.extend(["age", "age_group"])
 
