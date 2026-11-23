@@ -19,8 +19,8 @@ name; a file lacking a column gets blanks in it.
 
 Duplicates.  A record is identified by the key column (one row per stay, such
 as an impound number).  A key that appears more than once, in one file or
-across files, is kept once.  Copies that agree in every column collapse
-silently; copies that disagree are flagged in the log with the columns that
+across files, is kept once.  Copies that agree in every column collapse,
+and the log counts them; copies that disagree are flagged in the log with the columns that
 differ, and the copy from the file listed last is kept.  Rows with a blank
 key are all kept and counted in the log.
 

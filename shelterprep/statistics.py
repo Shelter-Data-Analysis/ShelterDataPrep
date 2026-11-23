@@ -26,7 +26,7 @@ import pandas as pd
 
 
 class Statistics:
-    """Accumulates the ledger rows; `frame` renders them."""
+    """Accumulates the ledger rows; `report` and `render` give them back."""
 
     def __init__(self, unique_report):
         self.unique_report = tuple(unique_report)
@@ -155,7 +155,10 @@ class Statistics:
 
 
 def _distinct(frame, column):
-    """Distinct non-missing values, or 0 when the column is not present.
+    """Distinct values, or 0 when the column is not present.
+
+    ``_UNKNOWN_`` is an ordinary value here, so rows with a blank identifier
+    count as one more distinct value.
 
     Absent rather than empty matters here: a unique_report field is allowed to
     be a column that some stages have not built yet.

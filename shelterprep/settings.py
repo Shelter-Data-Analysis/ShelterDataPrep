@@ -183,7 +183,6 @@ class Dedup:
     more likely to be a correction of an earlier one than the reverse.  It is
     also how mLOS breaks the same tie.
 
-
     Deliberately the narrowest useful form of deduplication.  Two rows
     identical in every output column and covering a stay of at least one night
     cannot both be real: an animal cannot be admitted twice on the same day for
