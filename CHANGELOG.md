@@ -58,6 +58,8 @@ file or a source that a run could not have used, or accept one it refused.
   switch on.
 - An `age_groups` cutoff that is not a number is a settings error, rather
   than a Python traceback.
+- `Prep.source.empty_rows` counts the empty rows of a CSV source, as it does
+  for a workbook. It was 0 for every CSV source.
 
 ## 0.5.2 (2026-11-14)
 

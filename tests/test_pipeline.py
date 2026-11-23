@@ -1178,6 +1178,7 @@ def test_empty_rows_in_a_workbook_are_passed_over_and_counted(tmp_path):
     assert "column names in row 3" in table.loc["read", "detail"]
     assert table.loc["drop_empty", "rows_affected"] == 2
     assert table.loc["drop_empty", "rows_out"] == 15
+    assert prep.source.empty_rows == 2
 
 
 def test_empty_rows_in_a_csv_are_passed_over_and_counted(tmp_path):
@@ -1195,6 +1196,7 @@ def test_empty_rows_in_a_csv_are_passed_over_and_counted(tmp_path):
     table = prep.statistics.frame().set_index("action")
     assert "column names in row 2" in table.loc["read", "detail"]
     assert table.loc["drop_empty", "rows_affected"] == 3
+    assert prep.source.empty_rows == 3
 
 
 def test_a_row_with_a_value_only_in_an_unread_column_is_not_empty(tmp_path):

@@ -93,11 +93,11 @@ class Prep:
             # holding the whole file.
             header_row = _header_row(path)
             header = list(_read_csv(path, header_row, nrows=0).columns)
-            self.source = Source(None, None, header_row, 0, 0, ())
             by_file_name = self._resolve(settings.wanted_columns(available=set(header)), header)
             frame = _read_csv(path, header_row, usecols=list(by_file_name))
             chunks = _read_csv(path, header_row, chunksize=100000)
             empty = np.concatenate([_empty_rows(chunk) for chunk in chunks] or [np.zeros(0, bool)])
+            self.source = Source(None, None, header_row, int(empty.sum()), 0, ())
         self.sheet = self.source.sheet
         header_row = self.source.header_row
 
