@@ -120,7 +120,9 @@ column its own format under `date_format_override`.
 Exclusions are ordinary `cut:` steps: you can see each one, each lands in the
 statistics table, and each can be quoted in a research paper's methods.
 Out-of-window stays, impossible date orders, and animals with no recorded
-outcome are all removed by steps you write.
+outcome are all removed by steps you write. Two kinds of row are dropped
+before your steps, each on a row of the statistics table of its own: rows with
+no value in any column, and rows with no `animal_id`.
 
 Work from the inherited steps and change the values to your shelter's
 vocabulary. Three habits are worth adopting from the start:

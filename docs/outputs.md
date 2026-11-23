@@ -19,7 +19,7 @@ file is whatever a run asks for. The meaning of each column is fixed:
 | `outcome_type` | text | likewise, in whatever codes the config maps to. These vary by config, and even the shipped ones differ: OC2's are `LCOM`, `TRAN`, `NONL`, and `INC` for still in care. The shipped configs also use `_NODATE_`, below |
 | `animal_size`, `animal_type`, … | text | any other source column the config keeps |
 | `nights` | number | the stay in whole nights. Blank where a date is missing |
-| `age` | number | years at intake, unrounded: 12.11 rather than 12 |
+| `age` | number | years at intake, as an unrounded decimal |
 | `night_sign` | text | `-1`, `0`, `1`, `_UNKNOWN_` |
 | `window_presence` | text | `BEFORE`, `IN`, `AFTER`, `_UNKNOWN_` |
 | `age_group` | text | the `age_groups` names, plus `_OVER_`, `_NEGATIVE_`, `_UNKNOWN_` |
@@ -28,7 +28,8 @@ These conventions run through all of it:
 
 - **`_UNKNOWN_` marks a missing value in a text column.** Blank, whitespace,
   and absent all become `_UNKNOWN_`, before any step runs. A cut or a map can
-  name it, and downstream code can treat it like any other value.
+  name it, and downstream code can treat it like any other value. A row with a
+  blank `animal_id` is dropped instead, so `animal_id` does not hold it.
 - **A blank date is an empty cell**, rather than the text `NaN` or `NaT`.
 - **One row is one stay**, not one animal. `animal_id_distinct` in the summary
   is the animal count where you need it.
@@ -86,10 +87,10 @@ The night columns follow on the same rows, dropped here for width:
          6617        21.34           0         1.0            6.0        17.0        52.0         616
 ```
 
-**One row per cell.** A contingency table written as a grid needs a header
-row *and* a header column, which one CSV cannot carry for several tables at
-once and which neither pandas nor R reads back readily. One row
-per cell, dimensions in named columns, goes straight into all three:
+**One row per cell.** A contingency table written as a grid needs a header row
+*and* a header column, which one CSV cannot carry for several tables at once
+and which neither pandas nor R reads back readily. One row per cell,
+dimensions in named columns, goes straight into pandas and R:
 
 ```python
 cells = frame[(frame.field == "animal_size") & (frame.margin == 0)]

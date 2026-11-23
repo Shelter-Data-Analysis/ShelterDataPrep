@@ -43,11 +43,11 @@ quietly skip an exclusion, and that failure survives into a published table.
 
 Six keys are required: `source_dir`, `source_file`, `date_format`, `dest_dir`,
 `dest_file`, and `output_columns`. A file missing any of them stops before a
-row is read. `date_format` has [a section of its own](#dates).
-Of the rest, `columns:` defaults to no renames, so each canonical name is
-looked for under its own spelling; `steps:` defaults to none; `date_format_override:` to none, so every date
-column is read with `date_format`; `keep_time:` to
-`false`; and `unique_report:` to `[animal_id]`. `sheet:`, the window pair, and
+row is read. `date_format` has [a section of its own](#dates). Of the rest,
+`columns:` defaults to no renames, so each canonical name is looked for under
+its own spelling; `steps:` defaults to none; `date_format_override:` to none,
+so every date column is read with `date_format`; `keep_time:` to `false`; and
+`unique_report:` to `[animal_id]`. `sheet:`, the window pair, and
 `age_groups:` have no default. Leaving `sheet:` out requires a workbook with
 one sheet, leaving out the window pair means no `window_presence`, and leaving
 out `age_groups:` means no `age` or `age_group`.
@@ -63,8 +63,9 @@ columns](steps.md).
 
 ## Paths
 
-`source_dir` and `dest_dir` are relative, and resolve against the settings file
-rather than the working directory, so a run means the same thing from anywhere.
+A relative `source_dir` or `dest_dir` resolves against the settings file
+rather than the working directory, so a run means the same thing from
+anywhere.
 
 The shipped configs keep to relative paths, so a clone of this repo next to a
 `_shelter_raw/` directory runs as written. They read `../../_shelter_raw` — a
@@ -73,7 +74,9 @@ sibling of the repo, which keeps the extracts outside git — and write to
 
 ## The source file
 
-CSV or Excel, decided by the file extension.
+CSV or Excel, decided by the file extension: `.xlsx`, `.xlsm`, and `.xltx` are
+read as Excel workbooks, `.xls` is refused with a message to save it as
+`.xlsx` or as CSV, and any other name is read as comma-separated text.
 
 **Gzipped CSVs need no setting.** pandas reads `.csv.gz` transparently, so
 `source_file: "OC_raw.csv.gz"` works like the uncompressed name, and the
@@ -100,9 +103,10 @@ the statistics table's `read` row then says which row the names are in. Below
 the names, a row with no value in any column, or only spaces, is no stay and
 is dropped, on a `drop_empty` row of its own at step 0. Both rules look at
 every column of the file, not only those the run reads: a row holding nothing
-but a note in a column the run ignores is still read, and becomes a stay with
-no dates, which the study window then removes. A file in which every row is
-empty stops the run.
+but a note in a column the run ignores is kept as a row, and is then dropped
+on a `drop_no_id` row for having no `animal_id`. A row with no `animal_id` is
+dropped there whatever else it holds. A file in which every row is empty stops
+the run.
 
 Only the columns a run actually needs are built into the frame, which costs
 little: a wide extract, which is the common case, is still read from disk, but

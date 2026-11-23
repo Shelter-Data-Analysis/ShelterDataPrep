@@ -19,20 +19,25 @@ gap is visible. On the OC2 run:
 ```
 
 For each field in `unique_report` there is an `_in` / `_affected` / `_out`
-triple, counting distinct values; a blank (`_UNKNOWN_`) is not counted. `animal_id_in` minus `animal_id_out` is the number of animals that left
-the study *entirely* at that stage, which is fewer than `animal_id_affected`:
-an animal with several stays can lose one and keep another, so a step touches
-it without removing it.
+triple, counting distinct values; a blank (`_UNKNOWN_`) is not counted.
+`animal_id_in` minus `animal_id_out` is the number of animals that left the
+study *entirely* at that stage, which is fewer than `animal_id_affected`: an
+animal with several stays can lose one and keep another, so a step touches it
+without removing it.
 
 Every step computes its mask, records the statistics, and only then applies the
 change, so the numbers describe the frame the step actually saw.
 
 Step 0 can have a `drop_empty` row after `read`, when the source has rows with
-no value in any column: `rows_affected` counts them, and `rows_out` is the rows
-left. It appears only when there are such rows. A `drop_no_id` row follows in
-the same way when rows have no `animal_id`. When the column names are not
-in the source's first row, the `read` row's `detail` says which row they are
-in, such as `43 column(s), sheet Sheet1, column names in row 2`.
+no value in any column: `rows_affected` counts them, and `rows_out` is the
+rows left. It appears only when there are such rows. A `drop_no_id` row
+follows in the same way when rows have no `animal_id`. When the column names
+are not in the source's first row, the `read` row's `detail` says which row
+they are in, such as `43 column(s), sheet Sheet1, column names in row 2`. The
+`action` column names the stage: `read`, `drop_empty`, `drop_no_id`,
+`parse_dates`, and `derive` at step 0; `cut`, `map`, or `dedup` for each step
+of the settings file, numbered from 1; and `write`, numbered one past the last
+step.
 
 ## The by-value breakdown
 
@@ -100,9 +105,10 @@ Two things to expect from a file this project did not write.
   `split`.
 
 The columns are the contract; what a writer puts in them is its own business.
-An extra column would break the concatenation. That is why mLOS keeps its
-internal stage names out of the file and identifies a stage the way this one
-does, by `action`, `column`, and `detail`.
+An extra column would leave the stacked file ragged, blank in that column for
+every row the other tool wrote. That is why mLOS keeps its internal stage
+names out of the file and identifies a stage the way this one does, by
+`action`, `column`, and `detail`.
 
 ---
 

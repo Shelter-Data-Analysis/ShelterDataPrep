@@ -30,11 +30,10 @@ but not always practical. (Most of the shipped configs have not been checked,
 and say so clearly.)
 
 Then **cite ShelterDataPrep by its DOI, naming the version you actually
-used**, not
-by a link to the repository. A GitHub URL is not archival: the repository can
-be rewritten or deleted, and "the GitHub repository" and "version 0.3.0" are
-different claims, of which only the second is checkable. Your run log reports
-the version to name, and
+used**, not by a link to the repository. A GitHub URL is not archival: the
+repository can be rewritten or deleted, and "the GitHub repository" and
+"version 0.3.0" are different claims, of which only the second is checkable.
+Your run log reports the version to name, and
 [10.5281/zenodo.22051338](https://doi.org/10.5281/zenodo.22051338) is the DOI
 to name it with.
 
@@ -44,7 +43,7 @@ why.
 
 Post the usage report, or a link to the deposit holding it, as a GitHub issue
 as well, so it reaches the people working on the tool rather than only the
-people tracing citations. It is read as a report of experience, not a feature
+people tracing citations. It is taken as a report of experience, not a feature
 request that anyone has undertaken to fill.
 
 More on what travels with a file into a paper: [docs/reproducibility.md](docs/reproducibility.md).

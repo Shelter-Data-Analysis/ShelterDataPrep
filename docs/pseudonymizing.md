@@ -21,9 +21,9 @@ python3 tools/pseudonymize_ids.py map settings.yaml
 `map` reads the raw extract named in the settings file, with the settings
 file's `columns:` entries and the same cleaning as a main run. It adds a
 pseudonym for each animal ID the mapping does not yet hold. An ID already in
-the mapping keeps its pseudonym, so one mapping can serve several configs
-and later extracts of the same shelter, and an animal keeps its pseudonym
-across them. A blank ID (`_UNKNOWN_`) is not an ID and gets no pseudonym.
+the mapping keeps its pseudonym, so one mapping can serve several configs and
+later extracts of the same shelter, and an animal keeps its pseudonym across
+them.
 
 ```bash
 python3 tools/pseudonymize_ids.py apply settings.yaml

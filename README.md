@@ -114,7 +114,7 @@ statistics this tool generates).
 | `example_tiny.yaml` | none — the test fixture | 11 | runs on a clean clone; the starting point to copy |
 | `orange_county2.yaml` | Orange County, dogs | 34,718 | the mLOS default; new outcome codes, `age_group` exported |
 | `orange_county1.yaml` | Orange County, dogs | 36,567 | superseded by the above; frozen, so earlier results can be rebuilt and differences traced |
-| `irvine_dogs.yaml` | Irvine, dogs | 11,022 | no dob, no size — no `animal_group` |
+| `irvine_dogs.yaml` | Irvine, dogs | 11,022 | no dob, no size, so nothing for mLOS to stratify on |
 | `irvine_all_species.yaml` | Irvine, all species | 20,690 | US `m/d/yy` dates; `animal_type` is the stratifier |
 | `long_beach.yaml` | Long Beach, dogs | 12,184 | no size; `age_group` is the stratifier |
 | `mission_viejo.yaml` | Mission Viejo, dogs | 4,662 | its own column names throughout |
@@ -131,7 +131,7 @@ from the stale pipeline because that pipeline appears to have had a bug, are
 commented in the config itself.
 
 Every config except `example_tiny.yaml` reads an extract that stays outside
-the repository. All six are deposited at
+the repository. The six extracts they read are deposited at
 [10.5281/zenodo.22051091](https://doi.org/10.5281/zenodo.22051091) under CC BY
 4.0, so a shipped config runs once its extract is downloaded into [the layout
 the configs
@@ -176,9 +176,9 @@ The command line calls `Prep(load(path)).run()`, which is the whole thing.
 ## Scope
 
 Preparation only: read, derive, filter, map, and write. The `dedup:` step
-collapses only stays identical in every column written, so screening
-near-duplicates in an analysis-specific way belongs
-[downstream](docs/steps.md#deduplication-is-deliberately-narrow). `stale/` also
+collapses stays that agree in the columns it lists, or in every column written
+when it lists none, so screening near-duplicates in an analysis-specific way
+belongs [downstream](docs/steps.md#deduplication-is-deliberately-narrow). `stale/` also
 holds weekly-cumulative "physics" code (`getCumulative`, `AnimDays`, the
 17-week differencing), unported and kept for reference; it does not run under
 pandas 2.
@@ -189,7 +189,7 @@ pandas 2.
 python3 -m pytest tests/ -q
 ```
 
-165 tests, 95% line coverage of `shelterprep/`. Most of them pin down a
+165 tests, 96% line coverage of `shelterprep/`. Most of them pin down a
 decision documented in `docs/`, so a test name reads as the rule it protects.
 For example, the age cutoff falling in the lower group, a map being
 simultaneous rather than sequential, a still-in-care animal staying `IN`

@@ -30,8 +30,9 @@ Two restrictions are deliberate:
   step for each one. The reason for this design choice is that the statistics
   describing two columns at once would be confusing.
 
-A step whose count comes out zero is still worth keeping: it catches a
-misspelled label, so retired values are often worth keeping in steps.
+A step that matches nothing is still worth keeping. A retired value left in a
+step catches the label if it returns, and the by-value breakdown of the
+statistics table shows a zero against a misspelled one.
 
 ## Complete maps
 
@@ -88,13 +89,14 @@ may be two genuine visits.
 
 The bare form is tied to `output_columns`, so **widening the output has the
 side effect of narrowing the step.** Each column added is one more that two
-rows have to agree on before either is dropped. The explicit list decouples the
-two: the `[animal_id, intake_date, outcome_date]` example above treats two
+rows have to agree on before either is dropped. The explicit list decouples
+the two: the `[animal_id, intake_date, outcome_date]` example above treats two
 multi-day stays as one whenever the animal and both dates agree, regardless of
 outcome type, animal size, or anything else. Either form costs little on the
-shipped extracts: the explicit three-column list drops one row more than the
-bare form on each of OC1, OC2, and Long Beach, and the same number elsewhere. What the config does not handle falls to the
-consumer of the prepared file.
+shipped extracts (checked 2026-11-22 with the shipped configs at 0.5.2): the
+explicit three-column list drops one row more than the bare form on each of
+OC1, OC2, and Long Beach, and the same number elsewhere. What the config does
+not handle falls to the consumer of the prepared file.
 
 **What the step leaves for the analysis.** Same-day repeats, overlapping stays,
 and rows that agree on the animal and both dates while disagreeing in any other
@@ -104,17 +106,17 @@ the size, or anything else the config exports. An analysis that treats a stay
 as a unit wants a screen of its own, which is where mLOS keeps its
 duplicate-stay and overlapping-stay screens.
 
-Which row in a matching set survives matters only when the compared columns are
-a **subset**, which allows matching rows to still differ elsewhere. There the
-**last** row is kept,
-on the reading that a later record corrects an earlier one rather than the
-reverse — which is also how mLOS breaks the same tie ("of two equal stays, the
-one earlier in the file is dropped").
+Which row in a matching set survives matters only when the compared columns
+are a **subset**, which allows matching rows to still differ elsewhere. There
+the **last** row is kept, on the reading that a later record corrects an
+earlier one rather than the reverse — which is also how mLOS breaks the same
+tie ("of two equal stays, the one earlier in the file is dropped").
 
 ## Derived columns
 
-Built after the dates are parsed and before any step runs, so they filter and
-map like columns that came out of the file.
+Built after the dates are parsed and before any step runs, so the text ones,
+`night_sign`, `window_presence`, and `age_group`, filter and map like columns
+that came out of the file.
 
 A cut, a map, or a `where:` / `where_not:` cannot name values of `nights` or
 `age`, which hold numbers, or of `intake_date`, `outcome_date`, or `dob`,
@@ -146,24 +148,24 @@ outcome date: it cannot pass the `BEFORE` test, and it is either `AFTER` or
 is `_UNKNOWN_`: it cannot be placed against the window at all, and every
 shipped config cuts it there.
 
-**Filtering is not hidden in code; it happens in the steps you write.**
-Over-age animals, impossible date orders, and out-of-window stays are removed
-by ordinary `cut:` steps in the settings file, so each lands in the statistics
-table like every other exclusion. Two kinds of row are dropped before any step,
-each counted in a row of the statistics table of its own: a row with no value
-in any column, and a row with no `animal_id`, which cannot be told apart from
-another animal's stay.
+**Filtering happens in the steps you write**, apart from two drops described
+below. Over-age animals, impossible date orders, and out-of-window stays are
+removed by ordinary `cut:` steps in the settings file, so each lands in the
+statistics table like every other exclusion. The two drops happen before any
+step, each counted in a row of the statistics table of its own: a row with no
+value in any column, and a row with no `animal_id`, which cannot be told apart
+from another animal's stay.
 
 `nights` is nights, not length of stay. mLOS defines `LOS = nights + 1` and
 derives it from the two dates itself.
 
 ## Blanks
 
-Every non-date value is text. Blank, whitespace-only, and missing all become
-`_UNKNOWN_` — the same sentinel mLOS uses. Because it is an ordinary value, a
-cut or a map can name it, and downstream code can treat it like any other
-value. A blank `animal_id` is the exception: the row is dropped before any
-step, as above.
+Every non-date value read from the file is text. Blank, whitespace-only, and
+missing all become `_UNKNOWN_` — the same sentinel mLOS uses. Because it is an
+ordinary value, a cut or a map can name it, and downstream code can treat it
+like any other value. A blank `animal_id` is the exception: the row is dropped
+before any step, as above.
 
 ---
 

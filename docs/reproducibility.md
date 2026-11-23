@@ -37,19 +37,20 @@ PyYAML        6.0.3
 openpyxl      3.1.5
 ```
 
-The digests here are shortened to fit; the log carries them in full. A run
-on a workbook the reader repaired adds a line after `sheet` for each repair:
-`repaired`, for font settings left out of the copy it read, and `heading`, for
-a column that takes the name of the merged heading above it. See [the source
-file](settings.md#the-source-file). A run with a `date_format_override` adds a
-line after `date_format` for each column it names, giving that column's format.
-A run whose summary leaves out a column for having more than 50 distinct
-values adds a `summary skips` line after `final span`, naming each one.
- The run
+The digests here are shortened to fit; the log carries them in full. The run
 predates 0.5.2's release date because the version is set when the work is
-done, ahead of the release tag. The two
-paths are absolute, since `source_dir` and `dest_dir` resolve against the
-settings file rather than the working directory.
+done, ahead of the release tag. The two paths are absolute, since a relative
+`source_dir` or `dest_dir` resolves against the settings file rather than the
+working directory.
+
+Some runs add lines. A run on a workbook the reader repaired adds a line after
+`sheet` for each repair: `repaired`, for font settings left out of the copy it
+read, and `heading`, for a column that takes the name of the merged heading
+above it. See [the source file](settings.md#the-source-file). A run with a
+`date_format_override` adds a line after `date_format` for each column it
+names, giving that column's format. A run whose summary leaves out a column
+for having more than 50 distinct values adds a `summary skips` line after
+`final span`, naming each one.
 
 `sheet`, `date_format`, `keep_time`, and `window` echo the settings that decide
 how the source is read and what the derived columns say. The statistics table
@@ -92,9 +93,10 @@ Four things reviewers care about:
    [10.5281/zenodo.22051368](https://doi.org/10.5281/zenodo.22051368) — the
    prepared files, their statistics tables, their run logs, and the settings
    files that produced them.
-4. **The statistics table is the flow diagram.** It is shaped after CONSORT and
-   goes into a supplement more or less as is; the by-value breakdown underneath
-   it turns "147,385 rows were excluded" into a defensible sentence.
+4. **The statistics table is the flow diagram.** It is shaped after CONSORT
+   and goes into a supplement more or less as is; the by-value breakdown
+   underneath it turns "147,385 rows were excluded" (the OC2 run's
+   `animal_type` cut, 0.5.2) into a defensible sentence.
 
 ## Citation
 
